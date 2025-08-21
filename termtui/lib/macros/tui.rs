@@ -1,0 +1,1819 @@
+//! Implementation of the tui! macro
+//!
+//! This file contains the main tui! macro and its internal parsing/building helpers.
+//! The macro provides a declarative syntax for building TUI components.
+
+/// Main macro for building TUI components with a declarative syntax
+///
+/// # Basic Syntax
+///
+/// - **Divs**: `div(props) [children]` - Properties in parentheses, children in brackets
+/// - **Text**: `text("content", props)` - Content first, then properties
+/// - **Input**: `input(props)` - Text input field with properties
+/// - **Spacers**: `spacer(size)` - Simple spacing elements
+/// - **Components**: `node(instance)` - Embed other components
+///
+/// # Examples
+///
+/// ## Basic Div with Text
+/// ```ignore
+/// use termtui::prelude::*;
+///
+/// tui! {
+///     div(bg: black, pad: 2) [
+///         text("Hello World", color: white, bold),
+///         text("Welcome to Radical TUI", color: cyan)
+///     ]
+/// }
+/// ```
+///
+/// ## Layout with HStack and VStack
+/// ```ignore
+/// tui! {
+///     div(bg: "#1a1a1a", pad: 2) [
+///         // Vertical layout by default
+///         text("Header", color: yellow, bold),
+///         spacer(1),
+///
+///         // Horizontal layout
+///         hstack(gap: 2) [
+///             div(bg: blue, w: 20, h: 10) [
+///                 text("Left", color: white)
+///             ],
+///             div(bg: green, w: 20, h: 10) [
+///                 text("Right", color: white)
+///             ]
+///         ],
+///
+///         spacer(1),
+///
+///         // Explicit vertical layout
+///         vstack [
+///             text("Line 1"),
+///             text("Line 2"),
+///             text("Line 3")
+///         ]
+///     ]
+/// }
+/// ```
+///
+/// ## Styling Properties
+/// ```ignore
+/// tui! {
+///     div(
+///         // Colors
+///         bg: black,              // Named color
+///         border: "#FF5733",      // Hex color
+///
+///         // Border configuration
+///         border_style: (BorderStyle::Rounded, white),  // Style and color
+///         border_edges: BorderEdges::TOP | BorderEdges::BOTTOM,  // Which edges
+///         border_full: (BorderStyle::Double, yellow, BorderEdges::ALL),  // Full config
+///
+///         // Dimensions
+///         w: 50,                  // Fixed width
+///         h: 20,                  // Fixed height
+///         w_pct: 0.5,            // Width as percentage (50%)
+///         h_pct: 0.8,            // Height as percentage (80%)
+///         w_auto,                // Automatic width
+///         h_content,             // Height based on content
+///
+///         // Spacing
+///         pad: 2,                // Padding on all sides
+///         pad_h: 1,              // Horizontal padding only
+///         pad_v: 1,              // Vertical padding only
+///         padding: (Spacing::horizontal(2)), // Direct Spacing expression
+///         gap: 1,                // Gap between children
+///
+///         // Layout
+///         dir: horizontal,       // Direction (or use 'h')
+///         wrap: wrap,           // Wrap mode (lowercase)
+///         overflow: hidden,     // Overflow behavior (lowercase)
+///
+///         // Positioning
+///         pos: absolute,        // Position type (lowercase)
+///         absolute,             // Shorthand for absolute positioning
+///         top: 5,              // Offset from top
+///         right: 10,           // Offset from right
+///         bottom: 5,           // Offset from bottom
+///         left: 10,            // Offset from left
+///         z: 100,              // Z-index for layering
+///
+///         // Interaction
+///         focusable,           // Can receive focus
+///         focus_style: (Style::new().border(yellow))  // Style when focused
+///     ) [
+///         text("Styled Div")
+///     ]
+/// }
+/// ```
+///
+/// ## Text Styling
+/// ```ignore
+/// tui! {
+///     div [
+///         // Basic text styles
+///         text("Bold text", bold),
+///         text("Italic text", italic),
+///         text("Underlined", underline),
+///         text("Strikethrough", strikethrough),
+///
+///         // Colors
+///         text("Red text", color: red),
+///         text("Bright blue", color: bright_blue),
+///         text("Custom hex", color: "#00FF00"),
+///         text("With background", color: white, bg: blue),
+///
+///         // Multiple styles
+///         text("Important!", color: yellow, bg: red, bold, underline),
+///
+///         // Text wrapping
+///         text("Long text that wraps", wrap: word)
+///     ]
+/// }
+/// ```
+///
+/// ## Text Input Fields
+/// ```ignore
+/// tui! {
+///     div [
+///         // Basic input with placeholder
+///         input(placeholder: "Enter your name...", focusable),
+///
+///         // Styled input with custom colors
+///         input(
+///             placeholder: "Type here...",
+///             cursor_color: yellow,
+///             content_color: green,
+///             border: cyan,
+///             w: 40,
+///             h: 3
+///         ),
+///
+///         // Wrapped input for long text
+///         input(
+///             placeholder: "Long message...",
+///             wrap: word,
+///             w: 50,
+///             h: 5,
+///             border: magenta
+///         )
+///     ]
+/// }
+/// ```
+///
+/// ## Rich Text (Inline Styled Text)
+/// ```ignore
+/// tui! {
+///     div [
+///         // Basic richtext with multiple styled segments
+///         richtext [
+///             text("Normal text "),
+///             text("Bold text", bold),
+///             text(" and "),
+///             text("colored text", color: red)
+///         ],
+///
+///         // Shorthand styled segments
+///         richtext [
+///             text("Status: "),
+///             colored("Success", green),
+///             text(" - "),
+///             bold("Important"),
+///             text(" - "),
+///             italic("Note")
+///         ],
+///
+///         // Code syntax highlighting example
+///         richtext(wrap: word_break) [
+///             text("fn ", color: magenta),
+///             text("calculate", color: yellow),
+///             text("("),
+///             text("n", color: cyan),
+///             text(": "),
+///             text("u32", color: blue),
+///             text(") -> "),
+///             text("u32", color: blue),
+///             text(" { ... }")
+///         ],
+///
+///         // Complex inline styling
+///         richtext(bg: black) [
+///             text("Error: ", color: red, bold),
+///             text("File "),
+///             text("config.rs", color: cyan, underline),
+///             text(" not found at line "),
+///             text("42", color: yellow)
+///         ],
+///
+///         // Apply styles to all spans
+///         richtext(color: white, bg: dark_gray) [
+///             text("All spans "),
+///             colored("inherit", green),  // green overrides white
+///             text(" the base style")      // uses white from richtext
+///         ],
+///
+///         // With text wrapping
+///         richtext(wrap: word) [
+///             text("This is a long line of rich text that will "),
+///             bold("wrap properly"),
+///             text(" while preserving all the "),
+///             colored("inline styles", blue),
+///             text(" across line boundaries.")
+///         ]
+///     ]
+/// }
+/// ```
+///
+/// ## Event Handlers
+/// ```ignore
+/// tui! {
+///     div(bg: black) [
+///         // Click handler
+///         container(bg: blue, focusable) [
+///             text("Click me", color: white),
+///             @click: ctx.handler(Msg::Clicked)
+///         ],
+///
+///         // Keyboard handlers
+///         container(focusable) [
+///             text("Press keys here"),
+///             @char('a'): ctx.handler(Msg::KeyA),
+///             @key(Enter): ctx.handler(Msg::Enter),
+///             @key(Backspace): ctx.handler(Msg::Back)
+///         ],
+///
+///         // Focus handlers
+///         container(focusable) [
+///             text("Focus me"),
+///             @focus: ctx.handler(Msg::GotFocus),
+///             @blur: ctx.handler(Msg::LostFocus)
+///         ],
+///
+///         // Global handlers (work without focus)
+///         @char_global('q'): ctx.handler(Msg::Quit),
+///         @key_global(Esc): ctx.handler(Msg::Exit)
+///     ]
+/// }
+/// ```
+///
+/// ## Dynamic Content
+/// ```ignore
+/// tui! {
+///     div(bg: black) [
+///         // Conditional text
+///         text(
+///             if state.logged_in { "Welcome!" } else { "Please login" },
+///             color: (if state.logged_in { green } else { red })
+///         ),
+///
+///         // Formatted text
+///         text(format!("Count: {}", state.count), bold),
+///
+///         // Conditional styling based on state
+///         container(
+///             bg: (if state.error { red } else { green }),
+///             border: (if state.selected { white } else { black })
+///         ) [
+///             text(state.message, color: white)
+///         ],
+///
+///         // Dynamic dimensions
+///         container(
+///             w: (window_width / 2),
+///             h: (window_height - 10)
+///         ) [
+///             text("Responsive size")
+///         ]
+///     ]
+/// }
+/// ```
+///
+/// ## Optional Properties
+///
+/// Use the `!` suffix after a parenthesized expression to conditionally apply properties.
+/// These properties are only applied when the value is `Some`:
+///
+/// ```ignore
+/// tui! {
+///     div(
+///         // Optional properties - only applied if Some
+///         bg: (state.optional_background)!,      // Option<Color>
+///         border: (state.optional_border_color)!, // Option<Color>
+///         pad: (calculate_optional_padding())!,   // Option<u16>
+///         w: (state.dynamic_width)!,              // Option<u16>
+///
+///         // Regular properties - always applied
+///         h: 20,
+///         focusable
+///     ) [
+///         text("Dynamic Styling",
+///             color: (state.text_color)!,         // Option<Color>
+///             bg: (state.text_background)!,       // Option<Color>
+///             bold                                  // Always bold
+///         ),
+///
+///         // Conditional border example
+///         div(
+///             border: (if state.selected { Some(Color::Yellow) } else { None })!,
+///             pad: 2
+///         ) [
+///             text("Select me!", color: (state.highlight_color)!)
+///         ]
+///     ]
+/// }
+/// ```
+///
+/// ## Nested Components
+/// ```ignore
+/// tui! {
+///     div(bg: black, dir: vertical) [
+///         // Include other components
+///         node(Header::new("My App")),
+///
+///         container(h_pct: 0.8) [
+///             node(MainContent::new(state.data))
+///         ],
+///
+///         node(StatusBar::new(state.status))
+///     ]
+/// }
+/// ```
+///
+/// # Color Values
+///
+/// Colors can be specified in multiple formats:
+///
+/// - **Named colors**: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`
+/// - **Bright variants**: `bright_black`, `bright_red`, `bright_green`, `bright_yellow`,
+///   `bright_blue`, `bright_magenta`, `bright_cyan`, `bright_white`
+/// - **Hex strings**: `"#RGB"`, `"#RRGGBB"` (e.g., `"#F00"`, `"#FF0000"`)
+/// - **Expressions**: Any expression that evaluates to `Color` (e.g., `Color::rgb(255, 0, 0)`)
+/// - **Conditional**: `(if condition { color1 } else { color2 })`
+///
+/// # Direction Values
+///
+/// - `vertical` or `v` - Stack children vertically
+/// - `horizontal` or `h` - Arrange children horizontally
+///
+/// # Property Shortcuts
+///
+/// Many properties have convenient short names:
+///
+/// | Short | Full Property | Description |
+/// |-------|--------------|-------------|
+/// | `bg` | `background` | Background color |
+/// | `dir` | `direction` | Layout direction |
+/// | `pad` | `padding` | Inner spacing (all sides) |
+/// | `pad_h` | `padding` | Horizontal padding only |
+/// | `pad_v` | `padding` | Vertical padding only |
+/// | `w` | `width` | Fixed width |
+/// | `h` | `height` | Fixed height |
+/// | `w_pct` | `width_percent` | Width as percentage (0.0 to 1.0) |
+/// | `h_pct` | `height_percent` | Height as percentage (0.0 to 1.0) |
+///
+/// # Event Handler Reference
+///
+/// All event handlers use the `@` prefix:
+///
+/// | Handler | Description | Example |
+/// |---------|-------------|---------|
+/// | `@click` | Mouse click | `@click: handler` |
+/// | `@char(c)` | Character key press | `@char('a'): handler` |
+/// | `@key(k)` | Special key press | `@key(Enter): handler` |
+/// | `@key(Char(c))` | Character in key enum | `@key(Char('-')): handler` |
+/// | `@char_global(c)` | Global character key | `@char_global('q'): handler` |
+/// | `@key_global(k)` | Global special key | `@key_global(Esc): handler` |
+/// | `@focus` | Gained focus | `@focus: handler` |
+/// | `@blur` | Lost focus | `@blur: handler` |
+/// | `@any_char` | Any character typed | `@any_char: \|c\| handler(c)` |
+///
+/// # Tips
+///
+/// 1. **Div is the default root** - The macro expects a div as the root element
+/// 2. **Text content comes first** - For readability, text content precedes styling properties
+/// 3. **Events go in children** - Event handlers are placed inside the children brackets
+/// 4. **Colors without prefix** - No need for `Color::` prefix on named colors
+/// 5. **Expressions need parens** - Complex expressions should be wrapped in parentheses
+#[macro_export]
+macro_rules! tui {
+    // Parse the root element
+    ($($tt:tt)*) => {{
+        $crate::tui_parse_element!($($tt)*)
+    }};
+}
+
+/// Parse a single element (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_parse_element {
+    // Div with properties and children
+    (div($($props:tt)*) [$($children:tt)*]) => {{
+        $crate::tui_build_div!(
+            props: [$($props)*],
+            children: [$($children)*]
+        )
+    }};
+
+    // Div with no properties
+    (div [$($children:tt)*]) => {{
+        $crate::tui_build_div!(
+            props: [],
+            children: [$($children)*]
+        )
+    }};
+
+    // Text with content and properties
+    (text($content:expr, $($props:tt)*)) => {{
+        $crate::tui_build_text!($content, $($props)*)
+    }};
+
+    // Text with just content
+    (text($content:expr)) => {{
+        $crate::Text::new($content).into()
+    }};
+
+    // RichText with properties and spans
+    (richtext($($props:tt)*) [$($spans:tt)*]) => {{
+        $crate::tui_build_richtext!(
+            props: [$($props)*],
+            spans: [$($spans)*]
+        )
+    }};
+
+    // RichText with just spans
+    (richtext [$($spans:tt)*]) => {{
+        $crate::tui_build_richtext!(
+            props: [],
+            spans: [$($spans)*]
+        )
+    }};
+
+    // Spacer
+    (spacer($size:expr)) => {{
+        $crate::Div::<$crate::Node>::new().height($size).into()
+    }};
+
+    // Component
+    (node($comp:expr)) => {{
+        $crate::Node::Component(Box::new($comp))
+    }};
+
+    // Input with properties
+    (input($($props:tt)*)) => {{
+        $crate::tui_build_input!($($props)*)
+    }};
+
+    // Input without properties
+    (input) => {{
+        $crate::Node::Component(Box::new($crate::TextInput::new()))
+    }};
+
+    // VStack with properties
+    (vstack($($props:tt)*) [$($children:tt)*]) => {{
+        $crate::tui_build_div!(
+            props: [dir: vertical, $($props)*],
+            children: [$($children)*]
+        )
+    }};
+
+    // VStack without properties
+    (vstack [$($children:tt)*]) => {{
+        $crate::tui_build_div!(
+            props: [dir: vertical],
+            children: [$($children)*]
+        )
+    }};
+
+    // HStack with properties
+    (hstack($($props:tt)*) [$($children:tt)*]) => {{
+        $crate::tui_build_div!(
+            props: [dir: horizontal, $($props)*],
+            children: [$($children)*]
+        )
+    }};
+
+    // HStack without properties
+    (hstack [$($children:tt)*]) => {{
+        $crate::tui_build_div!(
+            props: [dir: horizontal],
+            children: [$($children)*]
+        )
+    }};
+}
+
+/// Build a div (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_build_div {
+    // With properties
+    (props: [$($props:tt)+], children: [$($children:tt)*]) => {{
+        #[allow(unused_mut)]
+        let mut __div = $crate::Div::<$crate::Node>::new();
+
+        // Apply properties
+        __div = $crate::tui_apply_props!(__div, $($props)+);
+
+        // Parse children and collect nodes
+        let mut __children_vec = Vec::new();
+        $crate::tui_parse_children!(__children_vec, __div, $($children)*)
+
+        // The macro returns the final div
+    }};
+
+    // Without properties
+    (props: [], children: [$($children:tt)*]) => {{
+        #[allow(unused_mut)]
+        let mut __div = $crate::Div::<$crate::Node>::new();
+
+        // Parse children and collect nodes
+        let mut __children_vec = Vec::new();
+        $crate::tui_parse_children!(__children_vec, __div, $($children)*)
+
+        // The macro returns the final div
+    }};
+}
+
+/// Parse children and handle events (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_parse_children {
+    // Base case - done parsing (no tokens left)
+    ($children:ident, $container:expr) => {{
+        if !$children.is_empty() {
+            $container.children($children).into()
+        } else {
+            $container.into()
+        }
+    }};
+
+    // Base case - done parsing (trailing comma)
+    ($children:ident, $container:expr,) => {{
+        if !$children.is_empty() {
+            $container.children($children).into()
+        } else {
+            $container.into()
+        }
+    }};
+
+    // Event: @click (with more children)
+    ($children:ident, $container:expr, @click: $handler:expr, $($rest:tt)*) => {{
+        let container = $container.on_click($handler);
+        $crate::tui_parse_children!($children, container, $($rest)*)
+    }};
+
+    // Event: @click (last item)
+    ($children:ident, $container:expr, @click: $handler:expr) => {{
+        let container = $container.on_click($handler);
+        $crate::tui_parse_children!($children, container)
+    }};
+
+    // Event: @char (with more children)
+    ($children:ident, $container:expr, @char($ch:literal): $handler:expr, $($rest:tt)*) => {{
+        let container = $container.on_char($ch, $handler);
+        $crate::tui_parse_children!($children, container, $($rest)*)
+    }};
+
+    // Event: @char (last item)
+    ($children:ident, $container:expr, @char($ch:literal): $handler:expr) => {{
+        let container = $container.on_char($ch, $handler);
+        $crate::tui_parse_children!($children, container)
+    }};
+
+    // Event: @char_global (with more children)
+    ($children:ident, $container:expr, @char_global($ch:literal): $handler:expr, $($rest:tt)*) => {{
+        let container = $container.on_char_global($ch, $handler);
+        $crate::tui_parse_children!($children, container, $($rest)*)
+    }};
+
+    // Event: @char_global (last item)
+    ($children:ident, $container:expr, @char_global($ch:literal): $handler:expr) => {{
+        let container = $container.on_char_global($ch, $handler);
+        $crate::tui_parse_children!($children, container)
+    }};
+
+    // Event: @key with Char(...) (with more children)
+    ($children:ident, $container:expr, @key(Char($ch:literal)): $handler:expr, $($rest:tt)*) => {{
+        let container = $container.on_key($crate::Key::Char($ch), $handler);
+        $crate::tui_parse_children!($children, container, $($rest)*)
+    }};
+
+    // Event: @key with Char(...) (last item)
+    ($children:ident, $container:expr, @key(Char($ch:literal)): $handler:expr) => {{
+        let container = $container.on_key($crate::Key::Char($ch), $handler);
+        $crate::tui_parse_children!($children, container)
+    }};
+
+    // Event: @key (with more children)
+    ($children:ident, $container:expr, @key($key:ident): $handler:expr, $($rest:tt)*) => {{
+        let container = $container.on_key($crate::Key::$key, $handler);
+        $crate::tui_parse_children!($children, container, $($rest)*)
+    }};
+
+    // Event: @key (last item)
+    ($children:ident, $container:expr, @key($key:ident): $handler:expr) => {{
+        let container = $container.on_key($crate::Key::$key, $handler);
+        $crate::tui_parse_children!($children, container)
+    }};
+
+    // Event: @key_global (with more children)
+    ($children:ident, $container:expr, @key_global($key:ident): $handler:expr, $($rest:tt)*) => {{
+        let container = $container.on_key_global($crate::Key::$key, $handler);
+        $crate::tui_parse_children!($children, container, $($rest)*)
+    }};
+
+    // Event: @key_global (last item)
+    ($children:ident, $container:expr, @key_global($key:ident): $handler:expr) => {{
+        let container = $container.on_key_global($crate::Key::$key, $handler);
+        $crate::tui_parse_children!($children, container)
+    }};
+
+    // Event: @focus (with more children)
+    ($children:ident, $container:expr, @focus: $handler:expr, $($rest:tt)*) => {{
+        let container = $container.on_focus($handler);
+        $crate::tui_parse_children!($children, container, $($rest)*)
+    }};
+
+    // Event: @focus (last item)
+    ($children:ident, $container:expr, @focus: $handler:expr) => {{
+        let container = $container.on_focus($handler);
+        $crate::tui_parse_children!($children, container)
+    }};
+
+    // Event: @blur (with more children)
+    ($children:ident, $container:expr, @blur: $handler:expr, $($rest:tt)*) => {{
+        let container = $container.on_blur($handler);
+        $crate::tui_parse_children!($children, container, $($rest)*)
+    }};
+
+    // Event: @blur (last item)
+    ($children:ident, $container:expr, @blur: $handler:expr) => {{
+        let container = $container.on_blur($handler);
+        $crate::tui_parse_children!($children, container)
+    }};
+
+    // Event: @any_char (with more children)
+    ($children:ident, $container:expr, @any_char: $handler:expr, $($rest:tt)*) => {{
+        let container = $container.on_any_char($handler);
+        $crate::tui_parse_children!($children, container, $($rest)*)
+    }};
+
+    // Event: @any_char (last item)
+    ($children:ident, $container:expr, @any_char: $handler:expr) => {{
+        let container = $container.on_any_char($handler);
+        $crate::tui_parse_children!($children, container)
+    }};
+
+    // Child: div with props (and more children)
+    ($children:ident, $container:expr, div($($props:tt)*) [$($inner:tt)*], $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(div($($props)*) [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: div with props (last child)
+    ($children:ident, $container:expr, div($($props:tt)*) [$($inner:tt)*]) => {{
+        let child = $crate::tui_parse_element!(div($($props)*) [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: div without props (and more children)
+    ($children:ident, $container:expr, div [$($inner:tt)*], $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(div [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: div without props (last child)
+    ($children:ident, $container:expr, div [$($inner:tt)*]) => {{
+        let child = $crate::tui_parse_element!(div [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: text with props (and more children)
+    ($children:ident, $container:expr, text($content:expr, $($props:tt)*), $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(text($content, $($props)*));
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: text with props (last child)
+    ($children:ident, $container:expr, text($content:expr, $($props:tt)*)) => {{
+        let child = $crate::tui_parse_element!(text($content, $($props)*));
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: text without props (and more children)
+    ($children:ident, $container:expr, text($content:expr), $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(text($content));
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: text without props (last child)
+    ($children:ident, $container:expr, text($content:expr)) => {{
+        let child = $crate::tui_parse_element!(text($content));
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: spacer (and more children)
+    ($children:ident, $container:expr, spacer($size:expr), $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(spacer($size));
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: spacer (last child)
+    ($children:ident, $container:expr, spacer($size:expr)) => {{
+        let child = $crate::tui_parse_element!(spacer($size));
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: component (and more children)
+    ($children:ident, $container:expr, node($comp:expr), $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(node($comp));
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: component (last child)
+    ($children:ident, $container:expr, node($comp:expr)) => {{
+        let child = $crate::tui_parse_element!(node($comp));
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: input with props (and more children)
+    ($children:ident, $container:expr, input($($props:tt)*), $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(input($($props)*));
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: input with props (last child)
+    ($children:ident, $container:expr, input($($props:tt)*)) => {{
+        let child = $crate::tui_parse_element!(input($($props)*));
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: input without props (and more children)
+    ($children:ident, $container:expr, input, $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(input);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: input without props (last child)
+    ($children:ident, $container:expr, input) => {{
+        let child = $crate::tui_parse_element!(input);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: vstack with props (and more children)
+    ($children:ident, $container:expr, vstack($($props:tt)*) [$($inner:tt)*], $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(vstack($($props)*) [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: vstack with props (last child)
+    ($children:ident, $container:expr, vstack($($props:tt)*) [$($inner:tt)*]) => {{
+        let child = $crate::tui_parse_element!(vstack($($props)*) [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: vstack without props (and more children)
+    ($children:ident, $container:expr, vstack [$($inner:tt)*], $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(vstack [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: vstack without props (last child)
+    ($children:ident, $container:expr, vstack [$($inner:tt)*]) => {{
+        let child = $crate::tui_parse_element!(vstack [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: hstack with props (and more children)
+    ($children:ident, $container:expr, hstack($($props:tt)*) [$($inner:tt)*], $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(hstack($($props)*) [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: hstack with props (last child)
+    ($children:ident, $container:expr, hstack($($props:tt)*) [$($inner:tt)*]) => {{
+        let child = $crate::tui_parse_element!(hstack($($props)*) [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: hstack without props (and more children)
+    ($children:ident, $container:expr, hstack [$($inner:tt)*], $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(hstack [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: hstack without props (last child)
+    ($children:ident, $container:expr, hstack [$($inner:tt)*]) => {{
+        let child = $crate::tui_parse_element!(hstack [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: richtext with props (and more children)
+    ($children:ident, $container:expr, richtext($($props:tt)*) [$($inner:tt)*], $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(richtext($($props)*) [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: richtext with props (last child)
+    ($children:ident, $container:expr, richtext($($props:tt)*) [$($inner:tt)*]) => {{
+        let child = $crate::tui_parse_element!(richtext($($props)*) [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: richtext without props (and more children)
+    ($children:ident, $container:expr, richtext [$($inner:tt)*], $($rest:tt)*) => {{
+        let child = $crate::tui_parse_element!(richtext [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: richtext without props (last child)
+    ($children:ident, $container:expr, richtext [$($inner:tt)*]) => {{
+        let child = $crate::tui_parse_element!(richtext [$($inner)*]);
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+}
+
+/// Apply properties to div (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_apply_props {
+    // Base case - return the container
+    ($container:expr,) => { $container };
+    ($container:expr) => { $container };
+
+    // Background
+    ($container:expr, bg: $color:tt, $($rest:tt)*) => {{
+        let c = $container.background($crate::color_value!($color));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, bg: $color:tt) => {{
+        $container.background($crate::color_value!($color))
+    }};
+
+    // Background with expression
+    ($container:expr, bg: ($color:expr), $($rest:tt)*) => {{
+        let c = $container.background($color);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+
+    // Background - optional with ! suffix on expression
+    ($container:expr, bg: ($color:expr)!, $($rest:tt)*) => {{
+        let c = if let Some(color_val) = $color {
+            $container.background(color_val)
+        } else {
+            $container
+        };
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, bg: ($color:expr)!) => {{
+        if let Some(color_val) = $color {
+            $container.background(color_val)
+        } else {
+            $container
+        }
+    }};
+
+    // Direction
+    ($container:expr, dir: $dir:tt, $($rest:tt)*) => {{
+        let c = $container.direction($crate::direction_value!($dir));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, dir: $dir:tt) => {{
+        $container.direction($crate::direction_value!($dir))
+    }};
+
+    // Padding (single value - all sides)
+    ($container:expr, pad: $pad:expr, $($rest:tt)*) => {{
+        let c = $container.padding($crate::Spacing::all($pad));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, pad: $pad:expr) => {{
+        $container.padding($crate::Spacing::all($pad))
+    }};
+
+    // Padding - optional with ! suffix on expression
+    ($container:expr, pad: ($pad:expr)!, $($rest:tt)*) => {{
+        let c = if let Some(pad_val) = $pad {
+            $container.padding($crate::Spacing::all(pad_val))
+        } else {
+            $container
+        };
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, pad: ($pad:expr)!) => {{
+        if let Some(pad_val) = $pad {
+            $container.padding($crate::Spacing::all(pad_val))
+        } else {
+            $container
+        }
+    }};
+
+    // Horizontal padding only
+    ($container:expr, pad_h: $pad:expr, $($rest:tt)*) => {{
+        let c = $container.padding($crate::Spacing::horizontal($pad));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, pad_h: $pad:expr) => {{
+        $container.padding($crate::Spacing::horizontal($pad))
+    }};
+
+    // Vertical padding only
+    ($container:expr, pad_v: $pad:expr, $($rest:tt)*) => {{
+        let c = $container.padding($crate::Spacing::vertical($pad));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, pad_v: $pad:expr) => {{
+        $container.padding($crate::Spacing::vertical($pad))
+    }};
+
+    // Direct padding expression
+    ($container:expr, padding: ($padding:expr), $($rest:tt)*) => {{
+        let c = $container.padding($padding);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, padding: ($padding:expr)) => {{
+        $container.padding($padding)
+    }};
+
+    // Width
+    ($container:expr, w: $width:expr, $($rest:tt)*) => {{
+        let c = $container.width($width);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, w: $width:expr) => {{
+        $container.width($width)
+    }};
+
+    // Width - optional with ! suffix on expression
+    ($container:expr, w: ($width:expr)!, $($rest:tt)*) => {{
+        let c = if let Some(width_val) = $width {
+            $container.width(width_val)
+        } else {
+            $container
+        };
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, w: ($width:expr)!) => {{
+        if let Some(width_val) = $width {
+            $container.width(width_val)
+        } else {
+            $container
+        }
+    }};
+
+    // Width percentage
+    ($container:expr, w_pct: $pct:expr, $($rest:tt)*) => {{
+        let c = $container.width_percent($pct);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, w_pct: $pct:expr) => {{
+        $container.width_percent($pct)
+    }};
+
+    // Width auto
+    ($container:expr, w_auto, $($rest:tt)*) => {{
+        let c = $container.width_auto();
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, w_auto) => {{
+        $container.width_auto()
+    }};
+
+    // Width content
+    ($container:expr, w_content, $($rest:tt)*) => {{
+        let c = $container.width_content();
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, w_content) => {{
+        $container.width_content()
+    }};
+
+    // Height
+    ($container:expr, h: $height:expr, $($rest:tt)*) => {{
+        let c = $container.height($height);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, h: $height:expr) => {{
+        $container.height($height)
+    }};
+
+    // Height - optional with ! suffix on expression
+    ($container:expr, h: ($height:expr)!, $($rest:tt)*) => {{
+        let c = if let Some(height_val) = $height {
+            $container.height(height_val)
+        } else {
+            $container
+        };
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, h: ($height:expr)!) => {{
+        if let Some(height_val) = $height {
+            $container.height(height_val)
+        } else {
+            $container
+        }
+    }};
+
+    // Height percentage
+    ($container:expr, h_pct: $pct:expr, $($rest:tt)*) => {{
+        let c = $container.height_percent($pct);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, h_pct: $pct:expr) => {{
+        $container.height_percent($pct)
+    }};
+
+    // Height auto
+    ($container:expr, h_auto, $($rest:tt)*) => {{
+        let c = $container.height_auto();
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, h_auto) => {{
+        $container.height_auto()
+    }};
+
+    // Height content
+    ($container:expr, h_content, $($rest:tt)*) => {{
+        let c = $container.height_content();
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, h_content) => {{
+        $container.height_content()
+    }};
+
+    // Gap
+    ($container:expr, gap: $gap:expr, $($rest:tt)*) => {{
+        let c = $container.gap($gap);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, gap: $gap:expr) => {{
+        $container.gap($gap)
+    }};
+
+    // Border
+    ($container:expr, border: $color:tt, $($rest:tt)*) => {{
+        let c = $container.border_color($crate::color_value!($color));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border: $color:tt) => {{
+        $container.border_color($crate::color_value!($color))
+    }};
+
+    // Border with expression
+    ($container:expr, border: ($color:expr), $($rest:tt)*) => {{
+        let c = $container.border_color($color);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+
+    // Border - optional with ! suffix on expression
+    ($container:expr, border: ($color:expr)!, $($rest:tt)*) => {{
+        let c = if let Some(color_val) = $color {
+            $container.border_color(color_val)
+        } else {
+            $container
+        };
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border: ($color:expr)!) => {{
+        if let Some(color_val) = $color {
+            $container.border_color(color_val)
+        } else {
+            $container
+        }
+    }};
+
+    // Border style with color
+    ($container:expr, border_style: ($style:expr, $color:expr), $($rest:tt)*) => {{
+        let c = $container.border_style_with_color($style, $color);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_style: ($style:expr, $color:expr)) => {{
+        $container.border_style_with_color($style, $color)
+    }};
+
+    // Border edges
+    ($container:expr, border_edges: $edges:expr, $($rest:tt)*) => {{
+        let c = $container.border_edges($edges);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_edges: $edges:expr) => {{
+        $container.border_edges($edges)
+    }};
+
+    // Full border configuration
+    ($container:expr, border_full: ($style:expr, $color:expr, $edges:expr), $($rest:tt)*) => {{
+        let c = $container.border_full($style, $color, $edges);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_full: ($style:expr, $color:expr, $edges:expr)) => {{
+        $container.border_full($style, $color, $edges)
+    }};
+
+    // Focusable with value
+    ($container:expr, focusable: $val:expr, $($rest:tt)*) => {{
+        let c = $container.focusable($val);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, focusable: $val:expr) => {{
+        $container.focusable($val)
+    }};
+
+    // Focusable shorthand
+    ($container:expr, focusable, $($rest:tt)*) => {{
+        let c = $container.focusable(true);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, focusable) => {{
+        $container.focusable(true)
+    }};
+
+    // Show scrollbar with value
+    ($container:expr, show_scrollbar: $val:expr, $($rest:tt)*) => {{
+        let c = $container.show_scrollbar($val);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, show_scrollbar: $val:expr) => {{
+        $container.show_scrollbar($val)
+    }};
+
+    // Focus style
+    ($container:expr, focus_style: ($style:expr), $($rest:tt)*) => {{
+        let c = $container.focus_style($style);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, focus_style: ($style:expr)) => {{
+        $container.focus_style($style)
+    }};
+
+    // Focus style - optional with ! suffix on expression
+    ($container:expr, focus_style: ($style:expr)!, $($rest:tt)*) => {{
+        let c = if let Some(style_val) = $style {
+            $container.focus_style(style_val)
+        } else {
+            $container
+        };
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, focus_style: ($style:expr)!) => {{
+        if let Some(style_val) = $style {
+            $container.focus_style(style_val)
+        } else {
+            $container
+        }
+    }};
+
+    // Z-index
+    ($container:expr, z: $index:expr, $($rest:tt)*) => {{
+        let c = $container.z_index($index);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, z: $index:expr) => {{
+        $container.z_index($index)
+    }};
+
+    // Position
+    ($container:expr, pos: $pos:tt, $($rest:tt)*) => {{
+        let c = $container.position($crate::position_value!($pos));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, pos: $pos:tt) => {{
+        $container.position($crate::position_value!($pos))
+    }};
+
+    // Absolute positioning shorthand
+    ($container:expr, absolute, $($rest:tt)*) => {{
+        let c = $container.position($crate::Position::Absolute);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, absolute) => {{
+        $container.position($crate::Position::Absolute)
+    }};
+
+    // Positioning offsets
+    ($container:expr, top: $val:expr, $($rest:tt)*) => {{
+        let c = $container.top($val);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, top: $val:expr) => {{
+        $container.top($val)
+    }};
+
+    ($container:expr, right: $val:expr, $($rest:tt)*) => {{
+        let c = $container.right($val);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, right: $val:expr) => {{
+        $container.right($val)
+    }};
+
+    ($container:expr, bottom: $val:expr, $($rest:tt)*) => {{
+        let c = $container.bottom($val);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, bottom: $val:expr) => {{
+        $container.bottom($val)
+    }};
+
+    ($container:expr, left: $val:expr, $($rest:tt)*) => {{
+        let c = $container.left($val);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, left: $val:expr) => {{
+        $container.left($val)
+    }};
+
+    // Wrap mode
+    ($container:expr, wrap: $mode:tt, $($rest:tt)*) => {{
+        let c = $container.wrap($crate::wrap_value!($mode));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, wrap: $mode:tt) => {{
+        $container.wrap($crate::wrap_value!($mode))
+    }};
+
+    // Overflow
+    ($container:expr, overflow: $mode:tt, $($rest:tt)*) => {{
+        let c = $container.overflow($crate::overflow_value!($mode));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, overflow: $mode:tt) => {{
+        $container.overflow($crate::overflow_value!($mode))
+    }};
+}
+
+/// Build text with properties (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_build_text {
+    ($content:expr,) => {{
+        $crate::Text::new($content).into()
+    }};
+
+    ($content:expr, $($props:tt)*) => {{
+        #[allow(unused_mut)]
+        let __text = $crate::Text::new($content);
+        // Always add trailing comma for consistent parsing
+        let __text = $crate::tui_apply_text_props!(__text, $($props)* ,);
+        __text.into()
+    }};
+}
+
+/// Apply text properties (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_apply_text_props {
+    // Base case - return the text
+    ($text:expr,) => { $text };
+    ($text:expr) => { $text };
+
+    // Color
+    ($text:expr, color: $color:tt, $($rest:tt)*) => {{
+        let t = $text.color($crate::color_value!($color));
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+    ($text:expr, color: $color:tt) => {{
+        $text.color($crate::color_value!($color))
+    }};
+
+    // Color with expression
+    ($text:expr, color: ($color:expr), $($rest:tt)*) => {{
+        let t = $text.color($color);
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+
+    // Color - optional with ! suffix on expression
+    ($text:expr, color: ($color:expr)!, $($rest:tt)*) => {{
+        let t = if let Some(color_val) = $color {
+            $text.color(color_val)
+        } else {
+            $text
+        };
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+    ($text:expr, color: ($color:expr)!) => {{
+        if let Some(color_val) = $color {
+            $text.color(color_val)
+        } else {
+            $text
+        }
+    }};
+
+    // Background
+    ($text:expr, bg: $color:tt, $($rest:tt)*) => {{
+        let t = $text.background($crate::color_value!($color));
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+    ($text:expr, bg: $color:tt) => {{
+        $text.background($crate::color_value!($color))
+    }};
+
+    // Background - optional with ! suffix on expression
+    ($text:expr, bg: ($color:expr)!, $($rest:tt)*) => {{
+        let t = if let Some(bg_val) = $color {
+            $text.background(bg_val)
+        } else {
+            $text
+        };
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+    ($text:expr, bg: ($color:expr)!) => {{
+        if let Some(bg_val) = $color {
+            $text.background(bg_val)
+        } else {
+            $text
+        }
+    }};
+
+    // Bold
+    ($text:expr, bold, $($rest:tt)*) => {{
+        let t = $text.bold();
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+    ($text:expr, bold) => {{
+        $text.bold()
+    }};
+
+    // Italic
+    ($text:expr, italic, $($rest:tt)*) => {{
+        let t = $text.italic();
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+    ($text:expr, italic) => {{
+        $text.italic()
+    }};
+
+    // Underline
+    ($text:expr, underline, $($rest:tt)*) => {{
+        let t = $text.underline();
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+    ($text:expr, underline) => {{
+        $text.underline()
+    }};
+
+    // Strikethrough
+    ($text:expr, strikethrough, $($rest:tt)*) => {{
+        let t = $text.strikethrough();
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+    ($text:expr, strikethrough) => {{
+        $text.strikethrough()
+    }};
+
+    // Wrap mode
+    ($text:expr, wrap: $mode:tt, $($rest:tt)*) => {{
+        let t = $text.wrap($crate::text_wrap_value!($mode));
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+    ($text:expr, wrap: $mode:tt) => {{
+        $text.wrap($crate::text_wrap_value!($mode))
+    }};
+}
+
+/// Build RichText elements (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_build_richtext {
+    // With properties and spans
+    (props: [$($props:tt)*], spans: [$($spans:tt)*]) => {{
+        #[allow(unused_mut)]
+        let mut __richtext = $crate::RichText::new();
+        __richtext = $crate::tui_add_richtext_spans!(__richtext, $($spans)*);
+        // Apply top-level properties if any
+        let __richtext = $crate::tui_apply_richtext_props!(__richtext, $($props)*);
+        __richtext.into()
+    }};
+
+    // No properties, just spans
+    (props: [], spans: [$($spans:tt)*]) => {{
+        #[allow(unused_mut)]
+        let mut __richtext = $crate::RichText::new();
+        __richtext = $crate::tui_add_richtext_spans!(__richtext, $($spans)*);
+        __richtext.into()
+    }};
+}
+
+/// Add spans to RichText (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_add_richtext_spans {
+    // Base case - trailing comma
+    ($rt:expr,) => { $rt };
+    // Base case - no comma
+    ($rt:expr) => { $rt };
+
+    // Text span with properties
+    ($rt:expr, text($content:expr, $($props:tt)*), $($rest:tt)*) => {{
+        // Create a TextStyle from the properties
+        let mut style = $crate::TextStyle::default();
+        style = $crate::tui_apply_span_style!(style, $($props)*,);
+        let rt = $rt.styled($content, style);
+        $crate::tui_add_richtext_spans!(rt, $($rest)*)
+    }};
+
+    // Plain text span
+    ($rt:expr, text($content:expr), $($rest:tt)*) => {{
+        let rt = $rt.text($content);
+        $crate::tui_add_richtext_spans!(rt, $($rest)*)
+    }};
+
+    // Last span cases (no trailing comma)
+    ($rt:expr, text($content:expr, $($props:tt)*)) => {{
+        // Create a TextStyle from the properties
+        let mut style = $crate::TextStyle::default();
+        style = $crate::tui_apply_span_style!(style, $($props)*,);
+        $rt.styled($content, style)
+    }};
+
+    ($rt:expr, text($content:expr)) => {{
+        $rt.text($content)
+    }};
+}
+
+/// Apply style properties to TextStyle for RichText spans (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_apply_span_style {
+    // Base case
+    ($style:expr,) => { $style };
+    ($style:expr) => { $style };
+
+    // Color
+    ($style:expr, color: $color:tt, $($rest:tt)*) => {{
+        let mut s = $style;
+        s.color = Some($crate::color_value!($color));
+        $crate::tui_apply_span_style!(s, $($rest)*)
+    }};
+    ($style:expr, color: $color:tt) => {{
+        let mut s = $style;
+        s.color = Some($crate::color_value!($color));
+        s
+    }};
+
+    // Background
+    ($style:expr, bg: $color:tt, $($rest:tt)*) => {{
+        let mut s = $style;
+        s.background = Some($crate::color_value!($color));
+        $crate::tui_apply_span_style!(s, $($rest)*)
+    }};
+    ($style:expr, bg: $color:tt) => {{
+        let mut s = $style;
+        s.background = Some($crate::color_value!($color));
+        s
+    }};
+
+    // Bold
+    ($style:expr, bold, $($rest:tt)*) => {{
+        let mut s = $style;
+        s.bold = Some(true);
+        $crate::tui_apply_span_style!(s, $($rest)*)
+    }};
+    ($style:expr, bold) => {{
+        let mut s = $style;
+        s.bold = Some(true);
+        s
+    }};
+
+    // Italic
+    ($style:expr, italic, $($rest:tt)*) => {{
+        let mut s = $style;
+        s.italic = Some(true);
+        $crate::tui_apply_span_style!(s, $($rest)*)
+    }};
+    ($style:expr, italic) => {{
+        let mut s = $style;
+        s.italic = Some(true);
+        s
+    }};
+
+    // Underline
+    ($style:expr, underline, $($rest:tt)*) => {{
+        let mut s = $style;
+        s.underline = Some(true);
+        $crate::tui_apply_span_style!(s, $($rest)*)
+    }};
+    ($style:expr, underline) => {{
+        let mut s = $style;
+        s.underline = Some(true);
+        s
+    }};
+}
+
+/// Apply top-level properties to RichText (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_apply_richtext_props {
+    // Base case
+    ($rt:expr,) => { $rt };
+    ($rt:expr) => { $rt };
+
+    // Wrap mode
+    ($rt:expr, wrap: $wrap:tt, $($rest:tt)*) => {{
+        let rt = $rt.wrap($crate::text_wrap_value!($wrap));
+        $crate::tui_apply_richtext_props!(rt, $($rest)*)
+    }};
+
+    // Color all spans
+    ($rt:expr, color: $color:tt, $($rest:tt)*) => {{
+        let rt = $rt.color($crate::color_value!($color));
+        $crate::tui_apply_richtext_props!(rt, $($rest)*)
+    }};
+
+    // Background for all spans
+    ($rt:expr, bg: $color:tt, $($rest:tt)*) => {{
+        let rt = $rt.background($crate::color_value!($color));
+        $crate::tui_apply_richtext_props!(rt, $($rest)*)
+    }};
+
+    // Bold all spans
+    ($rt:expr, bold_all, $($rest:tt)*) => {{
+        let rt = $rt.bold_all();
+        $crate::tui_apply_richtext_props!(rt, $($rest)*)
+    }};
+
+    // Italic all spans
+    ($rt:expr, italic_all, $($rest:tt)*) => {{
+        let rt = $rt.italic_all();
+        $crate::tui_apply_richtext_props!(rt, $($rest)*)
+    }};
+
+    // Single property cases (no trailing comma)
+    ($rt:expr, wrap: $wrap:tt) => {{
+        $rt.wrap($crate::text_wrap_value!($wrap))
+    }};
+
+    ($rt:expr, color: $color:tt) => {{
+        $rt.color($crate::color_value!($color))
+    }};
+
+    ($rt:expr, bg: $color:tt) => {{
+        $rt.background($crate::color_value!($color))
+    }};
+
+    ($rt:expr, bold_all) => {{
+        $rt.bold_all()
+    }};
+
+    ($rt:expr, italic_all) => {{
+        $rt.italic_all()
+    }};
+}
+
+/// Internal helper macro for building text elements
+#[macro_export]
+#[doc(hidden)]
+macro_rules! tui_text {
+    ($content:expr, $($props:tt)*) => {{
+        $crate::tui_build_text!($content, $($props)*)
+    }};
+}
+
+/// Build input with properties (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_build_input {
+    () => {{
+        $crate::Node::Component(Box::new($crate::TextInput::new()))
+    }};
+
+    ($($props:tt)*) => {{
+        #[allow(unused_mut)]
+        let __input = $crate::TextInput::new();
+        // Always add trailing comma for consistent parsing
+        let __input = $crate::tui_apply_input_props!(__input, $($props)* ,);
+        $crate::Node::Component(Box::new(__input))
+    }};
+}
+
+/// Apply input properties (internal)
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_apply_input_props {
+    // Base case - return the input
+    ($input:expr,) => { $input };
+    ($input:expr) => { $input };
+
+    // Placeholder
+    ($input:expr, placeholder: $text:expr, $($rest:tt)*) => {{
+        let i = $input.placeholder($text);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, placeholder: $text:expr) => {{
+        $input.placeholder($text)
+    }};
+
+    // Focusable
+    ($input:expr, focusable: $value:expr, $($rest:tt)*) => {{
+        let i = $input.focusable($value);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focusable: $value:expr) => {{
+        $input.focusable($value)
+    }};
+
+    // Focusable shorthand
+    ($input:expr, focusable, $($rest:tt)*) => {{
+        let i = $input.focusable(true);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focusable) => {{
+        $input.focusable(true)
+    }};
+
+    // Width
+    ($input:expr, w: $value:expr, $($rest:tt)*) => {{
+        let i = $input.width($value);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, w: $value:expr) => {{
+        $input.width($value)
+    }};
+
+    ($input:expr, width: $value:expr, $($rest:tt)*) => {{
+        let i = $input.width($value);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, width: $value:expr) => {{
+        $input.width($value)
+    }};
+
+    // Height
+    ($input:expr, h: $value:expr, $($rest:tt)*) => {{
+        let i = $input.height($value);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, h: $value:expr) => {{
+        $input.height($value)
+    }};
+
+    ($input:expr, height: $value:expr, $($rest:tt)*) => {{
+        let i = $input.height($value);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, height: $value:expr) => {{
+        $input.height($value)
+    }};
+
+    // Border color
+    ($input:expr, border: $color:tt, $($rest:tt)*) => {{
+        let i = $input.border($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border: $color:tt) => {{
+        $input.border($crate::color_value!($color))
+    }};
+
+    // Border with expression
+    ($input:expr, border: ($color:expr), $($rest:tt)*) => {{
+        let i = $input.border($color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border: ($color:expr)) => {{
+        $input.border($color)
+    }};
+
+    // Background color
+    ($input:expr, bg: $color:tt, $($rest:tt)*) => {{
+        let i = $input.background($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, bg: $color:tt) => {{
+        $input.background($crate::color_value!($color))
+    }};
+
+    // Background with expression
+    ($input:expr, bg: ($color:expr), $($rest:tt)*) => {{
+        let i = $input.background($color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, bg: ($color:expr)) => {{
+        $input.background($color)
+    }};
+
+    // Cursor color
+    ($input:expr, cursor_color: $color:tt, $($rest:tt)*) => {{
+        let i = $input.cursor_color($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, cursor_color: $color:tt) => {{
+        $input.cursor_color($crate::color_value!($color))
+    }};
+
+    // Cursor color with expression
+    ($input:expr, cursor_color: ($color:expr), $($rest:tt)*) => {{
+        let i = $input.cursor_color($color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, cursor_color: ($color:expr)) => {{
+        $input.cursor_color($color)
+    }};
+
+    // Content color
+    ($input:expr, content_color: $color:tt, $($rest:tt)*) => {{
+        let i = $input.content_color($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, content_color: $color:tt) => {{
+        $input.content_color($crate::color_value!($color))
+    }};
+
+    // Content color shorthand
+    ($input:expr, color: $color:tt, $($rest:tt)*) => {{
+        let i = $input.content_color($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, color: $color:tt) => {{
+        $input.content_color($crate::color_value!($color))
+    }};
+
+    // Content bold
+    ($input:expr, content_bold: $value:expr, $($rest:tt)*) => {{
+        let i = $input.content_bold($value);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, content_bold: $value:expr) => {{
+        $input.content_bold($value)
+    }};
+
+    // Content bold shorthand
+    ($input:expr, bold, $($rest:tt)*) => {{
+        let i = $input.content_bold(true);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, bold) => {{
+        $input.content_bold(true)
+    }};
+
+    // Text wrapping
+    ($input:expr, wrap: $mode:ident, $($rest:tt)*) => {{
+        let i = $input.wrap($crate::text_wrap_value!($mode));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, wrap: $mode:ident) => {{
+        $input.wrap($crate::text_wrap_value!($mode))
+    }};
+
+    // Text wrapping with expression
+    ($input:expr, wrap: ($mode:expr), $($rest:tt)*) => {{
+        let i = $input.wrap($mode);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, wrap: ($mode:expr)) => {{
+        $input.wrap($mode)
+    }};
+
+    // Padding
+    ($input:expr, pad: $value:expr, $($rest:tt)*) => {{
+        let i = $input.padding($crate::Spacing::all($value));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, pad: $value:expr) => {{
+        $input.padding($crate::Spacing::all($value))
+    }};
+
+    // Password mode with value
+    ($input:expr, password: $value:expr, $($rest:tt)*) => {{
+        let i = $input.password($value);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, password: $value:expr) => {{
+        $input.password($value)
+    }};
+
+    // Password mode shorthand (enables password mode)
+    ($input:expr, password, $($rest:tt)*) => {{
+        let i = $input.password(true);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, password) => {{
+        $input.password(true)
+    }};
+}

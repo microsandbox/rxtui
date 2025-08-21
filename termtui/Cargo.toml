@@ -1,0 +1,19 @@
+[package]
+name = "termtui"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "A framework for building beautiful, responsive terminal user interfaces with a DOM-style hierarchical approach"
+
+[lib]
+name = "termtui"
+path = "lib/lib.rs"
+
+[dependencies]
+termtui-macros = { path = "../termtui-macros" }
+bitflags = "2.4"
+crossterm = "0.28"
+serde.workspace = true
+thiserror.workspace = true
+unicode-width = "0.2"
