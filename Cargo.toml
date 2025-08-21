@@ -10,7 +10,9 @@ version = "0.1.0"
 edition = "2024"
 authors = ["Radical Team"]
 license = "Apache-2.0"
-repository = "https://github.com/termtui/termtui"
+repository = "https://github.com/microsandbox/termtui"
+homepage = "https://github.com/microsandbox/termtui"
+documentation = "https://docs.rs/termtui"
 
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }

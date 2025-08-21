@@ -4,6 +4,12 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/termtui-macros"
+description = "Procedural macros for the termtui terminal UI framework"
+keywords = ["tui", "terminal", "macro", "proc-macro"]
+categories = ["command-line-interface"]
 
 [lib]
 proc-macro = true
