@@ -27,7 +27,7 @@ pub enum Action {
 pub struct ComponentId(pub String);
 
 /// Trait for messages that can be sent between components
-pub trait Message: Any + Send + 'static {
+pub trait Message: Any + Send + Sync + 'static {
     fn as_any(&self) -> &dyn Any;
     fn clone_box(&self) -> Box<dyn Message>;
 }
@@ -46,12 +46,12 @@ impl MessageExt for dyn Message {
 
 impl MessageExt for Box<dyn Message> {
     fn downcast<T: Any>(&self) -> Option<&T> {
-        self.as_any().downcast_ref::<T>()
+        Message::as_any(self.as_ref()).downcast_ref::<T>()
     }
 }
 
 /// Trait for component state management
-pub trait State: Any + Send + 'static {
+pub trait State: Any + Send + Sync + 'static {
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
     fn clone_box(&self) -> Box<dyn State>;
@@ -71,14 +71,14 @@ impl StateExt for dyn State {
 
 impl StateExt for Box<dyn State> {
     fn downcast<T: Any>(&self) -> Option<&T> {
-        self.as_any().downcast_ref::<T>()
+        State::as_any(self.as_ref()).downcast_ref::<T>()
     }
 }
 
 /// Auto-implementation of State for types that are Clone
 impl<T> State for T
 where
-    T: Any + Clone + Send + 'static,
+    T: Any + Clone + Send + Sync + 'static,
 {
     fn as_any(&self) -> &dyn Any {
         self
@@ -221,7 +221,7 @@ impl Default for ComponentId {
 
 impl<T> Message for T
 where
-    T: Any + Clone + Send + 'static,
+    T: Any + Clone + Send + Sync + 'static,
 {
     fn as_any(&self) -> &dyn Any {
         self

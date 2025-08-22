@@ -56,8 +56,7 @@ struct CounterState {
 struct Counter {}
 
 impl Counter {
-    // Handle messages and update state - using the #[update] macro
-    #[update]
+    #[update] // Handle messages and update state
     fn update(&self, ctx: &Context, msg: CounterMsg, mut state: CounterState) -> Action {
         match msg {
             CounterMsg::Increment => {
@@ -72,8 +71,7 @@ impl Counter {
         }
     }
 
-    // Render UI based on current state - using the #[view] macro
-    #[view]
+    #[view] // Render UI based on current state
     fn view(&self, ctx: &Context, state: CounterState) -> Node {
         node! {
             div(bg: blue, pad: 2) [

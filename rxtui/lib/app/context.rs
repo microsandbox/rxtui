@@ -1,17 +1,16 @@
 use crate::component::{ComponentId, Message, State};
-use std::cell::RefCell;
 use std::collections::{HashMap, VecDeque};
-use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 
 //--------------------------------------------------------------------------------------------------
 // Types
 //--------------------------------------------------------------------------------------------------
 
 /// Type alias for the message queue storage
-type MessageQueueMap = Rc<RefCell<HashMap<ComponentId, VecDeque<Box<dyn Message>>>>>;
+type MessageQueueMap = Arc<RwLock<HashMap<ComponentId, VecDeque<Box<dyn Message>>>>>;
 
 /// Type alias for topic message queue storage
-type TopicMessageQueueMap = Rc<RefCell<HashMap<String, VecDeque<Box<dyn Message>>>>>;
+type TopicMessageQueueMap = Arc<RwLock<HashMap<String, VecDeque<Box<dyn Message>>>>>;
 
 /// Dispatcher for sending messages to components
 #[derive(Clone)]
@@ -21,20 +20,22 @@ pub struct Dispatcher {
 }
 
 /// State storage for components with interior mutability
+#[derive(Clone)]
 pub struct StateMap {
-    states: RefCell<HashMap<ComponentId, Box<dyn State>>>,
+    states: Arc<RwLock<HashMap<ComponentId, Box<dyn State>>>>,
 }
 
 /// Topic storage for shared state between components
 pub struct TopicStore {
     /// Topic states indexed by topic name
-    states: RefCell<HashMap<String, Box<dyn State>>>,
+    states: RwLock<HashMap<String, Box<dyn State>>>,
 
     /// Topic owners - first writer becomes owner
-    owners: RefCell<HashMap<String, ComponentId>>,
+    owners: RwLock<HashMap<String, ComponentId>>,
 }
 
 /// Context passed to components during rendering
+#[derive(Clone)]
 pub struct Context {
     /// Current component ID in the tree walk
     pub(crate) current_component_id: ComponentId,
@@ -46,7 +47,7 @@ pub struct Context {
     pub(crate) states: StateMap,
 
     /// Topic states
-    pub(crate) topics: Rc<TopicStore>,
+    pub(crate) topics: Arc<TopicStore>,
 
     /// Message queues (shared with dispatcher)
     pub(crate) message_queues: MessageQueueMap,
@@ -68,7 +69,7 @@ impl Dispatcher {
     }
 
     pub fn send_to_id(&self, component_id: ComponentId, message: impl Message) {
-        let mut queues = self.queues.borrow_mut();
+        let mut queues = self.queues.write().unwrap();
         queues
             .entry(component_id)
             .or_default()
@@ -76,7 +77,7 @@ impl Dispatcher {
     }
 
     pub fn send_to_topic(&self, topic: String, message: impl Message) {
-        let mut queues = self.topic_queues.borrow_mut();
+        let mut queues = self.topic_queues.write().unwrap();
         queues
             .entry(topic)
             .or_default()
@@ -87,7 +88,7 @@ impl Dispatcher {
 impl StateMap {
     pub fn new() -> Self {
         Self {
-            states: RefCell::new(HashMap::new()),
+            states: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -95,11 +96,11 @@ impl StateMap {
         &self,
         component_id: &ComponentId,
     ) -> T {
-        let mut states = self.states.borrow_mut();
+        let mut states = self.states.write().unwrap();
 
         // Check if entry exists and try to downcast
         if let Some(existing_state) = states.get(component_id)
-            && let Some(typed_state) = existing_state.as_any().downcast_ref::<T>()
+            && let Some(typed_state) = State::as_any(existing_state.as_ref()).downcast_ref::<T>()
         {
             // Type matches, return the existing state
             return typed_state.clone();
@@ -108,7 +109,7 @@ impl StateMap {
 
         // Either no entry exists or type mismatch - create new default
         let new_state = Box::new(T::default());
-        let cloned = State::as_any(&*new_state)
+        let cloned = State::as_any(new_state.as_ref())
             .downcast_ref::<T>()
             .unwrap()
             .clone();
@@ -117,19 +118,19 @@ impl StateMap {
     }
 
     pub fn insert(&self, component_id: ComponentId, state: Box<dyn State>) {
-        self.states.borrow_mut().insert(component_id, state);
+        self.states.write().unwrap().insert(component_id, state);
     }
 
     pub fn remove(&self, component_id: &ComponentId) -> Option<Box<dyn State>> {
-        self.states.borrow_mut().remove(component_id)
+        self.states.write().unwrap().remove(component_id)
     }
 }
 
 impl TopicStore {
     pub fn new() -> Self {
         Self {
-            states: RefCell::new(HashMap::new()),
-            owners: RefCell::new(HashMap::new()),
+            states: RwLock::new(HashMap::new()),
+            owners: RwLock::new(HashMap::new()),
         }
     }
 
@@ -139,8 +140,8 @@ impl TopicStore {
         state: Box<dyn State>,
         component_id: ComponentId,
     ) -> bool {
-        let mut owners = self.owners.borrow_mut();
-        let mut states = self.states.borrow_mut();
+        let mut owners = self.owners.write().unwrap();
+        let mut states = self.states.write().unwrap();
 
         // Check if topic has an owner
         if let Some(owner) = owners.get(&topic) {
@@ -161,7 +162,7 @@ impl TopicStore {
 
     /// Claim ownership of an unassigned topic
     pub(crate) fn claim_topic(&self, topic: String, component_id: ComponentId) -> bool {
-        let mut owners = self.owners.borrow_mut();
+        let mut owners = self.owners.write().unwrap();
 
         // Only claim if topic has no owner
         use std::collections::hash_map::Entry;
@@ -174,19 +175,20 @@ impl TopicStore {
     }
 
     pub fn read_topic<T: State + Clone + 'static>(&self, topic: &str) -> Option<T> {
-        let states = self.states.borrow();
+        let states = self.states.read().unwrap();
         states
             .get(topic)
-            .and_then(|state| state.as_any().downcast_ref::<T>().cloned())
+            .and_then(|state| State::as_any(state.as_ref()).downcast_ref::<T>().cloned())
     }
 
     pub fn get_topic_owner(&self, topic: &str) -> Option<ComponentId> {
-        self.owners.borrow().get(topic).cloned()
+        self.owners.read().unwrap().get(topic).cloned()
     }
 
     pub fn get_owned_topics(&self, component_id: &ComponentId) -> Vec<String> {
         self.owners
-            .borrow()
+            .read()
+            .unwrap()
             .iter()
             .filter_map(|(topic, owner)| {
                 if owner == component_id {
@@ -201,14 +203,14 @@ impl TopicStore {
 
 impl Context {
     pub fn new() -> Self {
-        let queues = Rc::new(RefCell::new(HashMap::new()));
-        let topic_queues = Rc::new(RefCell::new(HashMap::new()));
+        let queues = Arc::new(RwLock::new(HashMap::new()));
+        let topic_queues = Arc::new(RwLock::new(HashMap::new()));
 
         Self {
             current_component_id: ComponentId::default(),
             dispatch: Dispatcher::new(queues.clone(), topic_queues.clone()),
             states: StateMap::new(),
-            topics: Rc::new(TopicStore::new()),
+            topics: Arc::new(TopicStore::new()),
             message_queues: queues,
             topic_message_queues: topic_queues,
         }
@@ -309,7 +311,7 @@ impl Context {
         Self {
             current_component_id: self.current_component_id.child(index),
             dispatch: self.dispatch.clone(),
-            states: StateMap::new(), // Child context gets empty state map, will be populated as needed
+            states: self.states.clone(), // Share the state map
             topics: self.topics.clone(), // Share the topic store
             message_queues: self.message_queues.clone(), // Share the message queues
             topic_message_queues: self.topic_message_queues.clone(), // Share the topic message queues
@@ -318,7 +320,7 @@ impl Context {
 
     /// Take and drain messages for a specific component
     pub fn drain_messages(&self, component_id: &ComponentId) -> Vec<Box<dyn Message>> {
-        let mut queues = self.message_queues.borrow_mut();
+        let mut queues = self.message_queues.write().unwrap();
         if let Some(queue) = queues.get_mut(component_id) {
             queue.drain(..).collect()
         } else {
@@ -328,7 +330,7 @@ impl Context {
 
     /// Take and drain messages for a specific topic
     pub fn drain_topic_messages(&self, topic: &str) -> Vec<Box<dyn Message>> {
-        let mut queues = self.topic_message_queues.borrow_mut();
+        let mut queues = self.topic_message_queues.write().unwrap();
         if let Some(queue) = queues.get_mut(topic) {
             queue.drain(..).collect()
         } else {
@@ -365,14 +367,14 @@ impl Context {
     /// Get cloned messages from topics that don't have owners yet
     fn get_unassigned_topic_messages(&self) -> Vec<(String, Box<dyn Message>)> {
         let mut unassigned = Vec::new();
-        let topic_queues = self.topic_message_queues.borrow();
+        let topic_queues = self.topic_message_queues.read().unwrap();
 
         // Check each topic queue
         for (topic, queue) in topic_queues.iter() {
             // If this topic has no owner, clone its messages (don't drain)
             if self.topics.get_topic_owner(topic).is_none() && !queue.is_empty() {
                 for msg in queue.iter() {
-                    unassigned.push((topic.clone(), msg.clone_box()));
+                    unassigned.push((topic.clone(), Message::clone_box(msg.as_ref())));
                 }
             }
         }
@@ -387,7 +389,7 @@ impl Context {
             && owner == *component_id
         {
             // Drain the messages since we now own the topic
-            let mut queues = self.topic_message_queues.borrow_mut();
+            let mut queues = self.topic_message_queues.write().unwrap();
             if let Some(queue) = queues.get_mut(topic) {
                 queue.clear();
             }
