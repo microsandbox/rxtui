@@ -18,6 +18,9 @@ pub use crate::component::{Action, ComponentId, Message, MessageExt, State, Stat
 pub use crate::Component;
 pub use crate::ComponentMacro as Component;
 
+// Re-export attribute macros
+pub use crate::{update, view};
+
 // UI elements
 pub use crate::node::{Div, Node, RichText, Text};
 
