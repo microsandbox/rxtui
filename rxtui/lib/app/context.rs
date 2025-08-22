@@ -67,7 +67,7 @@ impl Dispatcher {
         }
     }
 
-    pub fn send(&self, component_id: ComponentId, message: Box<dyn Message>) {
+    pub fn send_to(&self, component_id: ComponentId, message: Box<dyn Message>) {
         let mut queues = self.queues.borrow_mut();
         queues.entry(component_id).or_default().push_back(message);
     }
@@ -218,7 +218,7 @@ impl Context {
         let id = self.current_component_id.clone();
         let dispatcher = self.dispatch.clone();
         move || {
-            dispatcher.send(id.clone(), Box::new(msg.clone()));
+            dispatcher.send_to(id.clone(), Box::new(msg.clone()));
         }
     }
 
@@ -231,7 +231,7 @@ impl Context {
         let id = self.current_component_id.clone();
         let dispatcher = self.dispatch.clone();
         move |value| {
-            dispatcher.send(id.clone(), msg_fn(value));
+            dispatcher.send_to(id.clone(), msg_fn(value));
         }
     }
 
@@ -248,6 +248,17 @@ impl Context {
     /// Read state from a topic
     pub fn read_topic<T: State + Clone + 'static>(&self, topic: &str) -> Option<T> {
         self.topics.read_topic(topic)
+    }
+
+    /// Send a message to the current component
+    pub fn send(&self, message: Box<dyn Message>) {
+        self.dispatch
+            .send_to(self.current_component_id.clone(), message);
+    }
+
+    /// Send a message to a specific component
+    pub fn send_to(&self, component_id: ComponentId, message: Box<dyn Message>) {
+        self.dispatch.send_to(component_id, message);
     }
 
     /// Send a message to a topic owner
