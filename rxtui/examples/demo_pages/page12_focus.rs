@@ -14,7 +14,7 @@ pub struct Page12FocusDemo {}
 impl Page12FocusDemo {
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]
@@ -111,9 +111,9 @@ impl FocusButton {
         match msg {
             FocusButtonMsg::Increment => {
                 state.count += 1;
-                Action::Update(Box::new(state))
+                Action::update(state)
             }
-            FocusButtonMsg::Focused | FocusButtonMsg::Blurred => Action::None,
+            FocusButtonMsg::Focused | FocusButtonMsg::Blurred => Action::none(),
         }
     }
 

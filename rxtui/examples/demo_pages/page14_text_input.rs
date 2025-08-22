@@ -14,7 +14,7 @@ pub struct Page14TextInputDemo {}
 impl Page14TextInputDemo {
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]

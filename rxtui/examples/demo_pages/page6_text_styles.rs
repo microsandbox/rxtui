@@ -14,7 +14,7 @@ pub struct Page6TextStylesDemo {}
 impl Page6TextStylesDemo {
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]

@@ -35,7 +35,7 @@ impl Page5AbsoluteDemo {
             }
         }
 
-        Action::Update(Box::new(state))
+        Action::update(state)
     }
 
     #[view]

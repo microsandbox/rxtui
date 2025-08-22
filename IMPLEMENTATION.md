@@ -158,7 +158,7 @@ A unique feature for cross-component communication without direct references:
 2. **Claiming Ownership:**
    ```rust
    // First component to return this action owns the topic
-   Action::UpdateTopic("my-topic".into(), Box::new(MyState))
+   Action::update_topic("my-topic", MyState)
    ```
 
 3. **Handling Topic Messages (Using Macros):**
@@ -605,10 +605,10 @@ impl Counter {
                     CounterMsg::Increment => state.count += 1,
                     CounterMsg::Decrement => state.count -= 1,
                 }
-                Action::Update(Box::new(state))
+                Action::update(state)
             }
             Messages::ResetSignal(_) => {
-                Action::Update(Box::new(CounterState::default()))
+                Action::update(CounterState::default())
             }
         }
     }
@@ -663,7 +663,7 @@ impl Dashboard {
         // Send reset to all counters via topics
         ctx.send_to_topic("counter_a", Box::new(ResetSignal));
         ctx.send_to_topic("counter_b", Box::new(ResetSignal));
-        Action::None
+        Action::none()
     }
 
     #[view]

@@ -114,11 +114,11 @@ where
 ///         match msg {
 ///             CounterMsg::Increment => {
 ///                 state.count += 1;
-///                 Action::Update(Box::new(state))
+///                 Action::update(state)
 ///             }
 ///             CounterMsg::Decrement => {
 ///                 state.count -= 1;
-///                 Action::Update(Box::new(state))
+///                 Action::update(state)
 ///             }
 ///         }
 ///     }
@@ -144,7 +144,7 @@ where
 ///     if let Some(msg) = msg.downcast::<MyMsg>() {
 ///         // Handle message
 ///     }
-///     Action::None
+///     Action::none()
 /// }
 ///
 /// fn view(&self, ctx: &Context) -> Node {
@@ -172,6 +172,32 @@ pub trait ComponentClone {
 //--------------------------------------------------------------------------------------------------
 // Methods
 //--------------------------------------------------------------------------------------------------
+
+impl Action {
+    /// Create an Update action with the given state
+    #[inline]
+    pub fn update(state: impl State) -> Self {
+        Action::Update(Box::new(state))
+    }
+
+    /// Create an UpdateTopic action with the given topic and state
+    #[inline]
+    pub fn update_topic(topic: impl Into<String>, state: impl State) -> Self {
+        Action::UpdateTopic(topic.into(), Box::new(state))
+    }
+
+    /// Create a None action (no-op)
+    #[inline(always)]
+    pub fn none() -> Self {
+        Action::None
+    }
+
+    /// Create an Exit action to terminate the application
+    #[inline(always)]
+    pub fn exit() -> Self {
+        Action::Exit
+    }
+}
 
 impl ComponentId {
     pub fn new(id: impl Into<String>) -> Self {

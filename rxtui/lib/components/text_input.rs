@@ -557,10 +557,10 @@ impl TextInput {
                 }
             }
 
-            return Action::Update(Box::new(state));
+            return Action::update(state);
         }
 
-        Action::None
+        Action::none()
     }
 
     fn view(&self, ctx: &Context) -> Node {

@@ -14,7 +14,7 @@ pub struct Page11ContentSizingDemo {}
 impl Page11ContentSizingDemo {
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]

@@ -14,7 +14,7 @@ pub struct Page4BordersDemo {}
 impl Page4BordersDemo {
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]

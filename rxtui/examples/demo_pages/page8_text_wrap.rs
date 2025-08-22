@@ -14,7 +14,7 @@ pub struct Page8TextWrapDemo {}
 impl Page8TextWrapDemo {
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]
