@@ -33,3 +33,5 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+ignore/
