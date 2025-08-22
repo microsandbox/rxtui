@@ -1,4 +1,4 @@
-# TermTUI
+# RxTUI
 
 > [!WARNING]
 > This library is highly experimental and under active development. APIs may change significantly between versions. Use in production at your own risk.
@@ -7,7 +7,7 @@ A reactive terminal user interface framework for Rust that brings modern web dev
 
 ## Table of Contents
 
-- [Why TermTUI?](#why-termtui)
+- [Why RxTUI?](#why-rxtui)
 - [Quick Start](#quick-start)
 - [Core Architecture](#core-architecture)
 - [Building Your First Component](#building-your-first-component)
@@ -19,9 +19,9 @@ A reactive terminal user interface framework for Rust that brings modern web dev
 - [Performance Considerations](#performance-considerations)
 - [Examples and Recipes](#examples-and-recipes)
 
-## Why TermTUI?
+## Why RxTUI?
 
-Terminal UIs have traditionally been painful to build. You either work with low-level escape sequences (error-prone and tedious) or use immediate-mode libraries that require you to manage all state manually. TermTUI takes a different approach.
+Terminal UIs have traditionally been painful to build. You either work with low-level escape sequences (error-prone and tedious) or use immediate-mode libraries that require you to manage all state manually. RxTUI takes a different approach.
 
 We bring the **retained-mode, component-based architecture** that revolutionized web development to the terminal. This means:
 
@@ -35,7 +35,7 @@ We bring the **retained-mode, component-based architecture** that revolutionized
 Let's build a simple counter to see how it all fits together:
 
 ```rust
-use termtui::prelude::*;
+use rxtui::prelude::*;
 
 // 1. Define your messages (events that can happen)
 #[derive(Debug, Clone)]
@@ -115,7 +115,7 @@ This example demonstrates the complete flow: messages trigger updates, updates m
 
 ## Core Architecture
 
-To understand how TermTUI works, let's follow a user interaction through the system:
+To understand how RxTUI works, let's follow a user interaction through the system:
 
 ### The Journey of a Keypress
 
@@ -152,7 +152,7 @@ The virtual DOM solves these by:
 
 ## Building Your First Component
 
-Components are the heart of TermTUI. Each component is a self-contained unit that manages its own state and rendering. Let's build a more realistic component - a task list:
+Components are the heart of RxTUI. Each component is a self-contained unit that manages its own state and rendering. Let's build a more realistic component - a task list:
 
 ```rust
 // First, define what can happen (Messages)
@@ -187,7 +187,7 @@ The beauty of this pattern is that each component is independent. You can develo
 
 ## The Two Ways to Build UIs
 
-TermTUI provides two different APIs for building UIs, each suited to different use cases. Understanding when to use each one is key to productive development.
+RxTUI provides two different APIs for building UIs, each suited to different use cases. Understanding when to use each one is key to productive development.
 
 ### 1. The tui! Macro (Declarative)
 
@@ -260,7 +260,7 @@ Here's a simple decision tree:
 
 ## Component Communication
 
-As your application grows, components need to communicate. TermTUI provides several patterns for different scenarios.
+As your application grows, components need to communicate. RxTUI provides several patterns for different scenarios.
 
 ### Direct Component Messages
 
@@ -397,7 +397,7 @@ impl Parent {
 
 ## Styling and Layout
 
-TermTUI's styling system is designed to be familiar yet optimized for terminals.
+RxTUI's styling system is designed to be familiar yet optimized for terminals.
 
 ### The Box Model
 
@@ -473,7 +473,7 @@ div [
 
 ## Event Handling
 
-Events drive interactivity. TermTUI provides a rich event system that handles both keyboard and mouse input.
+Events drive interactivity. RxTUI provides a rich event system that handles both keyboard and mouse input.
 
 ### Focus-based Events
 
@@ -673,4 +673,4 @@ Each example is thoroughly commented and demonstrates best practices.
 - **Source Code** - The source is well-commented and structured
 - **Issues** - Check GitHub issues for common problems and solutions
 
-Remember: TermTUI is about making terminal UI development enjoyable. If something feels hard, there's probably a better way. The framework handles the complexity so you can focus on your application logic.
+Remember: RxTUI is about making terminal UI development enjoyable. If something feels hard, there's probably a better way. The framework handles the complexity so you can focus on your application logic.
