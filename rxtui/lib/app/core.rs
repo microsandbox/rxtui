@@ -157,7 +157,7 @@ impl App {
     /// ## Example
     /// ```rust,ignore
     /// let mut app = App::new()?;
-    /// let root = MyRootComponent::new();
+    /// let root = MyRootComponent::default();
     /// app.run(root)?;
     /// ```
     ///
@@ -374,14 +374,13 @@ impl App {
         child_index: usize,
     ) -> Result<VNode, ExitSignal> {
         match node {
-            Node::Component(mut component) => {
+            Node::Component(component) => {
                 // Update context for this component
                 let parent_id = context.current_component_id.clone();
                 context.current_component_id = parent_id.child(child_index);
 
                 // Store component in the map
                 let component_id = context.current_component_id.clone();
-                component.set_id(component_id.clone());
 
                 // Expand the component recursively, propagating any exit signal
                 let vnode = self.expand_component_tree(component.as_ref(), context, components)?;

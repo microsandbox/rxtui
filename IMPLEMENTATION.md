@@ -574,7 +574,6 @@ struct CounterState {
 // Component
 #[derive(Component, Clone)]
 struct Counter {
-    id: Option<ComponentId>,
     topic_name: String,
     label: String,
 }
@@ -651,9 +650,7 @@ impl Counter {
 
 // Dashboard with reset button
 #[derive(Component, Clone)]
-struct Dashboard {
-    id: Option<ComponentId>,
-}
+struct Dashboard {}
 
 impl Dashboard {
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {

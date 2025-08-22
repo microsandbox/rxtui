@@ -99,10 +99,6 @@ pub trait Component: 'static {
 
     fn view(&self, ctx: &Context) -> Node;
 
-    fn get_id(&self) -> Option<ComponentId>;
-
-    fn set_id(&mut self, id: ComponentId);
-
     fn as_any(&self) -> &dyn Any;
 
     fn as_any_mut(&mut self) -> &mut dyn Any;

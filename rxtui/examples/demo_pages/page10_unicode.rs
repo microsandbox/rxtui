@@ -4,20 +4,14 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Clone)]
-pub struct Page10UnicodeDemo {
-    id: Option<ComponentId>,
-}
+#[derive(Component, Clone, Default)]
+pub struct Page10UnicodeDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Methods
 //--------------------------------------------------------------------------------------------------
 
 impl Page10UnicodeDemo {
-    pub fn new() -> Self {
-        Self { id: None }
-    }
-
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         Action::None
     }

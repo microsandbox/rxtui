@@ -4,20 +4,14 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Clone)]
-pub struct Page12FocusDemo {
-    id: Option<ComponentId>,
-}
+#[derive(Component, Clone, Default)]
+pub struct Page12FocusDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Methods
 //--------------------------------------------------------------------------------------------------
 
 impl Page12FocusDemo {
-    pub fn new() -> Self {
-        Self { id: None }
-    }
-
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         // Page doesn't need to handle any messages now - buttons handle their own
         Action::None
@@ -99,7 +93,6 @@ enum FocusButtonMsg {
 
 #[derive(Component, Clone)]
 struct FocusButton {
-    id: Option<ComponentId>,
     label: String,
     color: Color,
 }
@@ -107,7 +100,6 @@ struct FocusButton {
 impl FocusButton {
     fn new(label: &str, color: Color) -> Self {
         Self {
-            id: None,
             label: label.to_string(),
             color,
         }

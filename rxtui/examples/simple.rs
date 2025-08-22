@@ -22,10 +22,8 @@ struct ColorDemoState {
 }
 
 /// Color demo component showing interactive color cycling
-#[derive(Component, Clone)]
-struct ColorDemo {
-    id: Option<ComponentId>,
-}
+#[derive(Component, Clone, Default)]
+struct ColorDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -46,10 +44,6 @@ impl Default for ColorDemoState {
 //--------------------------------------------------------------------------------------------------
 
 impl ColorDemo {
-    fn new() -> Self {
-        Self { id: None }
-    }
-
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         if let Some(msg) = msg.downcast::<ColorDemoMsg>() {
             let mut state = ctx.get_state::<ColorDemoState>();
@@ -122,7 +116,7 @@ impl ColorDemo {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    let root = ColorDemo::new();
+    let root = ColorDemo::default();
     app.run(root)
 }
 

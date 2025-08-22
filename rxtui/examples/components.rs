@@ -24,7 +24,6 @@ struct ResetSignal;
 
 #[derive(Component, Clone)]
 struct Counter {
-    id: Option<ComponentId>,
     topic_name: String,
     label: String,
     color: Color,
@@ -45,10 +44,8 @@ struct DashboardState {
     title: String,
 }
 
-#[derive(Component, Clone)]
-struct Dashboard {
-    id: Option<ComponentId>,
-}
+#[derive(Component, Clone, Default)]
+struct Dashboard {}
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -69,7 +66,6 @@ impl Default for DashboardState {
 impl Counter {
     fn new(topic: impl Into<String>, label: impl Into<String>, color: Color) -> Self {
         Self {
-            id: None,
             topic_name: topic.into(),
             label: label.into(),
             color,
@@ -145,10 +141,6 @@ impl Counter {
 //--------------------------------------------------------------------------------------------------
 
 impl Dashboard {
-    fn new() -> Self {
-        Self { id: None }
-    }
-
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         if let Some(msg) = msg.downcast::<DashboardMsg>() {
             match msg {
@@ -227,6 +219,6 @@ impl Dashboard {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    let root = Dashboard::new();
+    let root = Dashboard::default();
     app.run(root)
 }

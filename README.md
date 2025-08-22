@@ -52,16 +52,10 @@ struct CounterState {
 }
 
 // 3. Create your component
-#[derive(Component, Clone)]
-struct Counter {
-    id: Option<ComponentId>,
-}
+#[derive(Component, Clone, Default)]
+struct Counter {}
 
 impl Counter {
-    fn new() -> Self {
-        Self { id: None }
-    }
-
     // Handle messages and update state
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         if let Some(msg) = msg.downcast::<CounterMsg>() {
@@ -107,7 +101,7 @@ impl Counter {
 // 4. Run your app
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    app.run(Counter::new())
+    app.run(Counter::default())
 }
 ```
 
@@ -177,10 +171,8 @@ struct Task {
 }
 
 // Finally, create your component
-#[derive(Component, Clone)]
-struct TodoList {
-    id: Option<ComponentId>,
-}
+#[derive(Component, Clone, Default)]
+struct TodoList {}
 ```
 
 The beauty of this pattern is that each component is independent. You can develop, test, and reason about them in isolation, then compose them into larger applications.

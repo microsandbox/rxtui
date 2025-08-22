@@ -208,6 +208,11 @@ impl Context {
         }
     }
 
+    /// Get the current component's ID
+    pub fn id(&self) -> &ComponentId {
+        &self.current_component_id
+    }
+
     /// Creates a message handler that captures the current component ID
     pub fn handler<T: Message + Clone + 'static>(&self, msg: T) -> impl Fn() + 'static {
         let id = self.current_component_id.clone();

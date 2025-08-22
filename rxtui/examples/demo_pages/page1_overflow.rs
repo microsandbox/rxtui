@@ -31,10 +31,8 @@ struct OverflowDemoState {
     level3_color_idx: usize,
 }
 
-#[derive(Component, Clone)]
-pub struct Page1OverflowDemo {
-    id: Option<ComponentId>,
-}
+#[derive(Component, Clone, Default)]
+pub struct Page1OverflowDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -61,10 +59,6 @@ impl Default for OverflowDemoState {
 //--------------------------------------------------------------------------------------------------
 
 impl Page1OverflowDemo {
-    pub fn new() -> Self {
-        Self { id: None }
-    }
-
     fn get_colors() -> [Color; 12] {
         [
             Color::Red,

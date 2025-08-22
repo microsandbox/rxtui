@@ -68,4 +68,4 @@
 //! - `@blur: handler` - Focus lost
 
 mod internal;
-mod tui;
+mod node;

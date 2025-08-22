@@ -4,20 +4,14 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Clone)]
-pub struct Page6TextStylesDemo {
-    id: Option<ComponentId>,
-}
+#[derive(Component, Clone, Default)]
+pub struct Page6TextStylesDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Methods
 //--------------------------------------------------------------------------------------------------
 
 impl Page6TextStylesDemo {
-    pub fn new() -> Self {
-        Self { id: None }
-    }
-
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         Action::None
     }

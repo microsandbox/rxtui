@@ -20,10 +20,8 @@ struct DemoState {
     current_page: i32,
 }
 
-#[derive(Component, Clone)]
-struct Demo {
-    id: Option<ComponentId>,
-}
+#[derive(Component, Clone, Default)]
+struct Demo {}
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -40,10 +38,6 @@ impl Default for DemoState {
 //--------------------------------------------------------------------------------------------------
 
 impl Demo {
-    fn new() -> Self {
-        Self { id: None }
-    }
-
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
         if let Some(topic) = topic
             && topic != "navigation"
@@ -83,22 +77,22 @@ impl Demo {
         let state = ctx.get_state::<DemoState>();
 
         let page_content = match state.current_page {
-            1 => node! { node(page1_overflow::Page1OverflowDemo::new()) },
-            2 => node! { node(page2_direction::Page2DirectionDemo::new()) },
-            3 => node! { node(page3_percentages::Page3PercentagesDemo::new()) },
-            4 => node! { node(page4_borders::Page4BordersDemo::new()) },
-            5 => node! { node(page5_absolute::Page5AbsoluteDemo::new()) },
-            6 => node! { node(page6_text_styles::Page6TextStylesDemo::new()) },
-            7 => node! { node(page7_auto_sizing::Page7AutoSizingDemo::new()) },
-            8 => node! { node(page8_text_wrap::Page8TextWrapDemo::new()) },
-            9 => node! { node(page9_element_wrap::Page9ElementWrapDemo::new()) },
-            10 => node! { node(page10_unicode::Page10UnicodeDemo::new()) },
-            11 => node! { node(page11_content_sizing::Page11ContentSizingDemo::new()) },
-            12 => node! { node(page12_focus::Page12FocusDemo::new()) },
-            13 => node! { node(page13_rich_text::Page13::new()) },
-            14 => node! { node(page14_text_input::Page14TextInputDemo::new()) },
-            15 => node! { node(page15_scrollable::Page15ScrollableDemo::new()) },
-            _ => node! { node(page1_overflow::Page1OverflowDemo::new()) },
+            1 => node! { node(page1_overflow::Page1OverflowDemo::default()) },
+            2 => node! { node(page2_direction::Page2DirectionDemo::default()) },
+            3 => node! { node(page3_percentages::Page3PercentagesDemo::default()) },
+            4 => node! { node(page4_borders::Page4BordersDemo::default()) },
+            5 => node! { node(page5_absolute::Page5AbsoluteDemo::default()) },
+            6 => node! { node(page6_text_styles::Page6TextStylesDemo::default()) },
+            7 => node! { node(page7_auto_sizing::Page7AutoSizingDemo::default()) },
+            8 => node! { node(page8_text_wrap::Page8TextWrapDemo::default()) },
+            9 => node! { node(page9_element_wrap::Page9ElementWrapDemo::default()) },
+            10 => node! { node(page10_unicode::Page10UnicodeDemo::default()) },
+            11 => node! { node(page11_content_sizing::Page11ContentSizingDemo::default()) },
+            12 => node! { node(page12_focus::Page12FocusDemo::default()) },
+            13 => node! { node(page13_rich_text::Page13::default()) },
+            14 => node! { node(page14_text_input::Page14TextInputDemo::default()) },
+            15 => node! { node(page15_scrollable::Page15ScrollableDemo::default()) },
+            _ => node! { node(page1_overflow::Page1OverflowDemo::default()) },
         };
 
         // Since node! macro doesn't support variables as children, I need to create this manually
@@ -113,7 +107,7 @@ impl Demo {
         let tab_bar = node! { node(TabBar::new(state.current_page)) };
 
         // Combine using builder pattern
-        let container = Div::new()
+        let container = Div::default()
             .background(Color::Black)
             .direction(Direction::Vertical)
             .padding(Spacing::all(1))
@@ -149,18 +143,14 @@ impl Demo {
 // Tab Bar Component
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 struct TabBar {
-    id: Option<ComponentId>,
     current_page: i32,
 }
 
 impl TabBar {
     fn new(current_page: i32) -> Self {
-        Self {
-            id: None,
-            current_page,
-        }
+        Self { current_page }
     }
 
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
@@ -194,9 +184,8 @@ impl TabBar {
 // Individual Tab Component
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 struct Tab {
-    id: Option<ComponentId>,
     page_num: i32,
     label: String,
     current_page: i32,
@@ -205,7 +194,6 @@ struct Tab {
 impl Tab {
     fn new(page_num: i32, label: &str, current_page: i32) -> Self {
         Self {
-            id: None,
             page_num,
             label: label.to_string(),
             current_page,
@@ -242,6 +230,6 @@ impl Tab {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    let root = Demo::new();
+    let root = Demo::default();
     app.run(root)
 }
