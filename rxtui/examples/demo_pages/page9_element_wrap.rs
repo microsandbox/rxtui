@@ -14,7 +14,7 @@ pub struct Page9ElementWrapDemo {}
 impl Page9ElementWrapDemo {
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]

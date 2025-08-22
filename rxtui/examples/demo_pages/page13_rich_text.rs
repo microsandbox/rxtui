@@ -11,7 +11,7 @@ pub struct Page13 {}
 impl Page13 {
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]

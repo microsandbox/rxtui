@@ -110,7 +110,7 @@ impl Page1OverflowDemo {
             }
         }
 
-        Action::Update(Box::new(state))
+        Action::update(state)
     }
 
     #[view]

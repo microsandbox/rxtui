@@ -14,7 +14,7 @@ pub struct Page10UnicodeDemo {}
 impl Page10UnicodeDemo {
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]

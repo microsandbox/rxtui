@@ -54,17 +54,17 @@ impl ColorDemo {
         match message {
             ColorDemoMsg::ClickLeft => {
                 colors.left_color = next_color(colors.left_color);
-                Action::Update(Box::new(colors))
+                Action::update(colors)
             }
             ColorDemoMsg::ClickMiddle => {
                 colors.middle_color = next_color(colors.middle_color);
-                Action::Update(Box::new(colors))
+                Action::update(colors)
             }
             ColorDemoMsg::ClickRight => {
                 colors.right_color = next_color(colors.right_color);
-                Action::Update(Box::new(colors))
+                Action::update(colors)
             }
-            ColorDemoMsg::Exit => Action::Exit,
+            ColorDemoMsg::Exit => Action::exit(),
         }
     }
 

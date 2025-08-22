@@ -62,13 +62,13 @@ impl Counter {
         match msg {
             CounterMsg::Increment => {
                 state.count += 1;
-                Action::Update(Box::new(state))
+                Action::update(state)
             }
             CounterMsg::Decrement => {
                 state.count -= 1;
-                Action::Update(Box::new(state))
+                Action::update(state)
             }
-            CounterMsg::Exit => Action::Exit,
+            CounterMsg::Exit => Action::exit(),
         }
     }
 
@@ -275,7 +275,7 @@ impl MyComponent {
         match msg {
             MyMsg::Clicked => {
                 // Process message...
-                Action::None
+                Action::none()
             }
         }
     }
@@ -294,8 +294,8 @@ impl Sender {
         match msg {
             SenderMsg::NotifyOthers => {
                 // Send message to the topic - will be received by the owner (or first handler if unowned)
-                ctx.send_to_topic("notifications", Box::new(NotificationMsg::Alert));
-                Action::None
+                ctx.send_to_topic("notifications", NotificationMsg::Alert);
+                Action::none()
             }
         }
     }
@@ -314,12 +314,12 @@ impl Receiver {
         match messages {
             Messages::ReceiverMsg(msg) => {
                 // Handle regular messages
-                Action::None
+                Action::none()
             }
             Messages::NotificationMsg(_msg) => {
                 // Handle the notification - returning Action::Update claims ownership
                 state.notification_count += 1;
-                Action::Update(Box::new(state))
+                Action::update(state)
                 // This component now owns the topic and will receive all future messages
             }
         }
@@ -338,9 +338,9 @@ impl Dashboard {
         match msg {
             DashboardMsg::UpdateSharedState => {
                 // First component to update becomes the owner
-                Action::UpdateTopic(
-                    "shared.dashboard".to_string(),
-                    Box::new(SharedDashboardState { /* ... */ })
+                Action::update_topic(
+                    "shared.dashboard",
+                    SharedDashboardState { /* ... */ }
                 )
             }
         }

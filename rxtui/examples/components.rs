@@ -81,9 +81,9 @@ impl Counter {
                     CounterMsg::Increment => state.count += 1,
                     CounterMsg::Decrement => state.count -= 1,
                 }
-                Action::Update(Box::new(state))
+                Action::update(state)
             }
-            Messages::ResetSignal(_) => Action::Update(Box::new(CounterState::default())),
+            Messages::ResetSignal(_) => Action::update(CounterState::default()),
         }
     }
 
@@ -136,14 +136,14 @@ impl Dashboard {
     fn update(&self, ctx: &Context, msg: DashboardMsg, mut state: DashboardState) -> Action {
         match msg {
             DashboardMsg::ResetAll => {
-                ctx.send_to_topic("counter_r", Box::new(ResetSignal));
-                ctx.send_to_topic("counter_g", Box::new(ResetSignal));
-                ctx.send_to_topic("counter_b", Box::new(ResetSignal));
+                ctx.send_to_topic("counter_r", ResetSignal);
+                ctx.send_to_topic("counter_g", ResetSignal);
+                ctx.send_to_topic("counter_b", ResetSignal);
 
                 state.title = "RGB Counter Dashboard (Reset!)".to_string();
-                Action::Update(Box::new(state))
+                Action::update(state)
             }
-            DashboardMsg::Exit => Action::Exit,
+            DashboardMsg::Exit => Action::exit(),
         }
     }
 

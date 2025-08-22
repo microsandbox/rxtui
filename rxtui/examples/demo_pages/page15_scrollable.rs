@@ -60,7 +60,7 @@ impl Page15ScrollableDemo {
             }
         }
 
-        Action::Update(Box::new(state))
+        Action::update(state)
     }
 
     #[view]

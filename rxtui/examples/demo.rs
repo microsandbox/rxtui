@@ -56,11 +56,11 @@ impl Demo {
                 };
             }
             DemoMessage::Exit => {
-                return Action::Exit;
+                return Action::exit();
             }
         }
 
-        Action::Update(Box::new(state))
+        Action::update(state)
     }
 
     #[view]
@@ -144,7 +144,7 @@ impl TabBar {
 
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]
@@ -193,7 +193,7 @@ impl Tab {
 
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]

@@ -14,7 +14,7 @@ pub struct Page3PercentagesDemo {}
 impl Page3PercentagesDemo {
     #[update]
     fn update(&self, _ctx: &Context, _msg: ()) -> Action {
-        Action::None
+        Action::none()
     }
 
     #[view]

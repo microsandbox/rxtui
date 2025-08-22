@@ -67,14 +67,20 @@ impl Dispatcher {
         }
     }
 
-    pub fn send_to(&self, component_id: ComponentId, message: Box<dyn Message>) {
+    pub fn send_to_id(&self, component_id: ComponentId, message: impl Message) {
         let mut queues = self.queues.borrow_mut();
-        queues.entry(component_id).or_default().push_back(message);
+        queues
+            .entry(component_id)
+            .or_default()
+            .push_back(Box::new(message));
     }
 
-    pub fn send_to_topic(&self, topic: String, message: Box<dyn Message>) {
+    pub fn send_to_topic(&self, topic: String, message: impl Message) {
         let mut queues = self.topic_queues.borrow_mut();
-        queues.entry(topic).or_default().push_back(message);
+        queues
+            .entry(topic)
+            .or_default()
+            .push_back(Box::new(message));
     }
 }
 
@@ -218,20 +224,21 @@ impl Context {
         let id = self.current_component_id.clone();
         let dispatcher = self.dispatch.clone();
         move || {
-            dispatcher.send_to(id.clone(), Box::new(msg.clone()));
+            dispatcher.send_to_id(id.clone(), msg.clone());
         }
     }
 
     /// Creates a message handler with a value parameter
-    pub fn handler_with_value<T, F>(&self, msg_fn: F) -> impl Fn(T) + 'static
+    pub fn handler_with_value<T, M, F>(&self, msg_fn: F) -> impl Fn(T) + 'static
     where
         T: 'static,
-        F: Fn(T) -> Box<dyn Message> + 'static,
+        M: Message + 'static,
+        F: Fn(T) -> M + 'static,
     {
         let id = self.current_component_id.clone();
         let dispatcher = self.dispatch.clone();
         move |value| {
-            dispatcher.send_to(id.clone(), msg_fn(value));
+            dispatcher.send_to_id(id.clone(), msg_fn(value));
         }
     }
 
@@ -251,18 +258,18 @@ impl Context {
     }
 
     /// Send a message to the current component
-    pub fn send(&self, message: Box<dyn Message>) {
+    pub fn send(&self, message: impl Message) {
         self.dispatch
-            .send_to(self.current_component_id.clone(), message);
+            .send_to_id(self.current_component_id.clone(), message);
     }
 
     /// Send a message to a specific component
-    pub fn send_to(&self, component_id: ComponentId, message: Box<dyn Message>) {
-        self.dispatch.send_to(component_id, message);
+    pub fn send_to(&self, component_id: ComponentId, message: impl Message) {
+        self.dispatch.send_to_id(component_id, message);
     }
 
     /// Send a message to a topic owner
-    pub fn send_to_topic(&self, topic: impl Into<String>, message: Box<dyn Message>) {
+    pub fn send_to_topic(&self, topic: impl Into<String>, message: impl Message) {
         self.dispatch.send_to_topic(topic.into(), message);
     }
 
@@ -275,19 +282,20 @@ impl Context {
         let topic = topic.into();
         let dispatcher = self.dispatch.clone();
         move || {
-            dispatcher.send_to_topic(topic.clone(), Box::new(msg.clone()));
+            dispatcher.send_to_topic(topic.clone(), msg.clone());
         }
     }
 
     /// Creates a topic message handler with a value parameter
-    pub fn topic_handler_with_value<T, F>(
+    pub fn topic_handler_with_value<T, M, F>(
         &self,
         topic: impl Into<String>,
         msg_fn: F,
     ) -> impl Fn(T) + 'static
     where
         T: 'static,
-        F: Fn(T) -> Box<dyn Message> + 'static,
+        M: Message + 'static,
+        F: Fn(T) -> M + 'static,
     {
         let topic = topic.into();
         let dispatcher = self.dispatch.clone();
