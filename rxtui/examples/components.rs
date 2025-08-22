@@ -44,7 +44,7 @@ struct DashboardState {
     title: String,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 struct Dashboard {}
 
 //--------------------------------------------------------------------------------------------------
@@ -141,10 +141,6 @@ impl Counter {
 //--------------------------------------------------------------------------------------------------
 
 impl Dashboard {
-    fn new() -> Self {
-        Self {}
-    }
-
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         if let Some(msg) = msg.downcast::<DashboardMsg>() {
             match msg {
@@ -223,6 +219,6 @@ impl Dashboard {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    let root = Dashboard::new();
+    let root = Dashboard::default();
     app.run(root)
 }

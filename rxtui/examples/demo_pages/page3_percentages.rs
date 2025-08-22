@@ -4,7 +4,7 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 pub struct Page3PercentagesDemo {}
 
 //--------------------------------------------------------------------------------------------------
@@ -12,10 +12,6 @@ pub struct Page3PercentagesDemo {}
 //--------------------------------------------------------------------------------------------------
 
 impl Page3PercentagesDemo {
-    pub fn new() -> Self {
-        Self {}
-    }
-
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         Action::None
     }

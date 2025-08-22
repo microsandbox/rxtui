@@ -157,7 +157,7 @@ impl App {
     /// ## Example
     /// ```rust,ignore
     /// let mut app = App::new()?;
-    /// let root = MyRootComponent::new();
+    /// let root = MyRootComponent::default();
     /// app.run(root)?;
     /// ```
     ///

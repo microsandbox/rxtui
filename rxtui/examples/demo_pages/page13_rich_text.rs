@@ -5,14 +5,8 @@
 
 use rxtui::prelude::*;
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 pub struct Page13 {}
-
-impl Page13 {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
 
 impl Page13 {
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {

@@ -19,7 +19,7 @@ struct ScrollDemoState {
     info_text: String,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 pub struct Page15ScrollableDemo {}
 
 //--------------------------------------------------------------------------------------------------
@@ -40,10 +40,6 @@ impl Default for ScrollDemoState {
 //--------------------------------------------------------------------------------------------------
 
 impl Page15ScrollableDemo {
-    pub fn new() -> Self {
-        Self {}
-    }
-
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         if let Some(msg) = msg.downcast::<ScrollDemoMsg>() {
             let mut state = ctx.get_state::<ScrollDemoState>();

@@ -16,7 +16,7 @@ struct AbsoluteDemoState {
     selected_layer: i32,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 pub struct Page5AbsoluteDemo {}
 
 //--------------------------------------------------------------------------------------------------
@@ -24,10 +24,6 @@ pub struct Page5AbsoluteDemo {}
 //--------------------------------------------------------------------------------------------------
 
 impl Page5AbsoluteDemo {
-    pub fn new() -> Self {
-        Self {}
-    }
-
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         if let Some(msg) = msg.downcast::<AbsoluteDemoMsg>() {
             let mut state = ctx.get_state::<AbsoluteDemoState>();

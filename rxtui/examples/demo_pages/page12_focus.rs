@@ -4,7 +4,7 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 pub struct Page12FocusDemo {}
 
 //--------------------------------------------------------------------------------------------------
@@ -12,10 +12,6 @@ pub struct Page12FocusDemo {}
 //--------------------------------------------------------------------------------------------------
 
 impl Page12FocusDemo {
-    pub fn new() -> Self {
-        Self {}
-    }
-
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         // Page doesn't need to handle any messages now - buttons handle their own
         Action::None

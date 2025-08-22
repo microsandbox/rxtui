@@ -31,7 +31,7 @@ struct OverflowDemoState {
     level3_color_idx: usize,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 pub struct Page1OverflowDemo {}
 
 //--------------------------------------------------------------------------------------------------
@@ -59,10 +59,6 @@ impl Default for OverflowDemoState {
 //--------------------------------------------------------------------------------------------------
 
 impl Page1OverflowDemo {
-    pub fn new() -> Self {
-        Self {}
-    }
-
     fn get_colors() -> [Color; 12] {
         [
             Color::Red,
