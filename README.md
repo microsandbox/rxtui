@@ -56,26 +56,25 @@ struct CounterState {
 struct Counter {}
 
 impl Counter {
-    // Handle messages and update state
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        if let Some(msg) = msg.downcast::<CounterMsg>() {
-            let mut state = ctx.get_state::<CounterState>();
-
-            match msg {
-                CounterMsg::Increment => state.count += 1,
-                CounterMsg::Decrement => state.count -= 1,
-                CounterMsg::Exit => return Action::Exit,
+    // Handle messages and update state - using the #[update] macro
+    #[update]
+    fn update(&self, ctx: &Context, msg: CounterMsg, mut state: CounterState) -> Action {
+        match msg {
+            CounterMsg::Increment => {
+                state.count += 1;
+                Action::Update(Box::new(state))
             }
-
-            return Action::Update(Box::new(state));
+            CounterMsg::Decrement => {
+                state.count -= 1;
+                Action::Update(Box::new(state))
+            }
+            CounterMsg::Exit => Action::Exit,
         }
-        Action::None
     }
 
-    // Render UI based on current state
-    fn view(&self, ctx: &Context) -> Node {
-        let state = ctx.get_state::<CounterState>();
-
+    // Render UI based on current state - using the #[view] macro
+    #[view]
+    fn view(&self, ctx: &Context, state: CounterState) -> Node {
         node! {
             div(bg: blue, pad: 2) [
                 text(format!("Count: {}", state.count), color: white, bold),
@@ -260,6 +259,7 @@ Components send messages to themselves through event handlers:
 
 ```rust
 impl MyComponent {
+    #[view]
     fn view(&self, ctx: &Context) -> Node {
         node! {
             div [
@@ -269,12 +269,15 @@ impl MyComponent {
         }
     }
 
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
+    #[update]
+    fn update(&self, ctx: &Context, msg: MyMsg) -> Action {
         // Handle messages sent to this component
-        if let Some(msg) = msg.downcast::<MyMsg>() {
-            // Process message...
+        match msg {
+            MyMsg::Clicked => {
+                // Process message...
+                Action::None
+            }
         }
-        Action::None
     }
 }
 ```
@@ -286,40 +289,40 @@ Components can communicate across the tree using topics. Topics have ownership -
 ```rust
 // Sender component - sends messages to a topic
 impl Sender {
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        if let Some(msg) = msg.downcast::<SenderMsg>() {
-            match msg {
-                SenderMsg::NotifyOthers => {
-                    // Send message to the topic - will be received by the owner (or first handler if unowned)
-                    ctx.send_to_topic("notifications", Box::new(NotificationMsg::Alert));
-                }
+    #[update]
+    fn update(&self, ctx: &Context, msg: SenderMsg) -> Action {
+        match msg {
+            SenderMsg::NotifyOthers => {
+                // Send message to the topic - will be received by the owner (or first handler if unowned)
+                ctx.send_to_topic("notifications", Box::new(NotificationMsg::Alert));
+                Action::None
             }
         }
-        Action::None
     }
 }
 
-// Receiver component - listens to a specific topic
+// Receiver component - listens to a specific topic using the macro's topic support
 impl Receiver {
     fn new(topic: String) -> Self {
         Self {
-            id: None,
             topic_name: topic  // Store which topic to listen to
         }
     }
 
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
-        // Check if this message is from our topic
-        if let Some(topic) = topic {
-            if topic == self.topic_name && msg.downcast::<NotificationMsg>().is_some() {
+    #[update(msg = ReceiverMsg, topics = [self.topic_name => NotificationMsg])]
+    fn update(&self, ctx: &Context, messages: Messages, mut state: ReceiverState) -> Action {
+        match messages {
+            Messages::ReceiverMsg(msg) => {
+                // Handle regular messages
+                Action::None
+            }
+            Messages::NotificationMsg(_msg) => {
                 // Handle the notification - returning Action::Update claims ownership
-                let mut state = ctx.get_state::<ReceiverState>();
                 state.notification_count += 1;
-                return Action::Update(Box::new(state));
-                // This component now owns "notifications" topic and will receive all future messages
+                Action::Update(Box::new(state))
+                // This component now owns the topic and will receive all future messages
             }
         }
-        Action::None
     }
 }
 ```
@@ -330,24 +333,23 @@ Topics can also have associated state. The first component to update a topic bec
 
 ```rust
 impl Dashboard {
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        if let Some(msg) = msg.downcast::<DashboardMsg>() {
-            match msg {
-                DashboardMsg::UpdateSharedState => {
-                    // First component to update becomes the owner
-                    return Action::UpdateTopic(
-                        "shared.dashboard".to_string(),
-                        Box::new(SharedDashboardState { /* ... */ })
-                    );
-                }
+    #[update]
+    fn update(&self, ctx: &Context, msg: DashboardMsg) -> Action {
+        match msg {
+            DashboardMsg::UpdateSharedState => {
+                // First component to update becomes the owner
+                Action::UpdateTopic(
+                    "shared.dashboard".to_string(),
+                    Box::new(SharedDashboardState { /* ... */ })
+                )
             }
         }
-        Action::None
     }
 }
 
 // Other components can read topic state
 impl Reader {
+    #[view]
     fn view(&self, ctx: &Context) -> Node {
         // Read shared state from topic
         let shared = ctx.read_topic::<SharedDashboardState>("shared.dashboard");
@@ -367,9 +369,8 @@ Parents pass data down through component constructors:
 
 ```rust
 impl Parent {
-    fn view(&self, ctx: &Context) -> Node {
-        let state = ctx.get_state::<ParentState>();
-
+    #[view]
+    fn view(&self, ctx: &Context, state: ParentState) -> Node {
         node! {
             div [
                 // Pass data to child via constructor
@@ -525,17 +526,18 @@ Build complex interfaces from simple, focused components:
 
 ```rust
 impl App {
-    fn view(&self, ctx: &Context) -> Node {
+    #[view]
+    fn view(&self, ctx: &Context, state: AppState) -> Node {
         node! {
             div(dir: vertical) [
-                node(Header::new(&self.title)),
+                node(Header::new(&state.title)),
 
                 div(dir: horizontal, h_pct: 0.8) [
-                    node(Sidebar::new(&self.menu_items)),
-                    node(Content::new(&self.current_page)),
+                    node(Sidebar::new(&state.menu_items)),
+                    node(Content::new(&state.current_page)),
                 ],
 
-                node(StatusBar::new(&self.status))
+                node(StatusBar::new(&state.status))
             ]
         }
     }
@@ -578,7 +580,8 @@ struct FormState {
 }
 
 impl Form {
-    fn view(&self, ctx: &Context) -> Node {
+    #[view]
+    fn view(&self, ctx: &Context, state: FormState) -> Node {
         node! {
             div(pad: 2) [
                 text("Username:"),

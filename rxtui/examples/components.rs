@@ -72,32 +72,23 @@ impl Counter {
         }
     }
 
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
-        if let Some(topic) = topic {
-            if topic == self.topic_name && msg.downcast::<ResetSignal>().is_some() {
-                return Action::Update(Box::new(CounterState::default()));
+    /// Using the new #[update] macro with dynamic topic support!
+    #[update(msg = CounterMsg, topics = [self.topic_name => ResetSignal])]
+    fn update(&self, _ctx: &Context, messages: Messages, mut state: CounterState) -> Action {
+        match messages {
+            Messages::CounterMsg(msg) => {
+                match msg {
+                    CounterMsg::Increment => state.count += 1,
+                    CounterMsg::Decrement => state.count -= 1,
+                }
+                Action::Update(Box::new(state))
             }
-
-            return Action::None;
+            Messages::ResetSignal(_) => Action::Update(Box::new(CounterState::default())),
         }
-
-        if let Some(msg) = msg.downcast::<CounterMsg>() {
-            let mut state = ctx.get_state::<CounterState>();
-
-            match msg {
-                CounterMsg::Increment => state.count += 1,
-                CounterMsg::Decrement => state.count -= 1,
-            }
-
-            return Action::Update(Box::new(state));
-        }
-
-        Action::None
     }
 
-    fn view(&self, ctx: &Context) -> Node {
-        let state = ctx.get_state::<CounterState>();
-
+    #[view]
+    fn view(&self, ctx: &Context, state: CounterState) -> Node {
         node! {
             div(
                 bg: black,
@@ -141,29 +132,23 @@ impl Counter {
 //--------------------------------------------------------------------------------------------------
 
 impl Dashboard {
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        if let Some(msg) = msg.downcast::<DashboardMsg>() {
-            match msg {
-                DashboardMsg::ResetAll => {
-                    ctx.send_to_topic("counter_r", Box::new(ResetSignal));
-                    ctx.send_to_topic("counter_g", Box::new(ResetSignal));
-                    ctx.send_to_topic("counter_b", Box::new(ResetSignal));
+    #[update]
+    fn update(&self, ctx: &Context, msg: DashboardMsg, mut state: DashboardState) -> Action {
+        match msg {
+            DashboardMsg::ResetAll => {
+                ctx.send_to_topic("counter_r", Box::new(ResetSignal));
+                ctx.send_to_topic("counter_g", Box::new(ResetSignal));
+                ctx.send_to_topic("counter_b", Box::new(ResetSignal));
 
-                    let mut state = ctx.get_state::<DashboardState>();
-                    state.title = "RGB Counter Dashboard (Reset!)".to_string();
-                    return Action::Update(Box::new(state));
-                }
-                DashboardMsg::Exit => {
-                    return Action::Exit;
-                }
+                state.title = "RGB Counter Dashboard (Reset!)".to_string();
+                Action::Update(Box::new(state))
             }
+            DashboardMsg::Exit => Action::Exit,
         }
-        Action::None
     }
 
-    fn view(&self, ctx: &Context) -> Node {
-        let state = ctx.get_state::<DashboardState>();
-
+    #[view]
+    fn view(&self, ctx: &Context, state: DashboardState) -> Node {
         node! {
             div(bg: black, pad: 2, dir: vertical) [
                 div(bg: blue, pad: 1, w_pct: 1.0) [

@@ -161,8 +161,18 @@ A unique feature for cross-component communication without direct references:
    Action::UpdateTopic("my-topic".into(), Box::new(MyState))
    ```
 
-3. **Handling Topic Messages:**
+3. **Handling Topic Messages (Using Macros):**
    ```rust
+   // With the new #[update] macro:
+   #[update(msg = MyMsg, topics = ["my-topic" => TopicMsg])]
+   fn update(&self, ctx: &Context, messages: Messages) -> Action {
+       match messages {
+           Messages::MyMsg(msg) => { /* handle regular message */ }
+           Messages::TopicMsg(msg) => { /* handle topic message */ }
+       }
+   }
+
+   // Or manually without macro:
    fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
        if let Some(topic) = topic {
            if topic == "my-topic" {
@@ -581,36 +591,31 @@ struct Counter {
 impl Counter {
     fn new(topic: &str, label: &str) -> Self {
         Self {
-            id: None,
             topic_name: topic.into(),
             label: label.into(),
         }
     }
 
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
-        // Handle topic messages
-        if let Some(topic) = topic {
-            if topic == self.topic_name && msg.downcast::<ResetSignal>().is_some() {
-                return Action::Update(Box::new(CounterState::default()));
+    // Using the new #[update] macro with dynamic topic support
+    #[update(msg = CounterMsg, topics = [self.topic_name => ResetSignal])]
+    fn update(&self, ctx: &Context, messages: Messages, mut state: CounterState) -> Action {
+        match messages {
+            Messages::CounterMsg(msg) => {
+                match msg {
+                    CounterMsg::Increment => state.count += 1,
+                    CounterMsg::Decrement => state.count -= 1,
+                }
+                Action::Update(Box::new(state))
             }
-            return Action::None;
-        }
-
-        // Handle direct messages
-        if let Some(msg) = msg.downcast::<CounterMsg>() {
-            let mut state = ctx.get_state::<CounterState>();
-            match msg {
-                CounterMsg::Increment => state.count += 1,
-                CounterMsg::Decrement => state.count -= 1,
+            Messages::ResetSignal(_) => {
+                Action::Update(Box::new(CounterState::default()))
             }
-            return Action::Update(Box::new(state));
         }
-
-        Action::None
     }
 
-    fn view(&self, ctx: &Context) -> Node {
-        let state = ctx.get_state::<CounterState>();
+    // Using the new #[view] macro
+    #[view]
+    fn view(&self, ctx: &Context, state: CounterState) -> Node {
 
         Div::new()
             .background(Color::Blue)
@@ -649,20 +654,19 @@ impl Counter {
 }
 
 // Dashboard with reset button
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Default)]
 struct Dashboard {}
 
 impl Dashboard {
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        if msg.downcast::<ResetSignal>().is_some() {
-            // Send reset to all counters via topics
-            ctx.send_to_topic("counter_a", Box::new(ResetSignal));
-            ctx.send_to_topic("counter_b", Box::new(ResetSignal));
-            return Action::None;
-        }
+    #[update]
+    fn update(&self, ctx: &Context, msg: ResetSignal) -> Action {
+        // Send reset to all counters via topics
+        ctx.send_to_topic("counter_a", Box::new(ResetSignal));
+        ctx.send_to_topic("counter_b", Box::new(ResetSignal));
         Action::None
     }
 
+    #[view]
     fn view(&self, ctx: &Context) -> Node {
         Div::new()
             .padding(Spacing::all(2))
@@ -688,7 +692,7 @@ impl Dashboard {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    app.run(Dashboard { id: None })
+    app.run(Dashboard::default())
 }
 ```
 

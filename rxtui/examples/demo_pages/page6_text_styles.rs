@@ -12,10 +12,12 @@ pub struct Page6TextStylesDemo {}
 //--------------------------------------------------------------------------------------------------
 
 impl Page6TextStylesDemo {
-    fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
+    #[update]
+    fn update(&self, _ctx: &Context, _msg: ()) -> Action {
         Action::None
     }
 
+    #[view]
     fn view(&self, _ctx: &Context) -> Node {
         node! {
             div(bg: black, dir: vertical, pad: 2, w_pct: 1.0, h: 50) [

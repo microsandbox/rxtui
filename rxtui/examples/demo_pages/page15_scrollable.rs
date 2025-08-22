@@ -40,33 +40,30 @@ impl Default for ScrollDemoState {
 //--------------------------------------------------------------------------------------------------
 
 impl Page15ScrollableDemo {
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        if let Some(msg) = msg.downcast::<ScrollDemoMsg>() {
-            let mut state = ctx.get_state::<ScrollDemoState>();
-
-            match msg {
-                ScrollDemoMsg::ScrollUp => {
-                    state.info_text = "Scrolled up!".to_string();
-                }
-                ScrollDemoMsg::ScrollDown => {
-                    state.info_text = "Scrolled down!".to_string();
-                }
-                ScrollDemoMsg::ScrollLeft => {
-                    state.info_text = "Scrolled left!".to_string();
-                }
-                ScrollDemoMsg::ScrollRight => {
-                    state.info_text = "Scrolled right!".to_string();
-                }
-                ScrollDemoMsg::ResetScroll => {
-                    state.info_text = "Scroll reset!".to_string();
-                }
+    #[update]
+    fn update(&self, ctx: &Context, msg: ScrollDemoMsg, mut state: ScrollDemoState) -> Action {
+        match msg {
+            ScrollDemoMsg::ScrollUp => {
+                state.info_text = "Scrolled up!".to_string();
             }
-
-            return Action::Update(Box::new(state));
+            ScrollDemoMsg::ScrollDown => {
+                state.info_text = "Scrolled down!".to_string();
+            }
+            ScrollDemoMsg::ScrollLeft => {
+                state.info_text = "Scrolled left!".to_string();
+            }
+            ScrollDemoMsg::ScrollRight => {
+                state.info_text = "Scrolled right!".to_string();
+            }
+            ScrollDemoMsg::ResetScroll => {
+                state.info_text = "Scroll reset!".to_string();
+            }
         }
-        Action::None
+
+        Action::Update(Box::new(state))
     }
 
+    #[view]
     fn view(&self, _ctx: &Context) -> Node {
         node! {
             div(bg: black, dir: vertical, pad: 2, w_pct: 1.0, h: 60) [

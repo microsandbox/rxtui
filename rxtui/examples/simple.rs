@@ -44,34 +44,32 @@ impl Default for ColorDemoState {
 //--------------------------------------------------------------------------------------------------
 
 impl ColorDemo {
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        if let Some(msg) = msg.downcast::<ColorDemoMsg>() {
-            let mut state = ctx.get_state::<ColorDemoState>();
-
-            match msg {
-                ColorDemoMsg::ClickLeft => {
-                    state.left_color = next_color(state.left_color);
-                    return Action::Update(Box::new(state));
-                }
-                ColorDemoMsg::ClickMiddle => {
-                    state.middle_color = next_color(state.middle_color);
-                    return Action::Update(Box::new(state));
-                }
-                ColorDemoMsg::ClickRight => {
-                    state.right_color = next_color(state.right_color);
-                    return Action::Update(Box::new(state));
-                }
-                ColorDemoMsg::Exit => {
-                    return Action::Exit;
-                }
+    #[update]
+    fn update(
+        &self,
+        context: &Context,
+        message: ColorDemoMsg,
+        mut colors: ColorDemoState,
+    ) -> Action {
+        match message {
+            ColorDemoMsg::ClickLeft => {
+                colors.left_color = next_color(colors.left_color);
+                Action::Update(Box::new(colors))
             }
+            ColorDemoMsg::ClickMiddle => {
+                colors.middle_color = next_color(colors.middle_color);
+                Action::Update(Box::new(colors))
+            }
+            ColorDemoMsg::ClickRight => {
+                colors.right_color = next_color(colors.right_color);
+                Action::Update(Box::new(colors))
+            }
+            ColorDemoMsg::Exit => Action::Exit,
         }
-        Action::None
     }
 
-    fn view(&self, ctx: &Context) -> Node {
-        let state = ctx.get_state::<ColorDemoState>();
-
+    #[view]
+    fn view(&self, ctx: &Context, state: ColorDemoState) -> Node {
         node! {
             div(bg: black, dir: vertical, pad: 1) [
                 // Title bar
