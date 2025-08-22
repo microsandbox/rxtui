@@ -157,12 +157,12 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-/// Attribute macro that simplifies the update method implementation
+/// Simplifies component update methods by automatically handling message downcasting,
+/// state fetching, and topic routing.
 ///
-/// This macro automatically handles message downcasting, state fetching,
-/// and topic routing, significantly reducing boilerplate in component update methods.
+/// # Basic usage
 ///
-/// # Simple Usage (no topics, no state)
+/// The simplest form just handles a single message type:
 ///
 /// ```ignore
 /// #[update]
@@ -174,7 +174,9 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 /// }
 /// ```
 ///
-/// # With State
+/// # With state management
+///
+/// Add a state parameter and it will be automatically fetched and passed in:
 ///
 /// ```ignore
 /// #[update]
@@ -189,7 +191,10 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 /// }
 /// ```
 ///
-/// # With Topics (New Syntax)
+/// # With topic-based messaging
+///
+/// Components can also listen to topic messages. Topics can be static strings or
+/// dynamic expressions from self:
 ///
 /// ```ignore
 /// #[update(msg = AppMsg, topics = ["timer" => TimerMsg, self.topic_name => UpdateMsg])]
@@ -202,12 +207,12 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 /// }
 /// ```
 ///
-/// # Transformation (ASCII Diagram)
+/// # How it works
+///
+/// The macro transforms your simplified function into the full Component trait implementation:
 ///
 /// ```text
 /// ┌─────────────────────────────────────────────────────────────────┐
-/// │                        USER WRITES THIS:                        │
-/// ├─────────────────────────────────────────────────────────────────┤
 /// │ #[update(msg = CounterMsg, topics = [self.topic => ResetMsg])]  │
 /// │ fn update(&self, ctx: &Context, msg: Messages,                  │
 /// │           mut state: CounterState) -> Action {                  │
@@ -217,11 +222,8 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 /// │     }                                                           │
 /// │ }                                                               │
 /// └─────────────────────────────────────────────────────────────────┘
-///                                 │
-///                                 ▼
+///                                 ↓
 /// ┌─────────────────────────────────────────────────────────────────┐
-/// │                    MACRO GENERATES THIS:                        │
-/// ├─────────────────────────────────────────────────────────────────┤
 /// │ fn update(&self, ctx: &Context,                                 │
 /// │           msg: Box<dyn Message>,                                │
 /// │           topic: Option<&str>) -> Action {                      │
@@ -230,7 +232,7 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 /// │     let mut state = ctx.get_state::<CounterState>();            │
 /// │                                                                 │
 /// │     if let Some(topic) = topic {                                │
-/// │         if topic == self.topic.as_ref() { /* dynamic check */   │
+/// │         if topic == &*(self.topic) {                            │
 /// │             if let Some(m) = msg.downcast::<ResetMsg>() {       │
 /// │                 let msg = Messages::ResetMsg(m.clone());        │
 /// │                 return { /* user's match block */ };            │
@@ -249,11 +251,13 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 /// └─────────────────────────────────────────────────────────────────┘
 /// ```
 ///
-/// # Parameters (by position)
-/// - Position 0: `&self` (required)
-/// - Position 1: `&Context` (required) - any parameter name allowed
-/// - Position 2: Message type (required) - any parameter name allowed
-/// - Position 3: State type (optional) - any parameter name allowed
+/// # Parameters
+///
+/// The function parameters are detected by position:
+/// - `&self` (required)
+/// - `&Context` (required) - any name allowed
+/// - Message type (required) - any name allowed
+/// - State type (optional) - any name allowed
 #[proc_macro_attribute]
 pub fn update(args: TokenStream, input: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(input as ItemFn);
@@ -393,12 +397,11 @@ pub fn update(args: TokenStream, input: TokenStream) -> TokenStream {
     }
 }
 
-/// Attribute macro that simplifies the view method implementation
+/// Simplifies component view methods by automatically fetching state from the context.
 ///
-/// This macro automatically handles state fetching, reducing boilerplate
-/// in component view methods.
+/// # With state
 ///
-/// # Example (with state)
+/// If you include a state parameter, it will be automatically fetched:
 ///
 /// ```ignore
 /// #[view]
@@ -411,7 +414,9 @@ pub fn update(args: TokenStream, input: TokenStream) -> TokenStream {
 /// }
 /// ```
 ///
-/// # Example (without state)
+/// # Without state
+///
+/// For stateless components, just omit the state parameter:
 ///
 /// ```ignore
 /// #[view]
@@ -424,36 +429,15 @@ pub fn update(args: TokenStream, input: TokenStream) -> TokenStream {
 /// }
 /// ```
 ///
-/// # Transformation (ASCII Diagram)
+/// The macro automatically detects whether a state parameter is present and generates
+/// the appropriate code to fetch it from the context.
 ///
-/// ```text
-/// ┌─────────────────────────────────────────────────────────────────┐
-/// │                        USER WRITES THIS:                        │
-/// ├─────────────────────────────────────────────────────────────────┤
-/// │ #[view]                                                         │
-/// │ fn view(&self, context: &Context, my_state: CounterState)       │
-/// │         -> Node {                                               │
-/// │     // User can use any parameter names they want               │
-/// │     node! { ... }                                               │
-/// │ }                                                               │
-/// └─────────────────────────────────────────────────────────────────┘
-///                                 │
-///                                 ▼
-/// ┌─────────────────────────────────────────────────────────────────┐
-/// │                    MACRO GENERATES THIS:                        │
-/// ├─────────────────────────────────────────────────────────────────┤
-/// │ fn view(&self, context: &Context) -> Node {                     │
-/// │     let my_state = context.get_state::<CounterState>();         │
-/// │     // User's function body with their chosen names             │
-/// │     { node! { ... } }                                           │
-/// │ }                                                               │
-/// └─────────────────────────────────────────────────────────────────┘
-/// ```
+/// # Parameters
 ///
-/// # Parameters (by position)
-/// - Position 0: `&self` (required)
-/// - Position 1: `&Context` (required) - any parameter name allowed
-/// - Position 2: State type (optional) - any parameter name allowed
+/// The function parameters are detected by position:
+/// - `&self` (required)
+/// - `&Context` (required) - any name allowed
+/// - State type (optional) - any name allowed
 #[proc_macro_attribute]
 pub fn view(_args: TokenStream, input: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(input as ItemFn);
