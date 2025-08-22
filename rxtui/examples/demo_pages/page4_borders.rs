@@ -5,9 +5,7 @@ use rxtui::prelude::*;
 //--------------------------------------------------------------------------------------------------
 
 #[derive(Component, Clone)]
-pub struct Page4BordersDemo {
-    id: Option<ComponentId>,
-}
+pub struct Page4BordersDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Methods
@@ -15,7 +13,7 @@ pub struct Page4BordersDemo {
 
 impl Page4BordersDemo {
     pub fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {

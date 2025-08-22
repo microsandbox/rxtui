@@ -5,9 +5,7 @@ use rxtui::prelude::*;
 //--------------------------------------------------------------------------------------------------
 
 #[derive(Component, Clone)]
-pub struct Page14TextInputDemo {
-    id: Option<ComponentId>,
-}
+pub struct Page14TextInputDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Methods
@@ -15,7 +13,7 @@ pub struct Page14TextInputDemo {
 
 impl Page14TextInputDemo {
     pub fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {

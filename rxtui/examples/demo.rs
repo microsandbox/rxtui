@@ -21,9 +21,7 @@ struct DemoState {
 }
 
 #[derive(Component, Clone)]
-struct Demo {
-    id: Option<ComponentId>,
-}
+struct Demo {}
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -41,7 +39,7 @@ impl Default for DemoState {
 
 impl Demo {
     fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
@@ -151,16 +149,12 @@ impl Demo {
 
 #[derive(Component, Clone)]
 struct TabBar {
-    id: Option<ComponentId>,
     current_page: i32,
 }
 
 impl TabBar {
     fn new(current_page: i32) -> Self {
-        Self {
-            id: None,
-            current_page,
-        }
+        Self { current_page }
     }
 
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
@@ -196,7 +190,6 @@ impl TabBar {
 
 #[derive(Component, Clone)]
 struct Tab {
-    id: Option<ComponentId>,
     page_num: i32,
     label: String,
     current_page: i32,
@@ -205,7 +198,6 @@ struct Tab {
 impl Tab {
     fn new(page_num: i32, label: &str, current_page: i32) -> Self {
         Self {
-            id: None,
             page_num,
             label: label.to_string(),
             current_page,

@@ -5,9 +5,7 @@ use rxtui::prelude::*;
 //--------------------------------------------------------------------------------------------------
 
 #[derive(Component, Clone)]
-pub struct Page7AutoSizingDemo {
-    id: Option<ComponentId>,
-}
+pub struct Page7AutoSizingDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Methods
@@ -15,7 +13,7 @@ pub struct Page7AutoSizingDemo {
 
 impl Page7AutoSizingDemo {
     pub fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {

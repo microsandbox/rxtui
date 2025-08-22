@@ -5,9 +5,7 @@ use rxtui::prelude::*;
 //--------------------------------------------------------------------------------------------------
 
 #[derive(Component, Clone)]
-pub struct Page12FocusDemo {
-    id: Option<ComponentId>,
-}
+pub struct Page12FocusDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Methods
@@ -15,7 +13,7 @@ pub struct Page12FocusDemo {
 
 impl Page12FocusDemo {
     pub fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
@@ -99,7 +97,6 @@ enum FocusButtonMsg {
 
 #[derive(Component, Clone)]
 struct FocusButton {
-    id: Option<ComponentId>,
     label: String,
     color: Color,
 }
@@ -107,7 +104,6 @@ struct FocusButton {
 impl FocusButton {
     fn new(label: &str, color: Color) -> Self {
         Self {
-            id: None,
             label: label.to_string(),
             color,
         }

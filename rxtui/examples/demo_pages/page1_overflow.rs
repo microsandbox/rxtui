@@ -32,9 +32,7 @@ struct OverflowDemoState {
 }
 
 #[derive(Component, Clone)]
-pub struct Page1OverflowDemo {
-    id: Option<ComponentId>,
-}
+pub struct Page1OverflowDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -62,7 +60,7 @@ impl Default for OverflowDemoState {
 
 impl Page1OverflowDemo {
     pub fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     fn get_colors() -> [Color; 12] {

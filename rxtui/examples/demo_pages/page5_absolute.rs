@@ -17,9 +17,7 @@ struct AbsoluteDemoState {
 }
 
 #[derive(Component, Clone)]
-pub struct Page5AbsoluteDemo {
-    id: Option<ComponentId>,
-}
+pub struct Page5AbsoluteDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Methods
@@ -27,7 +25,7 @@ pub struct Page5AbsoluteDemo {
 
 impl Page5AbsoluteDemo {
     pub fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {

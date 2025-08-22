@@ -5,9 +5,7 @@ use rxtui::prelude::*;
 //--------------------------------------------------------------------------------------------------
 
 #[derive(Component, Clone)]
-pub struct Page8TextWrapDemo {
-    id: Option<ComponentId>,
-}
+pub struct Page8TextWrapDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Methods
@@ -15,7 +13,7 @@ pub struct Page8TextWrapDemo {
 
 impl Page8TextWrapDemo {
     pub fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {

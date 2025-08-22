@@ -6,13 +6,11 @@
 use rxtui::prelude::*;
 
 #[derive(Component, Clone)]
-pub struct Page13 {
-    id: Option<ComponentId>,
-}
+pub struct Page13 {}
 
 impl Page13 {
     pub fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 }
 

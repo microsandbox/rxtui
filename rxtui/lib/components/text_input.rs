@@ -1,4 +1,4 @@
-use crate::component::{Action, Component, ComponentId, Message, MessageExt};
+use crate::component::{Action, Component, Message, MessageExt};
 use crate::key::{Key, KeyWithModifiers};
 use crate::node::Node;
 use crate::node::{DivStyles, RichText, Text};
@@ -147,7 +147,6 @@ pub struct TextInputState {
 /// ```
 #[derive(Clone)]
 pub struct TextInput {
-    id: Option<ComponentId>,
     placeholder: Option<String>,
     placeholder_style: Option<TextStyle>,
     content_style: Option<TextStyle>,
@@ -356,7 +355,6 @@ impl TextInput {
     /// Creates a new TextInput component with default styling
     pub fn new() -> Self {
         Self {
-            id: None,
             placeholder: None,
             placeholder_style: Some(Self::default_placeholder_style()),
             content_style: Some(Self::default_content_style()),
@@ -1173,14 +1171,6 @@ impl Component for TextInput {
 
     fn view(&self, ctx: &Context) -> Node {
         TextInput::view(self, ctx)
-    }
-
-    fn get_id(&self) -> Option<ComponentId> {
-        self.id.clone()
-    }
-
-    fn set_id(&mut self, id: ComponentId) {
-        self.id = Some(id);
     }
 
     fn as_any(&self) -> &dyn Any {

@@ -20,9 +20,7 @@ struct ScrollDemoState {
 }
 
 #[derive(Component, Clone)]
-pub struct Page15ScrollableDemo {
-    id: Option<ComponentId>,
-}
+pub struct Page15ScrollableDemo {}
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -43,7 +41,7 @@ impl Default for ScrollDemoState {
 
 impl Page15ScrollableDemo {
     pub fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {

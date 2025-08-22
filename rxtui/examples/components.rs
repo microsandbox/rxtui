@@ -24,7 +24,6 @@ struct ResetSignal;
 
 #[derive(Component, Clone)]
 struct Counter {
-    id: Option<ComponentId>,
     topic_name: String,
     label: String,
     color: Color,
@@ -46,9 +45,7 @@ struct DashboardState {
 }
 
 #[derive(Component, Clone)]
-struct Dashboard {
-    id: Option<ComponentId>,
-}
+struct Dashboard {}
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -69,7 +66,6 @@ impl Default for DashboardState {
 impl Counter {
     fn new(topic: impl Into<String>, label: impl Into<String>, color: Color) -> Self {
         Self {
-            id: None,
             topic_name: topic.into(),
             label: label.into(),
             color,
@@ -146,7 +142,7 @@ impl Counter {
 
 impl Dashboard {
     fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
