@@ -164,10 +164,7 @@ A unique feature for cross-component communication without direct references:
 3. **Handling Topic Messages (Using Macros):**
    ```rust
    // With the new #[update] macro:
-   #[update(
-       msg = MyMsg,
-       topics = ["my-topic" => TopicMsg]
-   )]
+   #[update(msg = MyMsg, topics = ["my-topic" => TopicMsg])]
    fn update(&self, ctx: &Context, messages: Messages) -> Action {
        match messages {
            Messages::MyMsg(msg) => { /* handle regular message */ }
@@ -600,10 +597,7 @@ impl Counter {
     }
 
     // Using the new #[update] macro with dynamic topic support
-    #[update(
-        msg = CounterMsg,
-        topics = [self.topic_name => ResetSignal]
-    )]
+    #[update(msg = CounterMsg, topics = [self.topic_name => ResetSignal])]
     fn update(&self, ctx: &Context, messages: Messages, mut state: CounterState) -> Action {
         match messages {
             Messages::CounterMsg(msg) => {

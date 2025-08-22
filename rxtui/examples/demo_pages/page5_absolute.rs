@@ -24,27 +24,22 @@ pub struct Page5AbsoluteDemo {}
 //--------------------------------------------------------------------------------------------------
 
 impl Page5AbsoluteDemo {
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        if let Some(msg) = msg.downcast::<AbsoluteDemoMsg>() {
-            let mut state = ctx.get_state::<AbsoluteDemoState>();
-
-            match msg {
-                AbsoluteDemoMsg::ToggleModal => {
-                    state.show_modal = !state.show_modal;
-                }
-                AbsoluteDemoMsg::SetSelectedLayer(layer) => {
-                    state.selected_layer = *layer;
-                }
+    #[update]
+    fn update(&self, ctx: &Context, msg: AbsoluteDemoMsg, mut state: AbsoluteDemoState) -> Action {
+        match msg {
+            AbsoluteDemoMsg::ToggleModal => {
+                state.show_modal = !state.show_modal;
             }
-
-            return Action::Update(Box::new(state));
+            AbsoluteDemoMsg::SetSelectedLayer(layer) => {
+                state.selected_layer = layer;
+            }
         }
-        Action::None
+
+        Action::Update(Box::new(state))
     }
 
-    fn view(&self, ctx: &Context) -> Node {
-        let state = ctx.get_state::<AbsoluteDemoState>();
-
+    #[view]
+    fn view(&self, ctx: &Context, state: AbsoluteDemoState) -> Node {
         let selected_text = if state.selected_layer == 0 {
             "None".to_string()
         } else {

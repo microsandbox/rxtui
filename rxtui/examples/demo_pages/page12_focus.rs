@@ -12,11 +12,12 @@ pub struct Page12FocusDemo {}
 //--------------------------------------------------------------------------------------------------
 
 impl Page12FocusDemo {
-    fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        // Page doesn't need to handle any messages now - buttons handle their own
+    #[update]
+    fn update(&self, _ctx: &Context, _msg: ()) -> Action {
         Action::None
     }
 
+    #[view]
     fn view(&self, _ctx: &Context) -> Node {
         node! {
             div(bg: black, dir: vertical, pad: 2, w_pct: 1.0, h: 50) [
@@ -105,23 +106,19 @@ impl FocusButton {
         }
     }
 
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        if let Some(msg) = msg.downcast::<FocusButtonMsg>() {
-            match msg {
-                FocusButtonMsg::Increment => {
-                    let mut state = ctx.get_state::<FocusButtonState>();
-                    state.count += 1;
-                    return Action::Update(Box::new(state));
-                }
-                FocusButtonMsg::Focused => {}
-                FocusButtonMsg::Blurred => {}
+    #[update]
+    fn update(&self, ctx: &Context, msg: FocusButtonMsg, mut state: FocusButtonState) -> Action {
+        match msg {
+            FocusButtonMsg::Increment => {
+                state.count += 1;
+                Action::Update(Box::new(state))
             }
+            FocusButtonMsg::Focused | FocusButtonMsg::Blurred => Action::None,
         }
-        Action::None
     }
 
-    fn view(&self, ctx: &Context) -> Node {
-        let state = ctx.get_state::<FocusButtonState>();
+    #[view]
+    fn view(&self, ctx: &Context, state: FocusButtonState) -> Node {
         let label = self.label.clone();
         let color = self.color;
 

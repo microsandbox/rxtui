@@ -192,13 +192,7 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 /// # With Topics (New Syntax)
 ///
 /// ```ignore
-/// #[update(
-///     msg = AppMsg,
-///     topics = [
-///         "timer" => TimerMsg,              // Static topic
-///         self.topic_name => UpdateMsg      // Dynamic topic
-///     ]
-/// )]
+/// #[update(msg = AppMsg, topics = ["timer" => TimerMsg, self.topic_name => UpdateMsg])]
 /// fn update(&self, ctx: &Context, messages: Messages, mut state: AppState) -> Action {
 ///     match messages {
 ///         Messages::AppMsg(msg) => { /* handle regular message */ }

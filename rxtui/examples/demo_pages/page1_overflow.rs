@@ -76,48 +76,45 @@ impl Page1OverflowDemo {
         ]
     }
 
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
-        if let Some(msg) = msg.downcast::<OverflowDemoMsg>() {
-            let mut state = ctx.get_state::<OverflowDemoState>();
-            let colors_len = Self::get_colors().len();
+    #[update]
+    fn update(&self, ctx: &Context, msg: OverflowDemoMsg, mut state: OverflowDemoState) -> Action {
+        let colors_len = Self::get_colors().len();
 
-            match msg {
-                OverflowDemoMsg::SetParent1Color(idx) => {
-                    state.parent1_color_idx = *idx % colors_len;
-                }
-                OverflowDemoMsg::SetChild1Color(idx) => {
-                    state.child1_color_idx = *idx % colors_len;
-                }
-                OverflowDemoMsg::SetParent2Color(idx) => {
-                    state.parent2_color_idx = *idx % colors_len;
-                }
-                OverflowDemoMsg::SetChild2Color(idx) => {
-                    state.child2_color_idx = *idx % colors_len;
-                }
-                OverflowDemoMsg::SetParent3Color(idx) => {
-                    state.parent3_color_idx = *idx % colors_len;
-                }
-                OverflowDemoMsg::SetChild3Color(idx) => {
-                    state.child3_color_idx = *idx % colors_len;
-                }
-                OverflowDemoMsg::SetLevel1Color(idx) => {
-                    state.level1_color_idx = *idx % colors_len;
-                }
-                OverflowDemoMsg::SetLevel2Color(idx) => {
-                    state.level2_color_idx = *idx % colors_len;
-                }
-                OverflowDemoMsg::SetLevel3Color(idx) => {
-                    state.level3_color_idx = *idx % colors_len;
-                }
+        match msg {
+            OverflowDemoMsg::SetParent1Color(idx) => {
+                state.parent1_color_idx = idx % colors_len;
             }
-
-            return Action::Update(Box::new(state));
+            OverflowDemoMsg::SetChild1Color(idx) => {
+                state.child1_color_idx = idx % colors_len;
+            }
+            OverflowDemoMsg::SetParent2Color(idx) => {
+                state.parent2_color_idx = idx % colors_len;
+            }
+            OverflowDemoMsg::SetChild2Color(idx) => {
+                state.child2_color_idx = idx % colors_len;
+            }
+            OverflowDemoMsg::SetParent3Color(idx) => {
+                state.parent3_color_idx = idx % colors_len;
+            }
+            OverflowDemoMsg::SetChild3Color(idx) => {
+                state.child3_color_idx = idx % colors_len;
+            }
+            OverflowDemoMsg::SetLevel1Color(idx) => {
+                state.level1_color_idx = idx % colors_len;
+            }
+            OverflowDemoMsg::SetLevel2Color(idx) => {
+                state.level2_color_idx = idx % colors_len;
+            }
+            OverflowDemoMsg::SetLevel3Color(idx) => {
+                state.level3_color_idx = idx % colors_len;
+            }
         }
-        Action::None
+
+        Action::Update(Box::new(state))
     }
 
-    fn view(&self, ctx: &Context) -> Node {
-        let state = ctx.get_state::<OverflowDemoState>();
+    #[view]
+    fn view(&self, ctx: &Context, state: OverflowDemoState) -> Node {
         let colors = Self::get_colors();
         let colors_len = colors.len();
 

@@ -309,10 +309,7 @@ impl Receiver {
         }
     }
 
-    #[update(
-        msg = ReceiverMsg,
-        topics = [self.topic_name => NotificationMsg]
-    )]
+    #[update(msg = ReceiverMsg, topics = [self.topic_name => NotificationMsg])]
     fn update(&self, ctx: &Context, messages: Messages, mut state: ReceiverState) -> Action {
         match messages {
             Messages::ReceiverMsg(msg) => {
