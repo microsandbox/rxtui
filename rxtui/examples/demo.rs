@@ -38,44 +38,33 @@ impl Default for DemoState {
 //--------------------------------------------------------------------------------------------------
 
 impl Demo {
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
-        if let Some(topic) = topic
-            && topic != "navigation"
-        {
-            return Action::None;
-        }
-
-        if let Some(msg) = msg.downcast::<DemoMessage>() {
-            let mut state = ctx.get_state::<DemoState>();
-
-            match msg {
-                DemoMessage::SetPage(page) => {
-                    state.current_page = *page;
-                }
-                DemoMessage::NextPage => {
-                    state.current_page = (state.current_page % 15) + 1;
-                }
-                DemoMessage::PrevPage => {
-                    state.current_page = if state.current_page == 1 {
-                        15
-                    } else {
-                        state.current_page - 1
-                    };
-                }
-                DemoMessage::Exit => {
-                    return Action::Exit;
-                }
+    // Since demo only handles navigation topic messages, we'll simplify this
+    #[update]
+    fn update(&self, ctx: &Context, msg: DemoMessage, mut state: DemoState) -> Action {
+        match msg {
+            DemoMessage::SetPage(page) => {
+                state.current_page = page;
             }
-
-            return Action::Update(Box::new(state));
+            DemoMessage::NextPage => {
+                state.current_page = (state.current_page % 15) + 1;
+            }
+            DemoMessage::PrevPage => {
+                state.current_page = if state.current_page == 1 {
+                    15
+                } else {
+                    state.current_page - 1
+                };
+            }
+            DemoMessage::Exit => {
+                return Action::Exit;
+            }
         }
 
-        Action::None
+        Action::Update(Box::new(state))
     }
 
-    fn view(&self, ctx: &Context) -> Node {
-        let state = ctx.get_state::<DemoState>();
-
+    #[view]
+    fn view(&self, ctx: &Context, state: DemoState) -> Node {
         let page_content = match state.current_page {
             1 => node! { node(page1_overflow::Page1OverflowDemo::default()) },
             2 => node! { node(page2_direction::Page2DirectionDemo::default()) },
@@ -153,10 +142,12 @@ impl TabBar {
         Self { current_page }
     }
 
-    fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
+    #[update]
+    fn update(&self, _ctx: &Context, _msg: ()) -> Action {
         Action::None
     }
 
+    #[view]
     fn view(&self, _ctx: &Context) -> Node {
         node! {
             div(bg: blue, dir: horizontal, h: 3, w_pct: 1.0) [
@@ -200,10 +191,12 @@ impl Tab {
         }
     }
 
-    fn update(&self, _ctx: &Context, _msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
+    #[update]
+    fn update(&self, _ctx: &Context, _msg: ()) -> Action {
         Action::None
     }
 
+    #[view]
     fn view(&self, ctx: &Context) -> Node {
         let is_current = self.current_page == self.page_num;
         let bg_color = if is_current { Color::Cyan } else { Color::Blue };

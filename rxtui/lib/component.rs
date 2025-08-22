@@ -94,6 +94,64 @@ where
 }
 
 /// Main component trait for building UI components
+///
+/// Components can be created easily using the `#[derive(Component)]` macro.
+/// The `update` and `view` methods can be simplified using the `#[update]` and `#[view]`
+/// attribute macros which automatically handle message downcasting and state fetching.
+///
+/// # Example
+///
+/// ```ignore
+/// use rxtui::prelude::*;
+///
+/// #[derive(Component, Clone, Default)]
+/// struct Counter {}
+///
+/// impl Counter {
+///     // Using the #[update] macro - handles downcasting and state automatically
+///     #[update]
+///     fn update(&self, ctx: &Context, msg: CounterMsg, mut state: CounterState) -> Action {
+///         match msg {
+///             CounterMsg::Increment => {
+///                 state.count += 1;
+///                 Action::Update(Box::new(state))
+///             }
+///             CounterMsg::Decrement => {
+///                 state.count -= 1;
+///                 Action::Update(Box::new(state))
+///             }
+///         }
+///     }
+///
+///     // Using the #[view] macro - automatically fetches state
+///     #[view]
+///     fn view(&self, ctx: &Context, state: CounterState) -> Node {
+///         node! {
+///             div [
+///                 text(format!("Count: {}", state.count))
+///             ]
+///         }
+///     }
+/// }
+/// ```
+///
+/// # Manual Implementation
+///
+/// The trait can also be implemented manually for more control:
+///
+/// ```ignore
+/// fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
+///     if let Some(msg) = msg.downcast::<MyMsg>() {
+///         // Handle message
+///     }
+///     Action::None
+/// }
+///
+/// fn view(&self, ctx: &Context) -> Node {
+///     let state = ctx.get_state::<MyState>();
+///     // Build UI
+/// }
+/// ```
 pub trait Component: 'static {
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action;
 
