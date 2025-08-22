@@ -102,7 +102,7 @@ impl Counter {
     fn view(&self, ctx: &Context) -> Node {
         let state = ctx.get_state::<CounterState>();
 
-        tui! {
+        node! {
             div(
                 bg: black,
                 border: white,
@@ -172,7 +172,7 @@ impl Dashboard {
     fn view(&self, ctx: &Context) -> Node {
         let state = ctx.get_state::<DashboardState>();
 
-        tui! {
+        node! {
             div(bg: black, pad: 2, dir: vertical) [
                 div(bg: blue, pad: 1, w_pct: 1.0) [
                     text(&state.title, color: bright_white)

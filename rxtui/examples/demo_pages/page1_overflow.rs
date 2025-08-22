@@ -137,7 +137,7 @@ impl Page1OverflowDemo {
         let level2_color = colors[state.level2_color_idx];
         let level3_color = colors[state.level3_color_idx];
 
-        tui! {
+        node! {
             div(bg: black, dir: vertical, pad: 2, w_pct: 1.0, h: 60) [
                 // Title
                 text("Page 1: Overflow Behavior", color: bright_white),

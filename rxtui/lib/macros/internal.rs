@@ -1,4 +1,4 @@
-//! Internal macros used by the tui! macro
+//! Internal macros used by the node! macro
 //! These are not part of the public API
 
 /// Converts color values to the Color type

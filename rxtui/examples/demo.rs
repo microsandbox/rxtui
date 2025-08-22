@@ -83,26 +83,26 @@ impl Demo {
         let state = ctx.get_state::<DemoState>();
 
         let page_content = match state.current_page {
-            1 => tui! { node(page1_overflow::Page1OverflowDemo::new()) },
-            2 => tui! { node(page2_direction::Page2DirectionDemo::new()) },
-            3 => tui! { node(page3_percentages::Page3PercentagesDemo::new()) },
-            4 => tui! { node(page4_borders::Page4BordersDemo::new()) },
-            5 => tui! { node(page5_absolute::Page5AbsoluteDemo::new()) },
-            6 => tui! { node(page6_text_styles::Page6TextStylesDemo::new()) },
-            7 => tui! { node(page7_auto_sizing::Page7AutoSizingDemo::new()) },
-            8 => tui! { node(page8_text_wrap::Page8TextWrapDemo::new()) },
-            9 => tui! { node(page9_element_wrap::Page9ElementWrapDemo::new()) },
-            10 => tui! { node(page10_unicode::Page10UnicodeDemo::new()) },
-            11 => tui! { node(page11_content_sizing::Page11ContentSizingDemo::new()) },
-            12 => tui! { node(page12_focus::Page12FocusDemo::new()) },
-            13 => tui! { node(page13_rich_text::Page13::new()) },
-            14 => tui! { node(page14_text_input::Page14TextInputDemo::new()) },
-            15 => tui! { node(page15_scrollable::Page15ScrollableDemo::new()) },
-            _ => tui! { node(page1_overflow::Page1OverflowDemo::new()) },
+            1 => node! { node(page1_overflow::Page1OverflowDemo::new()) },
+            2 => node! { node(page2_direction::Page2DirectionDemo::new()) },
+            3 => node! { node(page3_percentages::Page3PercentagesDemo::new()) },
+            4 => node! { node(page4_borders::Page4BordersDemo::new()) },
+            5 => node! { node(page5_absolute::Page5AbsoluteDemo::new()) },
+            6 => node! { node(page6_text_styles::Page6TextStylesDemo::new()) },
+            7 => node! { node(page7_auto_sizing::Page7AutoSizingDemo::new()) },
+            8 => node! { node(page8_text_wrap::Page8TextWrapDemo::new()) },
+            9 => node! { node(page9_element_wrap::Page9ElementWrapDemo::new()) },
+            10 => node! { node(page10_unicode::Page10UnicodeDemo::new()) },
+            11 => node! { node(page11_content_sizing::Page11ContentSizingDemo::new()) },
+            12 => node! { node(page12_focus::Page12FocusDemo::new()) },
+            13 => node! { node(page13_rich_text::Page13::new()) },
+            14 => node! { node(page14_text_input::Page14TextInputDemo::new()) },
+            15 => node! { node(page15_scrollable::Page15ScrollableDemo::new()) },
+            _ => node! { node(page1_overflow::Page1OverflowDemo::new()) },
         };
 
-        // Since tui! macro doesn't support variables as children, I need to create this manually
-        let header = tui! {
+        // Since node! macro doesn't support variables as children, I need to create this manually
+        let header = node! {
             div(bg: bright_black, dir: horizontal, pad: 1, w_pct: 1.0, h: 3) [
                 text("Radical TUI Demo", color: bright_cyan),
                 div(w: 10) [],
@@ -110,7 +110,7 @@ impl Demo {
             ]
         };
 
-        let tab_bar = tui! { node(TabBar::new(state.current_page)) };
+        let tab_bar = node! { node(TabBar::new(state.current_page)) };
 
         // Combine using builder pattern
         let container = Div::new()
@@ -168,7 +168,7 @@ impl TabBar {
     }
 
     fn view(&self, _ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(bg: blue, dir: horizontal, h: 3, w_pct: 1.0) [
                 node(Tab::new(1, "[1] Overflow", self.current_page)),
                 node(Tab::new(2, "[2] Direction", self.current_page)),
@@ -227,7 +227,7 @@ impl Tab {
         let label = self.label.clone();
         let page_num = self.page_num;
 
-        tui! {
+        node! {
             div(bg: (bg_color), pad: 1, h: 3, w_auto) [
                 text(label, color: (text_color)),
                 @click: ctx.topic_handler("navigation", DemoMessage::SetPage(page_num))

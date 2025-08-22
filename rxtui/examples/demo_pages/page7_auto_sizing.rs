@@ -23,7 +23,7 @@ impl Page7AutoSizingDemo {
     }
 
     fn view(&self, _ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(bg: black, dir: vertical, pad: 2, w_pct: 1.0, h: 60) [
                 // Title
                 text("Page 7: Auto Sizing", color: bright_white),

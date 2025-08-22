@@ -1,11 +1,11 @@
 //! Macro-based DSL for building TUI components
 //!
-//! This module provides the `tui!` macro for composing rxtui components
+//! This module provides the `node!` macro for composing rxtui components
 //! with an ergonomic, declarative syntax.
 //!
 //! # Overview
 //!
-//! The `tui!` macro reduces boilerplate by 50-70% compared to the builder pattern
+//! The `node!` macro reduces boilerplate by 50-70% compared to the builder pattern
 //! while maintaining type safety and readability.
 //!
 //! # Syntax
@@ -23,7 +23,7 @@
 //! use rxtui::prelude::*;
 //!
 //! fn view(&self, ctx: &Context) -> Node {
-//!     tui! {
+//!     node! {
 //!         container(bg: black, pad: 2) [
 //!             text("Hello World", color: white, bold),
 //!             spacer(1),

@@ -23,7 +23,7 @@ impl Page6TextStylesDemo {
     }
 
     fn view(&self, _ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(bg: black, dir: vertical, pad: 2, w_pct: 1.0, h: 50) [
                 // Title
                 text("Page 6: Text Styling Demo", color: bright_white, bold),

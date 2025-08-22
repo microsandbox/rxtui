@@ -23,7 +23,7 @@ impl Page9ElementWrapDemo {
     }
 
     fn view(&self, _ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(bg: black, dir: vertical, pad: 2, w_pct: 1.0, h_pct: 1.0) [
                 // Title
                 text("Page 9: Element Wrapping Demo", color: cyan, bold, underline),

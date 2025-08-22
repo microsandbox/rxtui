@@ -1,4 +1,4 @@
-//! Tests for the tui! macro DSL
+//! Tests for the node! macro DSL
 
 use rxtui::prelude::*;
 
@@ -8,7 +8,7 @@ use rxtui::prelude::*;
 
 #[test]
 fn test_empty_div() {
-    let node = tui! {
+    let node = node! {
         div []
     };
 
@@ -20,7 +20,7 @@ fn test_empty_div() {
 
 #[test]
 fn test_div_with_basic_props() {
-    let node = tui! {
+    let node = node! {
         div(bg: black, pad: 2, w: 50, h: 20) []
     };
 
@@ -32,7 +32,7 @@ fn test_div_with_basic_props() {
 
 #[test]
 fn test_div_with_hex_color() {
-    let node = tui! {
+    let node = node! {
         div(bg: "#FF5733", border: "#00FF00") []
     };
 
@@ -44,7 +44,7 @@ fn test_div_with_hex_color() {
 
 #[test]
 fn test_div_with_percentage_dimensions() {
-    let node = tui! {
+    let node = node! {
         div(w_pct: 0.5, h_pct: 0.8) []
     };
 
@@ -56,7 +56,7 @@ fn test_div_with_percentage_dimensions() {
 
 #[test]
 fn test_container_with_auto_dimensions() {
-    let node = tui! {
+    let node = node! {
         div(w_auto, h_content) []
     };
 
@@ -72,7 +72,7 @@ fn test_container_with_auto_dimensions() {
 
 #[test]
 fn test_simple_text() {
-    let node = tui! {
+    let node = node! {
         div [
             text("Hello World")
         ]
@@ -88,7 +88,7 @@ fn test_simple_text() {
 
 #[test]
 fn test_text_with_color() {
-    let node = tui! {
+    let node = node! {
         div [
             text("Colored text", color: red)
         ]
@@ -104,7 +104,7 @@ fn test_text_with_color() {
 
 #[test]
 fn test_text_with_multiple_styles() {
-    let node = tui! {
+    let node = node! {
         div [
             text("Styled text", color: yellow, bg: blue, bold, underline)
         ]
@@ -120,7 +120,7 @@ fn test_text_with_multiple_styles() {
 
 #[test]
 fn test_text_with_bright_colors() {
-    let node = tui! {
+    let node = node! {
         div [
             text("Bright colors", color: bright_yellow, bg: bright_blue)
         ]
@@ -136,7 +136,7 @@ fn test_text_with_bright_colors() {
 
 #[test]
 fn test_text_with_wrap() {
-    let node = tui! {
+    let node = node! {
         div [
             text("Long text that should wrap", wrap: word)
         ]
@@ -156,7 +156,7 @@ fn test_text_with_wrap() {
 
 #[test]
 fn test_vbox_layout() {
-    let node = tui! {
+    let node = node! {
         vstack [
             text("Line 1"),
             text("Line 2"),
@@ -178,7 +178,7 @@ fn test_vbox_layout() {
 
 #[test]
 fn test_hbox_layout() {
-    let node = tui! {
+    let node = node! {
         hstack(gap: 2) [
             text("Left"),
             text("Center"),
@@ -199,7 +199,7 @@ fn test_hbox_layout() {
 
 #[test]
 fn test_nested_layouts() {
-    let node = tui! {
+    let node = node! {
         vstack [
             text("Header"),
             hstack [
@@ -228,7 +228,7 @@ fn test_nested_layouts() {
 
 #[test]
 fn test_spacer() {
-    let node = tui! {
+    let node = node! {
         div [
             text("Above"),
             spacer(2),
@@ -251,7 +251,7 @@ fn test_spacer() {
 #[test]
 fn test_dynamic_text() {
     let count = 42;
-    let node = tui! {
+    let node = node! {
         div [
             text(format!("Count: {}", count), bold)
         ]
@@ -268,7 +268,7 @@ fn test_dynamic_text() {
 #[test]
 fn test_conditional_color() {
     let is_error = true;
-    let node = tui! {
+    let node = node! {
         div(bg: (if is_error { Color::Red } else { Color::Green })) [
             text("Status")
         ]
@@ -288,7 +288,7 @@ fn test_conditional_color() {
 #[test]
 fn test_conditional_text() {
     let logged_in = false;
-    let node = tui! {
+    let node = node! {
         div [
             text(
                 if logged_in { "Welcome!" } else { "Please login" },
@@ -311,7 +311,7 @@ fn test_conditional_text() {
 
 #[test]
 fn test_absolute_positioning() {
-    let node = tui! {
+    let node = node! {
         div(pos: absolute, top: 5, left: 10, z: 100) []
     };
 
@@ -329,7 +329,7 @@ fn test_absolute_positioning() {
 
 #[test]
 fn test_absolute_shorthand() {
-    let node = tui! {
+    let node = node! {
         div(absolute, top: 0, right: 0) []
     };
 
@@ -350,7 +350,7 @@ fn test_absolute_shorthand() {
 
 #[test]
 fn test_deeply_nested_structure() {
-    let node = tui! {
+    let node = node! {
         div(bg: black, pad: 2) [
             text("Title", color: yellow, bold),
             spacer(1),
@@ -390,11 +390,11 @@ fn test_deeply_nested_structure() {
 
 #[test]
 fn test_direction_shortcuts() {
-    let node1 = tui! {
+    let node1 = node! {
         div(dir: v) []
     };
 
-    let node2 = tui! {
+    let node2 = node! {
         div(dir: h) []
     };
 
@@ -415,7 +415,7 @@ fn test_direction_shortcuts() {
 
 #[test]
 fn test_all_color_names() {
-    let node = tui! {
+    let node = node! {
         vstack [
             text("Black", color: black),
             text("Red", color: red),
@@ -438,7 +438,7 @@ fn test_all_color_names() {
 
 #[test]
 fn test_wrap_and_overflow_modes() {
-    let node = tui! {
+    let node = node! {
         div(wrap: wrap, overflow: hidden) [
             text("Content", wrap: word)
         ]
@@ -460,7 +460,7 @@ fn test_wrap_and_overflow_modes() {
 
 #[test]
 fn test_focusable_div() {
-    let node = tui! {
+    let node = node! {
         div(focusable) []
     };
 
@@ -475,7 +475,7 @@ fn test_focusable_div() {
 #[test]
 fn test_focusable_with_value() {
     let should_focus = false;
-    let node = tui! {
+    let node = node! {
         div(focusable: should_focus) []
     };
 
@@ -493,7 +493,7 @@ fn test_focusable_with_value() {
 
 #[test]
 fn test_empty_text() {
-    let node = tui! {
+    let node = node! {
         div [
             text("")
         ]
@@ -509,7 +509,7 @@ fn test_empty_text() {
 
 #[test]
 fn test_multiple_children_with_trailing_comma() {
-    let node = tui! {
+    let node = node! {
         div [
             text("First"),
             text("Second"),
@@ -530,7 +530,7 @@ fn test_expression_in_dimensions() {
     let window_width = 100;
     let window_height = 50;
 
-    let node = tui! {
+    let node = node! {
         div(
             w: (window_width / 2),
             h: (window_height - 10)

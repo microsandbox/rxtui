@@ -1,6 +1,6 @@
-//! Implementation of the tui! macro
+//! Implementation of the node! macro
 //!
-//! This file contains the main tui! macro and its internal parsing/building helpers.
+//! This file contains the main node! macro and its internal parsing/building helpers.
 //! The macro provides a declarative syntax for building TUI components.
 
 /// Main macro for building TUI components with a declarative syntax
@@ -19,7 +19,7 @@
 /// ```ignore
 /// use rxtui::prelude::*;
 ///
-/// tui! {
+/// node! {
 ///     div(bg: black, pad: 2) [
 ///         text("Hello World", color: white, bold),
 ///         text("Welcome to Radical TUI", color: cyan)
@@ -29,7 +29,7 @@
 ///
 /// ## Layout with HStack and VStack
 /// ```ignore
-/// tui! {
+/// node! {
 ///     div(bg: "#1a1a1a", pad: 2) [
 ///         // Vertical layout by default
 ///         text("Header", color: yellow, bold),
@@ -59,7 +59,7 @@
 ///
 /// ## Styling Properties
 /// ```ignore
-/// tui! {
+/// node! {
 ///     div(
 ///         // Colors
 ///         bg: black,              // Named color
@@ -110,7 +110,7 @@
 ///
 /// ## Text Styling
 /// ```ignore
-/// tui! {
+/// node! {
 ///     div [
 ///         // Basic text styles
 ///         text("Bold text", bold),
@@ -135,7 +135,7 @@
 ///
 /// ## Text Input Fields
 /// ```ignore
-/// tui! {
+/// node! {
 ///     div [
 ///         // Basic input with placeholder
 ///         input(placeholder: "Enter your name...", focusable),
@@ -164,7 +164,7 @@
 ///
 /// ## Rich Text (Inline Styled Text)
 /// ```ignore
-/// tui! {
+/// node! {
 ///     div [
 ///         // Basic richtext with multiple styled segments
 ///         richtext [
@@ -227,7 +227,7 @@
 ///
 /// ## Event Handlers
 /// ```ignore
-/// tui! {
+/// node! {
 ///     div(bg: black) [
 ///         // Click handler
 ///         container(bg: blue, focusable) [
@@ -259,7 +259,7 @@
 ///
 /// ## Dynamic Content
 /// ```ignore
-/// tui! {
+/// node! {
 ///     div(bg: black) [
 ///         // Conditional text
 ///         text(
@@ -295,7 +295,7 @@
 /// These properties are only applied when the value is `Some`:
 ///
 /// ```ignore
-/// tui! {
+/// node! {
 ///     div(
 ///         // Optional properties - only applied if Some
 ///         bg: (state.optional_background)!,      // Option<Color>
@@ -326,7 +326,7 @@
 ///
 /// ## Nested Components
 /// ```ignore
-/// tui! {
+/// node! {
 ///     div(bg: black, dir: vertical) [
 ///         // Include other components
 ///         node(Header::new("My App")),
@@ -396,7 +396,7 @@
 /// 4. **Colors without prefix** - No need for `Color::` prefix on named colors
 /// 5. **Expressions need parens** - Complex expressions should be wrapped in parentheses
 #[macro_export]
-macro_rules! tui {
+macro_rules! node {
     // Parse the root element
     ($($tt:tt)*) => {{
         $crate::tui_parse_element!($($tt)*)

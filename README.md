@@ -82,7 +82,7 @@ impl Counter {
     fn view(&self, ctx: &Context) -> Node {
         let state = ctx.get_state::<CounterState>();
 
-        tui! {
+        node! {
             div(bg: blue, pad: 2) [
                 text(format!("Count: {}", state.count), color: white, bold),
                 spacer(1),
@@ -189,14 +189,14 @@ The beauty of this pattern is that each component is independent. You can develo
 
 RxTUI provides two different APIs for building UIs, each suited to different use cases. Understanding when to use each one is key to productive development.
 
-### 1. The tui! Macro (Declarative)
+### 1. The node! Macro (Declarative)
 
 Best for: **Most UI code, especially view methods**
 
-The `tui!` macro provides a JSX-like syntax that's concise and readable:
+The `node!` macro provides a JSX-like syntax that's concise and readable:
 
 ```rust
-tui! {
+node! {
     div(bg: blue, pad: 2) [
         text("Hello", color: white),
         div(border: white) [
@@ -253,10 +253,10 @@ for (i, item) in items.iter().enumerate() {
 
 Here's a simple decision tree:
 
-1. **Writing a view method?** → Use `tui!` macro
+1. **Writing a view method?** → Use `node!` macro
 2. **Building UI from dynamic data?** → Use Builder API
 3. **Creating a reusable component library?** → Use Builder API
-4. **Prototyping quickly?** → Use `tui!` macro
+4. **Prototyping quickly?** → Use `node!` macro
 
 ## Component Communication
 
@@ -269,7 +269,7 @@ Components send messages to themselves through event handlers:
 ```rust
 impl MyComponent {
     fn view(&self, ctx: &Context) -> Node {
-        tui! {
+        node! {
             div [
                 text("Click me"),
                 @click: ctx.handler(MyMsg::Clicked)  // Sends to this component
@@ -360,7 +360,7 @@ impl Reader {
         // Read shared state from topic
         let shared = ctx.read_topic::<SharedDashboardState>("shared.dashboard");
 
-        tui! {
+        node! {
             div [
                 text(format!("Shared value: {:?}", shared))
             ]
@@ -378,7 +378,7 @@ impl Parent {
     fn view(&self, ctx: &Context) -> Node {
         let state = ctx.get_state::<ParentState>();
 
-        tui! {
+        node! {
             div [
                 // Pass data to child via constructor
                 node(ChildComponent::new(state.child_config.clone())),
@@ -534,7 +534,7 @@ Build complex interfaces from simple, focused components:
 ```rust
 impl App {
     fn view(&self, ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(dir: vertical) [
                 node(Header::new(&self.title)),
 
@@ -557,7 +557,7 @@ Each component handles its own concerns, making the overall structure clear and 
 For inline styling, use RichText:
 
 ```rust
-tui! {
+node! {
     richtext [
         text("Error: ", color: red, bold),
         text("File "),
@@ -587,7 +587,7 @@ struct FormState {
 
 impl Form {
     fn view(&self, ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(pad: 2) [
                 text("Username:"),
                 input(placeholder: "Enter username", focusable),
