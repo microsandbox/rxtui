@@ -78,7 +78,7 @@ impl ColorDemo {
     fn view(&self, ctx: &Context) -> Node {
         let state = ctx.get_state::<ColorDemoState>();
 
-        tui! {
+        node! {
             div(bg: black, dir: vertical, pad: 1) [
                 // Title bar
                 hstack(bg: "#333333", pad: 1, w: 80, h: 3) [

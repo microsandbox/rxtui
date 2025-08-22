@@ -23,7 +23,7 @@ impl Page14TextInputDemo {
     }
 
     fn view(&self, _ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(bg: black, dir: vertical, pad: 2, w_pct: 1.0, h: 50) [
                 // Title
                 text("Page 14: TextInput Components", color: bright_white, bold),

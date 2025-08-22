@@ -57,7 +57,7 @@ impl Page5AbsoluteDemo {
             format!("Layer {}", state.selected_layer)
         };
 
-        let main_content = tui! {
+        let main_content = node! {
             div(bg: black, dir: vertical, pad: 1, w_pct: 1.0, h: 60) [
                 // Title and instructions
                 text("Page 5: Absolute Positioning & Z-Index Demo", color: bright_white),
@@ -181,7 +181,7 @@ impl Page5AbsoluteDemo {
 
         // Add modal if visible
         if state.show_modal {
-            let modal = tui! {
+            let modal = node! {
                 div(
                     pos: fixed,
                     top: 8,

@@ -22,7 +22,7 @@ impl Page13 {
     }
 
     fn view(&self, _ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(bg: black, dir: vertical, pad: 1, w_pct: 1.0) [
                 // Title
                 text("Page 13: RichText Demo", color: bright_white),

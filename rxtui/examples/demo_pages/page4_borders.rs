@@ -23,7 +23,7 @@ impl Page4BordersDemo {
     }
 
     fn view(&self, _ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(bg: black, dir: vertical, pad: 1, w_pct: 1.0, h: 60) [
                 // Title
                 text("Page 4: Borders Demo", color: bright_white),

@@ -23,7 +23,7 @@ impl Page8TextWrapDemo {
     }
 
     fn view(&self, _ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(bg: black, dir: vertical, pad: 2, w_pct: 1.0, h: 60) [
                 // Title
                 text("Page 8: Text Wrapping Examples", color: bright_white),

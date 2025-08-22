@@ -74,7 +74,7 @@ impl Page15ScrollableDemo {
     }
 
     fn view(&self, _ctx: &Context) -> Node {
-        tui! {
+        node! {
             div(bg: black, dir: vertical, pad: 2, w_pct: 1.0, h: 60) [
                 // Title
                 text("Page 15: Scrollable Content - Use arrow keys or mouse wheel to scroll", color: bright_white),

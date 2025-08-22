@@ -37,4 +37,4 @@ pub use crate::key::Key;
 pub use crate::bounds::Rect;
 
 // Main macro for building TUI components
-pub use crate::tui;
+pub use crate::node;
