@@ -100,7 +100,7 @@ pub struct TextInputState {
 /// # Basic Example
 ///
 /// ```ignore
-/// use termtui::prelude::*;
+/// use rxtui::prelude::*;
 ///
 /// // Uses default cyan border and 30x3 size
 /// let input = TextInput::new()
@@ -110,7 +110,7 @@ pub struct TextInputState {
 /// # Customization Example
 ///
 /// ```ignore
-/// use termtui::prelude::*;
+/// use rxtui::prelude::*;
 ///
 /// // Override specific properties while keeping other defaults
 /// let input = TextInput::new()
@@ -124,7 +124,7 @@ pub struct TextInputState {
 /// # Placeholder Styling Example
 ///
 /// ```ignore
-/// use termtui::prelude::*;
+/// use rxtui::prelude::*;
 ///
 /// // Customize placeholder text appearance
 /// let input = TextInput::new()
@@ -137,7 +137,7 @@ pub struct TextInputState {
 /// # Content Styling Example
 ///
 /// ```ignore
-/// use termtui::prelude::*;
+/// use rxtui::prelude::*;
 ///
 /// // Customize the typed content appearance
 /// let input = TextInput::new()

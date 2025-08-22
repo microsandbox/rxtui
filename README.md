@@ -53,13 +53,11 @@ struct CounterState {
 
 // 3. Create your component
 #[derive(Component, Clone)]
-struct Counter {
-    id: Option<ComponentId>,
-}
+struct Counter {}
 
 impl Counter {
     fn new() -> Self {
-        Self { id: None }
+        Self {}
     }
 
     // Handle messages and update state
@@ -178,9 +176,7 @@ struct Task {
 
 // Finally, create your component
 #[derive(Component, Clone)]
-struct TodoList {
-    id: Option<ComponentId>,
-}
+struct TodoList {}
 ```
 
 The beauty of this pattern is that each component is independent. You can develop, test, and reason about them in isolation, then compose them into larger applications.
