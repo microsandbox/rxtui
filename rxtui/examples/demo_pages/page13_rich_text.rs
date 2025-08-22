@@ -39,7 +39,6 @@ impl Page13 {
                         text("blue", color: blue),
                         text(" text!"),
                     ],
-                    spacer(1),
 
                     // Example 2: Text formatting
                     text("2. Text Formatting:", color: yellow, bold),
@@ -51,7 +50,6 @@ impl Page13 {
                         text(", and "),
                         text("underlined text", underline),
                     ],
-                    spacer(1),
 
                     // Example 3: Combined styles
                     text("3. Combined Styles:", color: yellow, bold),
@@ -61,7 +59,6 @@ impl Page13 {
                         text(" and "),
                         text("italic blue on yellow", color: blue, bg: yellow, italic),
                     ],
-                    spacer(1),
 
                     // Example 4: Status indicators
                     text("4. Status Indicators:", color: yellow, bold),
@@ -76,7 +73,6 @@ impl Page13 {
                             text(" ERROR ", color: white, bg: red, bold),
                         ]
                     ],
-                    spacer(1),
 
                     // Example 5: Text wrapping modes
                     text("5. Text Wrapping Modes:", color: yellow, bold),
@@ -124,7 +120,6 @@ impl Page13 {
                             ]
                         ]
                     ],
-                    spacer(3),
 
                     // Example 6: Code syntax highlighting
                     text("6. Code Syntax Highlighting:", color: yellow, bold),
@@ -170,7 +165,6 @@ impl Page13 {
                             text("}"),
                         ]
                     ],
-                    spacer(1),
 
                     // Example 7: Progress bar
                     text("7. Progress Bar:", color: yellow, bold),
@@ -184,7 +178,6 @@ impl Page13 {
                         ],
                         text("60%", color: cyan)
                     ],
-                    spacer(1),
 
                     // Example 8: Top-level styling
                     text("8. Top-Level Styling:", color: yellow, bold),
@@ -201,7 +194,6 @@ impl Page13 {
                             text(" property!"),
                         ]
                     ],
-                    spacer(1),
 
                     // Example 9: Inline vs Block comparison
                     text("9. Inline vs Block Text:", color: yellow, bold),
@@ -219,7 +211,6 @@ impl Page13 {
                             text("line."),
                         ]
                     ],
-                    spacer(1),
 
                     // Example 10: Dynamic content
                     text("10. Dynamic Content Example:", color: yellow, bold),
@@ -235,9 +226,6 @@ impl Page13 {
                             text("12d 3h", color: white),
                         ]
                     ],
-
-                    // Add some padding at the bottom
-                    spacer(2)
                 ]
             ]
         }
