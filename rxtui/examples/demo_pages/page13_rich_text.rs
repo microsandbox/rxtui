@@ -27,7 +27,7 @@ impl Page13 {
                 spacer(1),
 
                 // Scrollable content area
-                div(dir: vertical, overflow: hidden, gap: 1) [
+                div(dir: vertical, gap: 1) [
                     // Example 1: Basic colored text
                     text("1. Basic Colored Text:", color: yellow, bold),
                     richtext [
