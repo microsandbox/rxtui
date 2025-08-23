@@ -144,19 +144,25 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
                 self
             }
 
-            // Forward to the user's implementations
+            // Use method resolution to call inherent __component_update_impl if it exists,
+            // otherwise fall back to the trait's default implementation (Action::None)
             fn update(&self, ctx: &rxtui::Context, msg: Box<dyn rxtui::Message>, topic: Option<&str>) -> rxtui::Action {
-                <#name>::update(self, ctx, msg, topic)
+                use rxtui::providers::UpdateProvider;
+                self.__component_update_impl(ctx, msg, topic)
             }
 
+            // Use method resolution to call inherent __component_view_impl if it exists,
+            // otherwise fall back to the trait's default implementation (empty Node)
             fn view(&self, ctx: &rxtui::Context) -> rxtui::Node {
-                <#name>::view(self, ctx)
+                use rxtui::providers::ViewProvider;
+                self.__component_view_impl(ctx)
             }
 
             // Use method resolution to call inherent __component_effects_impl if it exists,
             // otherwise fall back to the trait's default implementation (empty vec)
+            #[cfg(feature = "effects")]
             fn effects(&self, ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
-                use rxtui::effect::EffectsProvider;
+                use rxtui::providers::EffectsProvider;
                 self.__component_effects_impl(ctx)
             }
         }
@@ -271,7 +277,7 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 pub fn update(args: TokenStream, input: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(input as ItemFn);
 
-    let fn_name = &input_fn.sig.ident;
+    let _fn_name = &input_fn.sig.ident;
     let fn_vis = &input_fn.vis;
     let fn_block = &input_fn.block;
 
@@ -311,7 +317,7 @@ pub fn update(args: TokenStream, input: TokenStream) -> TokenStream {
         };
 
         let expanded = quote! {
-            #fn_vis fn #fn_name(&self, #ctx_name: &rxtui::Context, msg: Box<dyn rxtui::Message>, _topic: Option<&str>) -> rxtui::Action {
+            #fn_vis fn __component_update_impl(&self, #ctx_name: &rxtui::Context, msg: Box<dyn rxtui::Message>, _topic: Option<&str>) -> rxtui::Action {
                 if let Some(#msg_name) = msg.downcast::<#msg_type>() {
                     #state_setup
                     let #msg_name = #msg_name.clone();
@@ -377,7 +383,7 @@ pub fn update(args: TokenStream, input: TokenStream) -> TokenStream {
 
         // Generate the complete function
         let expanded = quote! {
-            #fn_vis fn #fn_name(&self, #ctx_name: &rxtui::Context, msg: Box<dyn rxtui::Message>, topic: Option<&str>) -> rxtui::Action {
+            #fn_vis fn __component_update_impl(&self, #ctx_name: &rxtui::Context, msg: Box<dyn rxtui::Message>, topic: Option<&str>) -> rxtui::Action {
                 // Generate the enum for message types
                 #[allow(non_camel_case_types)]
                 enum #enum_name {
@@ -451,7 +457,7 @@ pub fn update(args: TokenStream, input: TokenStream) -> TokenStream {
 pub fn view(_args: TokenStream, input: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(input as ItemFn);
 
-    let fn_name = &input_fn.sig.ident;
+    let _fn_name = &input_fn.sig.ident;
     let fn_vis = &input_fn.vis;
     let fn_block = &input_fn.block;
 
@@ -477,7 +483,7 @@ pub fn view(_args: TokenStream, input: TokenStream) -> TokenStream {
 
         // Generate with state fetching
         let expanded = quote! {
-            #fn_vis fn #fn_name(&self, #ctx_name: &rxtui::Context) -> rxtui::Node {
+            #fn_vis fn __component_view_impl(&self, #ctx_name: &rxtui::Context) -> rxtui::Node {
                 let #state_name = #ctx_name.get_state::<#state_type>();
                 #fn_block
             }
@@ -487,7 +493,7 @@ pub fn view(_args: TokenStream, input: TokenStream) -> TokenStream {
     } else {
         // No state parameter - just forward as-is
         let expanded = quote! {
-            #fn_vis fn #fn_name(&self, #ctx_name: &rxtui::Context) -> rxtui::Node {
+            #fn_vis fn __component_view_impl(&self, #ctx_name: &rxtui::Context) -> rxtui::Node {
                 #fn_block
             }
         };

@@ -11,6 +11,7 @@ use crate::effect::Effect;
 //--------------------------------------------------------------------------------------------------
 
 /// Action returned by a component's update method
+#[derive(Default)]
 pub enum Action {
     /// Update the component's state
     Update(Box<dyn State>),
@@ -22,6 +23,7 @@ pub enum Action {
     None,
 
     /// Exit the application
+    #[default]
     Exit,
 }
 
@@ -230,7 +232,10 @@ where
 /// }
 /// ```
 pub trait Component: 'static {
-    fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action;
+    #[allow(unused_variables)]
+    fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
+        Action::default()
+    }
 
     fn view(&self, ctx: &Context) -> Node;
 

@@ -131,6 +131,11 @@ pub mod key;
 /// Provides helpers for display width, text manipulation, and wrapping algorithms.
 pub mod utils;
 
+/// Provider traits for Component macro system (internal use)
+/// Enables safe defaults via method shadowing for update/view/effects
+#[doc(hidden)]
+pub mod providers;
+
 //--------------------------------------------------------------------------------------------------
 // Modules: Macros
 //--------------------------------------------------------------------------------------------------
