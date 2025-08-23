@@ -16,4 +16,4 @@ mod types;
 //--------------------------------------------------------------------------------------------------
 
 pub use runtime::EffectRuntime;
-pub use types::{Effect, EffectDef, EffectDeps};
+pub use types::Effect;

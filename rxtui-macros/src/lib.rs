@@ -2,7 +2,8 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::{
-    DeriveInput, Expr, FnArg, Ident, ItemFn, LitStr, Pat, PatType, Token, Type, parse_macro_input,
+    DeriveInput, Expr, FnArg, Ident, ImplItem, ItemFn, ItemImpl, LitStr, Pat, PatType, Token, Type,
+    parse_macro_input,
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -491,4 +492,258 @@ pub fn view(_args: TokenStream, input: TokenStream) -> TokenStream {
 
         TokenStream::from(expanded)
     }
+}
+
+/// Simplifies component effects methods by allowing async functions to be defined as effects.
+///
+/// # Basic usage
+///
+/// Define async effects that run in the background:
+///
+/// ```ignore
+/// #[effects]
+/// async fn timer_effect(&self, ctx: &Context) {
+///     loop {
+///         tokio::time::sleep(Duration::from_secs(1)).await;
+///         ctx.send(Msg::Tick);
+///     }
+/// }
+/// ```
+///
+/// # With state
+///
+/// Effects can access component state:
+///
+/// ```ignore
+/// #[effects]
+/// async fn fetch_data(&self, ctx: &Context, state: MyState) {
+///     let url = &state.api_url;
+///     let data = fetch(url).await;
+///     ctx.send(Msg::DataLoaded(data));
+/// }
+/// ```
+///
+/// # Multiple effects
+///
+/// You can define multiple effects on a component - they will all be collected
+/// into a single `effects()` method:
+///
+/// ```ignore
+/// impl MyComponent {
+///     #[effects]
+///     async fn timer(&self, ctx: &Context) {
+///         // Timer logic
+///     }
+///
+///     #[effects]
+///     async fn websocket(&self, ctx: &Context) {
+///         // WebSocket logic
+///     }
+/// }
+/// ```
+///
+/// # Parameters
+///
+/// The function parameters are detected by position:
+/// - `&self` (required)
+/// - `&Context` (required) - any name allowed
+/// - State type (optional) - any name allowed
+///
+/// Note: Currently, each component should manually implement the effects() method
+/// that collects all effect functions. Future versions may auto-generate this.
+#[proc_macro_attribute]
+pub fn effects(_args: TokenStream, input: TokenStream) -> TokenStream {
+    let input_fn = parse_macro_input!(input as ItemFn);
+
+    let fn_name = &input_fn.sig.ident;
+    let fn_vis = &input_fn.vis;
+    let fn_block = &input_fn.block;
+
+    // Parse function parameters by position
+    let mut params = input_fn.sig.inputs.iter();
+
+    // Position 0: &self (skip it)
+    params
+        .next()
+        .expect("#[effects] function must have &self as first parameter");
+
+    // Position 1: &Context
+    let ctx_param = params
+        .next()
+        .expect("#[effects] function must have &Context as second parameter");
+    let (ctx_name, _ctx_type) =
+        extract_param_info(ctx_param).expect("Failed to extract context parameter info");
+
+    // Position 2: State type (optional)
+    let state_setup = if let Some(state_param) = params.next() {
+        let (state_name, state_type) =
+            extract_param_info(state_param).expect("Failed to extract state parameter info");
+        quote! { let #state_name = #ctx_name.get_state::<#state_type>(); }
+    } else {
+        quote! {}
+    };
+
+    // Generate a helper method that creates the effect
+    let helper_name = format_ident!("__{}_effect", fn_name);
+
+    let expanded = quote! {
+        #[allow(dead_code)]
+        #fn_vis fn #helper_name(&self, #ctx_name: &rxtui::Context) -> rxtui::effect::Effect {
+            Box::pin({
+                let #ctx_name = #ctx_name.clone();
+                #state_setup
+                async move #fn_block
+            })
+        }
+
+        // Keep the original async function for reference/testing if needed
+        #[allow(dead_code)]
+        #fn_vis async fn #fn_name(&self, #ctx_name: &rxtui::Context) #fn_block
+    };
+
+    TokenStream::from(expanded)
+}
+
+/// Impl-level macro that automatically handles Component trait boilerplate.
+///
+/// This macro processes an impl block and:
+/// 1. Collects all methods marked with `#[effects]`
+/// 2. Generates helper methods for each effect
+/// 3. Automatically creates the `effects()` method
+///
+/// # Example
+///
+/// ```ignore
+/// #[component]
+/// impl MyComponent {
+///     #[update]
+///     fn update(&self, ctx: &Context, msg: Msg, mut state: State) -> Action {
+///         // update logic
+///     }
+///
+///     #[view]
+///     fn view(&self, ctx: &Context, state: State) -> Node {
+///         // view logic
+///     }
+///
+///     #[effects]
+///     async fn timer(&self, ctx: &Context) {
+///         // async effect logic
+///     }
+/// }
+/// ```
+///
+/// The macro will automatically generate the `effects()` method that collects
+/// all methods marked with `#[effects]`.
+#[proc_macro_attribute]
+pub fn component(_args: TokenStream, input: TokenStream) -> TokenStream {
+    let mut impl_block = parse_macro_input!(input as ItemImpl);
+
+    // Find all methods marked with #[effects]
+    let mut effect_methods = Vec::new();
+    let mut processed_items = Vec::new();
+
+    for item in impl_block.items.drain(..) {
+        if let ImplItem::Fn(mut method) = item {
+            // Check if this method has the #[effects] attribute
+            let has_effects_attr = method
+                .attrs
+                .iter()
+                .any(|attr| attr.path().is_ident("effects"));
+
+            if has_effects_attr {
+                // Remove the #[effects] attribute
+                method.attrs.retain(|attr| !attr.path().is_ident("effects"));
+
+                let method_name = &method.sig.ident;
+                let helper_name = format_ident!("__{}_effect", method_name);
+
+                // Parse parameters
+                let mut params = method.sig.inputs.iter();
+
+                // Skip &self
+                params.next();
+
+                // Get context parameter
+                let ctx_param = params.next();
+                let ctx_name = if let Some(FnArg::Typed(PatType { pat, .. })) = ctx_param {
+                    if let Pat::Ident(pat_ident) = &**pat {
+                        &pat_ident.ident
+                    } else {
+                        panic!("Expected context parameter");
+                    }
+                } else {
+                    panic!("Expected context parameter");
+                };
+
+                // Check for state parameter
+                let state_setup = if let Some(FnArg::Typed(PatType { pat, ty, .. })) = params.next()
+                {
+                    if let Pat::Ident(pat_ident) = &**pat {
+                        let state_name = &pat_ident.ident;
+                        let state_type = &**ty;
+                        quote! { let #state_name = #ctx_name.get_state::<#state_type>(); }
+                    } else {
+                        quote! {}
+                    }
+                } else {
+                    quote! {}
+                };
+
+                let method_block = &method.block;
+
+                // Generate helper method
+                let helper_method = quote! {
+                    #[allow(dead_code)]
+                    fn #helper_name(&self, #ctx_name: &rxtui::Context) -> rxtui::effect::Effect {
+                        Box::pin({
+                            let #ctx_name = #ctx_name.clone();
+                            #state_setup
+                            async move #method_block
+                        })
+                    }
+                };
+
+                // Store effect method info for later
+                effect_methods.push((helper_name, ctx_name.clone()));
+
+                // Add both the helper and original method
+                let helper_item: ImplItem = syn::parse2(helper_method).unwrap();
+                processed_items.push(helper_item);
+
+                // Add #[allow(dead_code)] to the original async method
+                method.attrs.push(syn::parse_quote! { #[allow(dead_code)] });
+                processed_items.push(ImplItem::Fn(method));
+            } else {
+                processed_items.push(ImplItem::Fn(method));
+            }
+        } else {
+            processed_items.push(item);
+        }
+    }
+
+    // Add all processed items back
+    impl_block.items = processed_items;
+
+    // Generate effects() method if we found any #[effects] methods
+    if !effect_methods.is_empty() {
+        let effect_calls = effect_methods
+            .iter()
+            .map(|(helper_name, _)| {
+                quote! { self.#helper_name(ctx) }
+            })
+            .collect::<Vec<_>>();
+
+        let effects_method = quote! {
+            #[cfg(feature = "effects")]
+            fn effects(&self, ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
+                vec![#(#effect_calls),*]
+            }
+        };
+
+        let effects_item: ImplItem = syn::parse2(effects_method).unwrap();
+        impl_block.items.push(effects_item);
+    }
+
+    TokenStream::from(quote! { #impl_block })
 }

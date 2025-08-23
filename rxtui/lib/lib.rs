@@ -159,7 +159,9 @@ pub mod effect;
 // Re-export the derive macro with the same name
 #[doc(hidden)]
 pub use rxtui_macros::Component as ComponentMacro;
-pub use rxtui_macros::{update, view};
+#[cfg(feature = "effects")]
+pub use rxtui_macros::effects;
+pub use rxtui_macros::{component, update, view};
 
 pub use app::{App, Context, Dispatcher, RenderConfig, StateMap};
 pub use bounds::Rect;

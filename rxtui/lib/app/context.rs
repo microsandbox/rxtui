@@ -76,12 +76,6 @@ impl Dispatcher {
             .push_back(Box::new(message));
     }
 
-    /// Send an already-boxed message to a component
-    pub fn send_boxed_to_id(&self, component_id: ComponentId, message: Box<dyn Message>) {
-        let mut queues = self.queues.write().unwrap();
-        queues.entry(component_id).or_default().push_back(message);
-    }
-
     pub fn send_to_topic(&self, topic: String, message: impl Message) {
         let mut queues = self.topic_queues.write().unwrap();
         queues
