@@ -37,68 +37,51 @@ Let's build a simple counter to see how it all fits together:
 ```rust
 use rxtui::prelude::*;
 
-// 1. Define your messages (events that can happen)
 #[derive(Debug, Clone)]
-enum CounterMsg {
-    Increment,
-    Decrement,
+enum TimerMsg {
+    Tick,
     Exit,
 }
 
-// 2. Define your state (data that changes)
-#[derive(Debug, Clone, Default)]
-struct CounterState {
-    count: i32,
-}
+#[derive(Component)]
+struct Timer;
 
-// 3. Create your component
-#[derive(Component, Clone)]
-struct Counter;
-
-impl Counter {
-    #[update] // Handle messages and update state
-    fn update(&self, ctx: &Context, msg: CounterMsg, mut state: CounterState) -> Action {
+#[component]
+impl Timer {
+    #[update]
+    fn update(&self, _ctx: &Context, msg: TimerMsg, mut state: u64) -> Action {
         match msg {
-            CounterMsg::Increment => {
-                state.count += 1;
+            TimerMsg::Tick => {
+                state += 1;
                 Action::update(state)
             }
-            CounterMsg::Decrement => {
-                state.count -= 1;
-                Action::update(state)
-            }
-            CounterMsg::Exit => Action::exit(),
+            TimerMsg::Exit => Action::exit(),
         }
     }
 
-    #[view] // Render UI based on current state
-    fn view(&self, ctx: &Context, state: CounterState) -> Node {
+    #[view]
+    fn view(&self, ctx: &Context, state: u64) -> Node {
         node! {
-            div(bg: blue, pad: 2) [
-                text(format!("Count: {}", state.count), color: white, bold),
-                spacer(1),
-                hstack(gap: 2) [
-                    div(bg: green, pad: 1, focusable) [
-                        text("+ Increment"),
-                        @click: ctx.handler(CounterMsg::Increment),
-                        @key(Enter): ctx.handler(CounterMsg::Increment)
-                    ],
-                    div(bg: red, pad: 1, focusable) [
-                        text("- Decrement"),
-                        @click: ctx.handler(CounterMsg::Decrement),
-                        @key(Enter): ctx.handler(CounterMsg::Decrement)
-                    ]
-                ],
-                @key_global(Esc): ctx.handler(CounterMsg::Exit)
+            div(bg: black, pad: 2, gap: 2) [
+                text(format!("Timer: {} seconds", state), color: white),
+                text("Press Esc to exit", color: bright_black),
+                @key_global(Esc): ctx.handler(TimerMsg::Exit)
             ]
         }
     }
+
+    #[effect]
+    async fn tick(&self, ctx: &Context) {
+        loop {
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            ctx.send(TimerMsg::Tick);
+        }
+    }
 }
 
-// 4. Run your app
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    app.run(Counter)
+    app.run(Timer)
 }
 ```
 
