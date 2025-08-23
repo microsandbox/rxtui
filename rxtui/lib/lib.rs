@@ -147,6 +147,11 @@ pub mod macros;
 /// Provides pre-built components like TextInput, Button, etc.
 pub mod components;
 
+/// Async effects system for running background tasks
+/// Requires the "effects" feature flag
+#[cfg(feature = "effects")]
+pub mod effect;
+
 //--------------------------------------------------------------------------------------------------
 // Exports
 //--------------------------------------------------------------------------------------------------
@@ -154,7 +159,9 @@ pub mod components;
 // Re-export the derive macro with the same name
 #[doc(hidden)]
 pub use rxtui_macros::Component as ComponentMacro;
-pub use rxtui_macros::{update, view};
+#[cfg(feature = "effects")]
+pub use rxtui_macros::effects;
+pub use rxtui_macros::{component, update, view};
 
 pub use app::{App, Context, Dispatcher, RenderConfig, StateMap};
 pub use bounds::Rect;

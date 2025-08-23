@@ -14,12 +14,18 @@ pub use crate::app::{App, Context};
 // Component system
 pub use crate::component::{Action, ComponentId, Message, MessageExt, State, StateExt};
 
+// Effects system (when feature is enabled)
+#[cfg(feature = "effects")]
+pub use crate::effect::Effect;
+
 // Re-export both the trait and the derive macro
 pub use crate::Component;
 pub use crate::ComponentMacro as Component;
 
 // Re-export attribute macros
-pub use crate::{update, view};
+#[cfg(feature = "effects")]
+pub use crate::effects;
+pub use crate::{component, update, view};
 
 // UI elements
 pub use crate::node::{Div, Node, RichText, Text};

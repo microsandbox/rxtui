@@ -15,9 +15,9 @@ A reactive terminal user interface framework for Rust that brings modern web dev
 - [Component Communication](#component-communication)
 - [Styling and Layout](#styling-and-layout)
 - [Event Handling](#event-handling)
+- [Async Effects](#async-effects)
 - [Advanced Patterns](#advanced-patterns)
-- [Performance Considerations](#performance-considerations)
-- [Examples and Recipes](#examples-and-recipes)
+- [Examples](#examples)
 
 ## Why RxTUI?
 
@@ -56,8 +56,7 @@ struct CounterState {
 struct Counter {}
 
 impl Counter {
-    // Handle messages and update state - using the #[update] macro
-    #[update]
+    #[update] // Handle messages and update state
     fn update(&self, ctx: &Context, msg: CounterMsg, mut state: CounterState) -> Action {
         match msg {
             CounterMsg::Increment => {
@@ -72,8 +71,7 @@ impl Counter {
         }
     }
 
-    // Render UI based on current state - using the #[view] macro
-    #[view]
+    #[view] // Render UI based on current state
     fn view(&self, ctx: &Context, state: CounterState) -> Node {
         node! {
             div(bg: blue, pad: 2) [
@@ -650,6 +648,116 @@ The framework automatically:
 
 **Note:** Currently only vertical scrolling is implemented. Content that exceeds the horizontal viewport will be clipped.
 
+## Async Effects
+
+RxTUI supports async background tasks through its effects system. Effects are perfect for timers, network requests, file watching, or any async operation that needs to communicate with your UI.
+
+### Quick Example with #[component] Macro
+
+The easiest way to use effects is with the `#[component]` and `#[effects]` macros:
+
+```rust
+use rxtui::prelude::*;
+use std::time::Duration;
+
+#[derive(Component, Clone)]
+struct WeatherWidget;
+
+#[component]  // Automatically collects all #[effects] methods
+impl WeatherWidget {
+    #[update]
+    fn update(&self, ctx: &Context, msg: WeatherMsg, mut state: WeatherState) -> Action {
+        match msg {
+            WeatherMsg::DataFetched(data) => {
+                state.weather = Some(data);
+                Action::update(state)
+            }
+            WeatherMsg::RefreshRequested => {
+                state.loading = true;
+                Action::update(state)
+            }
+        }
+    }
+
+    #[view]
+    fn view(&self, ctx: &Context, state: WeatherState) -> Node {
+        node! {
+            div [
+                if let Some(weather) = &state.weather {
+                    text(format!("Temperature: {}°C", weather.temp))
+                } else if state.loading {
+                    text("Loading weather data...")
+                } else {
+                    text("No weather data")
+                }
+            ]
+        }
+    }
+
+    // This async method will be automatically collected as an effect
+    #[effects]
+    async fn fetch_weather(&self, ctx: &Context) {
+        loop {
+            // Fetch weather data from API
+            match fetch_weather_api().await {
+                Ok(data) => ctx.send(WeatherMsg::DataFetched(data)),
+                Err(_) => ctx.send(WeatherMsg::FetchError),
+            }
+
+            // Refresh every 5 minutes
+            tokio::time::sleep(Duration::from_secs(300)).await;
+        }
+    }
+
+    // Can have multiple effects
+    #[effects]
+    async fn handle_user_refresh(&self, ctx: &Context, state: WeatherState) {
+        // Effects can access state via optional parameter
+        if state.auto_refresh {
+            ctx.send(WeatherMsg::RefreshRequested);
+        }
+    }
+}
+```
+
+### How Effects Work
+
+1. **Lifecycle Management**: Effects are spawned when a component mounts and automatically cancelled when it unmounts
+2. **Message Communication**: Effects communicate with components by sending messages via `ctx.send()`
+3. **State Access**: Effects can read component state by adding an optional state parameter
+4. **Concurrency**: Multiple effects run concurrently in the Tokio runtime
+
+### Common Use Cases
+
+- **Timers and Clocks**: Periodic UI updates
+- **Network Requests**: Fetching data from APIs
+- **WebSocket Connections**: Real-time communication
+- **File Watching**: Monitoring file system changes
+- **Background Calculations**: Heavy computations without blocking UI
+
+### Manual Implementation
+
+For more control, you can implement effects manually:
+
+```rust
+impl MyComponent {
+    fn effects(&self, ctx: &Context) -> Vec<Effect> {
+        vec![
+            Box::pin({
+                let ctx = ctx.clone();
+                async move {
+                    // Your async logic here
+                    loop {
+                        tokio::time::sleep(Duration::from_secs(1)).await;
+                        ctx.send(MyMsg::Tick);
+                    }
+                }
+            })
+        ]
+    }
+}
+```
+
 ## Examples
 
 The `examples/` directory contains full applications:
@@ -657,7 +765,7 @@ The `examples/` directory contains full applications:
 - **simple.rs** - Interactive color picker showing event handling
 - **demo.rs** - Multi-page showcase of all features
 - **components.rs** - Topic-based component communication with multiple counters
-- **spinner.rs** - Animated loading spinner with state management
+- **timer.rs** - Timer with async effects demonstrating the `#[component]` and `#[effects]` macros
 
 Each example is thoroughly commented and demonstrates best practices.
 
