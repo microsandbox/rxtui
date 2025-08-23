@@ -160,7 +160,7 @@ pub mod effect;
 #[doc(hidden)]
 pub use rxtui_macros::Component as ComponentMacro;
 #[cfg(feature = "effects")]
-pub use rxtui_macros::effects;
+pub use rxtui_macros::effect;
 pub use rxtui_macros::{component, update, view};
 
 pub use app::{App, Context, Dispatcher, RenderConfig, StateMap};

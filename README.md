@@ -654,7 +654,7 @@ RxTUI supports async background tasks through its effects system. Effects are pe
 
 ### Quick Example with #[component] Macro
 
-The easiest way to use effects is with the `#[component]` and `#[effects]` macros:
+The easiest way to use effects is with the `#[component]` and `#[effect]` macros:
 
 ```rust
 use rxtui::prelude::*;
@@ -663,7 +663,7 @@ use std::time::Duration;
 #[derive(Component, Clone)]
 struct WeatherWidget;
 
-#[component]  // Automatically collects all #[effects] methods
+#[component]  // Automatically collects all #[effect] methods
 impl WeatherWidget {
     #[update]
     fn update(&self, ctx: &Context, msg: WeatherMsg, mut state: WeatherState) -> Action {
@@ -695,7 +695,7 @@ impl WeatherWidget {
     }
 
     // This async method will be automatically collected as an effect
-    #[effects]
+    #[effect]
     async fn fetch_weather(&self, ctx: &Context) {
         loop {
             // Fetch weather data from API
@@ -710,7 +710,7 @@ impl WeatherWidget {
     }
 
     // Can have multiple effects
-    #[effects]
+    #[effect]
     async fn handle_user_refresh(&self, ctx: &Context, state: WeatherState) {
         // Effects can access state via optional parameter
         if state.auto_refresh {
@@ -765,7 +765,7 @@ The `examples/` directory contains full applications:
 - **simple.rs** - Interactive color picker showing event handling
 - **demo.rs** - Multi-page showcase of all features
 - **components.rs** - Topic-based component communication with multiple counters
-- **timer.rs** - Timer with async effects demonstrating the `#[component]` and `#[effects]` macros
+- **timer.rs** - Timer with async effects demonstrating the `#[component]` and `#[effect]` macros
 
 Each example is thoroughly commented and demonstrates best practices.
 

@@ -16,7 +16,7 @@ name = "rxtui"
 path = "lib/lib.rs"
 
 [features]
-default = []
+default = ["effects"]
 effects = ["tokio", "futures"]
 
 [dependencies]

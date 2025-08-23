@@ -494,14 +494,14 @@ pub fn view(_args: TokenStream, input: TokenStream) -> TokenStream {
     }
 }
 
-/// Simplifies component effects methods by allowing async functions to be defined as effects.
+/// Marks an async method as a single effect that runs in the background.
 ///
 /// # Basic usage
 ///
-/// Define async effects that run in the background:
+/// Define an async effect that runs in the background:
 ///
 /// ```ignore
-/// #[effects]
+/// #[effect]
 /// async fn timer_effect(&self, ctx: &Context) {
 ///     loop {
 ///         tokio::time::sleep(Duration::from_secs(1)).await;
@@ -515,7 +515,7 @@ pub fn view(_args: TokenStream, input: TokenStream) -> TokenStream {
 /// Effects can access component state:
 ///
 /// ```ignore
-/// #[effects]
+/// #[effect]
 /// async fn fetch_data(&self, ctx: &Context, state: MyState) {
 ///     let url = &state.api_url;
 ///     let data = fetch(url).await;
@@ -530,12 +530,12 @@ pub fn view(_args: TokenStream, input: TokenStream) -> TokenStream {
 ///
 /// ```ignore
 /// impl MyComponent {
-///     #[effects]
+///     #[effect]
 ///     async fn timer(&self, ctx: &Context) {
 ///         // Timer logic
 ///     }
 ///
-///     #[effects]
+///     #[effect]
 ///     async fn websocket(&self, ctx: &Context) {
 ///         // WebSocket logic
 ///     }
@@ -549,10 +549,10 @@ pub fn view(_args: TokenStream, input: TokenStream) -> TokenStream {
 /// - `&Context` (required) - any name allowed
 /// - State type (optional) - any name allowed
 ///
-/// Note: Currently, each component should manually implement the effects() method
-/// that collects all effect functions. Future versions may auto-generate this.
+/// Note: Use the #[component] macro on the impl block to automatically collect
+/// all methods marked with #[effect] into the effects() method.
 #[proc_macro_attribute]
-pub fn effects(_args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn effect(_args: TokenStream, input: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(input as ItemFn);
 
     let fn_name = &input_fn.sig.ident;
@@ -607,7 +607,7 @@ pub fn effects(_args: TokenStream, input: TokenStream) -> TokenStream {
 /// Impl-level macro that automatically handles Component trait boilerplate.
 ///
 /// This macro processes an impl block and:
-/// 1. Collects all methods marked with `#[effects]`
+/// 1. Collects all methods marked with `#[effect]`
 /// 2. Generates helper methods for each effect
 /// 3. Automatically creates the `effects()` method
 ///
@@ -626,7 +626,7 @@ pub fn effects(_args: TokenStream, input: TokenStream) -> TokenStream {
 ///         // view logic
 ///     }
 ///
-///     #[effects]
+///     #[effect]
 ///     async fn timer(&self, ctx: &Context) {
 ///         // async effect logic
 ///     }
@@ -634,26 +634,26 @@ pub fn effects(_args: TokenStream, input: TokenStream) -> TokenStream {
 /// ```
 ///
 /// The macro will automatically generate the `effects()` method that collects
-/// all methods marked with `#[effects]`.
+/// all methods marked with `#[effect]`.
 #[proc_macro_attribute]
 pub fn component(_args: TokenStream, input: TokenStream) -> TokenStream {
     let mut impl_block = parse_macro_input!(input as ItemImpl);
 
-    // Find all methods marked with #[effects]
+    // Find all methods marked with #[effect]
     let mut effect_methods = Vec::new();
     let mut processed_items = Vec::new();
 
     for item in impl_block.items.drain(..) {
         if let ImplItem::Fn(mut method) = item {
-            // Check if this method has the #[effects] attribute
-            let has_effects_attr = method
+            // Check if this method has the #[effect] attribute
+            let has_effect_attr = method
                 .attrs
                 .iter()
-                .any(|attr| attr.path().is_ident("effects"));
+                .any(|attr| attr.path().is_ident("effect"));
 
-            if has_effects_attr {
-                // Remove the #[effects] attribute
-                method.attrs.retain(|attr| !attr.path().is_ident("effects"));
+            if has_effect_attr {
+                // Remove the #[effect] attribute
+                method.attrs.retain(|attr| !attr.path().is_ident("effect"));
 
                 let method_name = &method.sig.ident;
                 let helper_name = format_ident!("__{}_effect", method_name);
@@ -725,7 +725,7 @@ pub fn component(_args: TokenStream, input: TokenStream) -> TokenStream {
     // Add all processed items back
     impl_block.items = processed_items;
 
-    // Generate effects() method if we found any #[effects] methods
+    // Generate effects() method if we found any #[effect] methods
     if !effect_methods.is_empty() {
         let effect_calls = effect_methods
             .iter()

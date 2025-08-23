@@ -6,7 +6,7 @@
 //!
 //! # Quick Start
 //!
-//! The easiest way to use effects is with the `#[component]` and `#[effects]` macros:
+//! The easiest way to use effects is with the `#[component]` and `#[effect]` macros:
 //!
 //! ```ignore
 //! use rxtui::prelude::*;
@@ -15,7 +15,7 @@
 //! #[derive(Component, Clone)]
 //! struct Timer;
 //!
-//! #[component]  // Automatically collects all #[effects] methods
+//! #[component]  // Automatically collects all #[effect] methods
 //! impl Timer {
 //!     #[update]
 //!     fn update(&self, ctx: &Context, msg: TimerMsg, mut state: TimerState) -> Action {
@@ -36,7 +36,7 @@
 //!         }
 //!     }
 //!
-//!     #[effects]
+//!     #[effect]
 //!     async fn tick(&self, ctx: &Context) {
 //!         loop {
 //!             tokio::time::sleep(Duration::from_secs(1)).await;
@@ -62,13 +62,13 @@
 //! ```ignore
 //! #[component]
 //! impl Dashboard {
-//!     #[effects]
+//!     #[effect]
 //!     async fn fetch_data(&self, ctx: &Context) {
 //!         let data = fetch_from_api().await;
 //!         ctx.send(DashboardMsg::DataLoaded(data));
 //!     }
 //!
-//!     #[effects]
+//!     #[effect]
 //!     async fn websocket_listener(&self, ctx: &Context) {
 //!         let mut ws = connect_websocket().await;
 //!         while let Some(msg) = ws.next().await {
@@ -76,7 +76,7 @@
 //!         }
 //!     }
 //!
-//!     #[effects]
+//!     #[effect]
 //!     async fn auto_refresh(&self, ctx: &Context) {
 //!         loop {
 //!             tokio::time::sleep(Duration::from_secs(30)).await;
@@ -91,7 +91,7 @@
 //! Effects can read component state by adding a state parameter:
 //!
 //! ```ignore
-//! #[effects]
+//! #[effect]
 //! async fn monitor(&self, ctx: &Context, state: AppState) {
 //!     // State is automatically fetched via ctx.get_state()
 //!     if state.threshold_exceeded() {
@@ -137,7 +137,7 @@
 //! also handle cancellation explicitly:
 //!
 //! ```ignore
-//! #[effects]
+//! #[effect]
 //! async fn cancellable_task(&self, ctx: &Context) {
 //!     let handle = spawn_cancellable_task();
 //!
@@ -155,7 +155,7 @@
 //! Always handle errors gracefully in effects:
 //!
 //! ```ignore
-//! #[effects]
+//! #[effect]
 //! async fn network_task(&self, ctx: &Context) {
 //!     match fetch_data().await {
 //!         Ok(data) => ctx.send(MyMsg::Success(data)),

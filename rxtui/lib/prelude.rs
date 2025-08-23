@@ -24,7 +24,7 @@ pub use crate::ComponentMacro as Component;
 
 // Re-export attribute macros
 #[cfg(feature = "effects")]
-pub use crate::effects;
+pub use crate::effect;
 pub use crate::{component, update, view};
 
 // UI elements

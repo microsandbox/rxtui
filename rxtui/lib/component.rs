@@ -140,7 +140,7 @@ where
 ///
 /// # With Async Effects (using #[component] macro)
 ///
-/// The `#[component]` macro automatically collects all `#[effects]` methods:
+/// The `#[component]` macro automatically collects all `#[effect]` methods:
 ///
 /// ```ignore
 /// use rxtui::prelude::*;
@@ -175,7 +175,7 @@ where
 ///     }
 ///
 ///     // Mark async methods as effects - they'll be auto-collected
-///     #[effects]
+///     #[effect]
 ///     async fn tick_timer(&self, ctx: &Context) {
 ///         loop {
 ///             tokio::time::sleep(Duration::from_secs(1)).await;
@@ -184,7 +184,7 @@ where
 ///     }
 ///
 ///     // Can have multiple effects, with optional state access
-///     #[effects]
+///     #[effect]
 ///     async fn monitor_state(&self, ctx: &Context, state: TimerState) {
 ///         // State is automatically fetched via ctx.get_state()
 ///         if state.seconds > 60 {
@@ -232,15 +232,15 @@ pub trait Component: 'static {
     /// Effects are async tasks that run outside the main event loop.
     /// They are spawned when the component mounts and cancelled when it unmounts.
     ///
-    /// # Using the #[component] and #[effects] macros (Recommended)
+    /// # Using the #[component] and #[effect] macros (Recommended)
     ///
     /// The easiest way is to use the `#[component]` macro on your impl block
-    /// and mark async methods with `#[effects]`:
+    /// and mark async methods with `#[effect]`:
     ///
     /// ```ignore
     /// #[component]
     /// impl MyComponent {
-    ///     #[effects]
+    ///     #[effect]
     ///     async fn background_task(&self, ctx: &Context) {
     ///         // Async work here
     ///     }

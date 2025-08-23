@@ -1,6 +1,6 @@
 //! Simple timer example with effects
 //!
-//! Run with: cargo run --example timer --features effects
+//! Run with: cargo run --example timer
 
 use rxtui::prelude::*;
 
@@ -76,8 +76,7 @@ impl Timer {
         }
     }
 
-    #[cfg(feature = "effects")]
-    #[effects]
+    #[effect]
     async fn tick_timer(&self, ctx: &Context) {
         loop {
             tokio::time::sleep(std::time::Duration::from_secs(1)).await;
@@ -91,13 +90,6 @@ impl Timer {
 //--------------------------------------------------------------------------------------------------
 
 fn main() -> std::io::Result<()> {
-    #[cfg(not(feature = "effects"))]
-    {
-        eprintln!("This example requires the 'effects' feature.");
-        eprintln!("Run with: cargo run --example timer --features effects");
-        return Ok(());
-    }
-
     let mut app = App::new()?;
     app.run(Timer)?;
     Ok(())
