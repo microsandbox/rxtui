@@ -176,4 +176,4 @@ mod types;
 //--------------------------------------------------------------------------------------------------
 
 pub use runtime::EffectRuntime;
-pub use types::Effect;
+pub use types::{Effect, EffectsProvider};
