@@ -218,6 +218,28 @@ impl App {
         self
     }
 
+    /// Sets the event polling duration in milliseconds.
+    /// Lower values make the app more responsive but use more CPU.
+    /// Default is 100ms.
+    pub fn poll_duration(mut self, duration_ms: u64) -> Self {
+        self.config.poll_duration_ms = duration_ms;
+        self
+    }
+
+    /// Sets the app to use a fast polling rate (10ms).
+    /// This makes the app very responsive but uses more CPU.
+    pub fn fast_polling(mut self) -> Self {
+        self.config.poll_duration_ms = 10;
+        self
+    }
+
+    /// Sets the app to use a slow polling rate (500ms).
+    /// This reduces CPU usage but may feel less responsive.
+    pub fn slow_polling(mut self) -> Self {
+        self.config.poll_duration_ms = 500;
+        self
+    }
+
     /// Main event loop using component-based architecture.
     ///
     /// Manages component state through messages and actions,
@@ -350,8 +372,10 @@ impl App {
                 needs_render = false;
             }
 
-            // Poll for events with a shorter timeout since we're not rendering constantly
-            if event::poll(std::time::Duration::from_millis(100))? {
+            // Poll for events with configurable timeout
+            if event::poll(std::time::Duration::from_millis(
+                self.config.poll_duration_ms,
+            ))? {
                 match event::read()? {
                     Event::Key(key_event) => {
                         handle_key_event(&self.vdom, key_event);
