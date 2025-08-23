@@ -104,7 +104,8 @@ fn extract_param_info(arg: &FnArg) -> Option<(Ident, Type)> {
 /// Derive macro that implements the Component trait
 ///
 /// This macro automatically implements all the boilerplate methods
-/// required by the Component trait.
+/// required by the Component trait. The component struct must also
+/// implement Clone.
 ///
 /// # Example
 ///
@@ -113,6 +114,10 @@ fn extract_param_info(arg: &FnArg) -> Option<(Ident, Type)> {
 /// struct MyComponent {
 ///     // any fields you need
 /// }
+///
+/// // Or for unit structs:
+/// #[derive(Component, Clone)]
+/// struct MyComponent;
 ///
 /// impl MyComponent {
 ///     fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
@@ -129,7 +134,7 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
 
-    // Generate the implementation - no ID field needed
+    // Generate the implementation
     let expanded = quote! {
         impl rxtui::Component for #name {
             fn as_any(&self) -> &dyn std::any::Any {
@@ -153,8 +158,12 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
                 <#name>::view(self, ctx)
             }
 
-            // Don't forward effects - let the trait's default implementation be used
-            // unless the type explicitly implements it via the #[component] attribute macro
+            // Forward effects if using #[component] macro
+            // This will fail to compile if #[component] isn't used, which is the correct behavior
+            // since #[component] is required for effects support
+            fn effects(&self, ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
+                <#name>::effects(self, ctx)
+            }
         }
     };
 
@@ -722,8 +731,10 @@ pub fn component(_args: TokenStream, input: TokenStream) -> TokenStream {
     // Add all processed items back
     impl_block.items = processed_items;
 
-    // Generate effects() method if we found any #[effect] methods
-    if !effect_methods.is_empty() {
+    // Always generate effects() method - either with collected effects or empty vec
+    // If rxtui is compiled without effects, the Effect type won't exist and compilation will fail
+    // This is the correct behavior - using effects without the feature should be a compile error
+    let effects_method = if !effect_methods.is_empty() {
         let effect_calls = effect_methods
             .iter()
             .map(|(helper_name, _)| {
@@ -731,16 +742,23 @@ pub fn component(_args: TokenStream, input: TokenStream) -> TokenStream {
             })
             .collect::<Vec<_>>();
 
-        let effects_method = quote! {
-            #[cfg(feature = "effects")]
+        quote! {
+            // Generated effects method with collected effects
             fn effects(&self, ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
                 vec![#(#effect_calls),*]
             }
-        };
+        }
+    } else {
+        quote! {
+            // No effects defined, return empty vec
+            fn effects(&self, _ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
+                vec![]
+            }
+        }
+    };
 
-        let effects_item: ImplItem = syn::parse2(effects_method).unwrap();
-        impl_block.items.push(effects_item);
-    }
+    let effects_item: ImplItem = syn::parse2(effects_method).unwrap();
+    impl_block.items.push(effects_item);
 
     TokenStream::from(quote! { #impl_block })
 }
