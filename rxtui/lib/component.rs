@@ -99,10 +99,10 @@ where
 /// Main component trait for building UI components
 ///
 /// Components can be created easily using the `#[derive(Component)]` macro.
-/// The `update` and `view` methods can be simplified using the `#[update]` and `#[view]`
-/// attribute macros which automatically handle message downcasting and state fetching.
+/// The `update`, `view`, and `effects` methods can be simplified using attribute macros
+/// which automatically handle message downcasting, state fetching, and effect collection.
 ///
-/// # Example
+/// # Basic Example
 ///
 /// ```ignore
 /// use rxtui::prelude::*;
@@ -138,6 +138,62 @@ where
 /// }
 /// ```
 ///
+/// # With Async Effects (using #[component] macro)
+///
+/// The `#[component]` macro automatically collects all `#[effects]` methods:
+///
+/// ```ignore
+/// use rxtui::prelude::*;
+/// use std::time::Duration;
+///
+/// #[derive(Component, Clone)]
+/// struct Timer {}
+///
+/// #[component]  // This macro handles effect collection
+/// impl Timer {
+///     #[update]
+///     fn update(&self, ctx: &Context, msg: TimerMsg, mut state: TimerState) -> Action {
+///         match msg {
+///             TimerMsg::Tick => {
+///                 state.seconds += 1;
+///                 Action::update(state)
+///             }
+///             TimerMsg::Reset => {
+///                 state.seconds = 0;
+///                 Action::update(state)
+///             }
+///         }
+///     }
+///
+///     #[view]
+///     fn view(&self, ctx: &Context, state: TimerState) -> Node {
+///         node! {
+///             div [
+///                 text(format!("Time: {}s", state.seconds))
+///             ]
+///         }
+///     }
+///
+///     // Mark async methods as effects - they'll be auto-collected
+///     #[effects]
+///     async fn tick_timer(&self, ctx: &Context) {
+///         loop {
+///             tokio::time::sleep(Duration::from_secs(1)).await;
+///             ctx.send(TimerMsg::Tick);
+///         }
+///     }
+///
+///     // Can have multiple effects, with optional state access
+///     #[effects]
+///     async fn monitor_state(&self, ctx: &Context, state: TimerState) {
+///         // State is automatically fetched via ctx.get_state()
+///         if state.seconds > 60 {
+///             ctx.send(TimerMsg::Reset);
+///         }
+///     }
+/// }
+/// ```
+///
 /// # Manual Implementation
 ///
 /// The trait can also be implemented manually for more control:
@@ -154,6 +210,17 @@ where
 ///     let state = ctx.get_state::<MyState>();
 ///     // Build UI
 /// }
+///
+/// fn effects(&self, ctx: &Context) -> Vec<Effect> {
+///     vec![
+///         Box::pin({
+///             let ctx = ctx.clone();
+///             async move {
+///                 // Async effect logic
+///             }
+///         })
+///     ]
+/// }
 /// ```
 pub trait Component: 'static {
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action;
@@ -161,8 +228,52 @@ pub trait Component: 'static {
     fn view(&self, ctx: &Context) -> Node;
 
     /// Define effects for this component
-    /// Effects are async tasks that run outside the main event loop
-    /// They are spawned when the component mounts and cancelled when it unmounts
+    ///
+    /// Effects are async tasks that run outside the main event loop.
+    /// They are spawned when the component mounts and cancelled when it unmounts.
+    ///
+    /// # Using the #[component] and #[effects] macros (Recommended)
+    ///
+    /// The easiest way is to use the `#[component]` macro on your impl block
+    /// and mark async methods with `#[effects]`:
+    ///
+    /// ```ignore
+    /// #[component]
+    /// impl MyComponent {
+    ///     #[effects]
+    ///     async fn background_task(&self, ctx: &Context) {
+    ///         // Async work here
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// # Manual Implementation
+    ///
+    /// You can also implement this method manually:
+    ///
+    /// ```ignore
+    /// fn effects(&self, ctx: &Context) -> Vec<Effect> {
+    ///     vec![
+    ///         Box::pin({
+    ///             let ctx = ctx.clone();
+    ///             async move {
+    ///                 loop {
+    ///                     tokio::time::sleep(Duration::from_secs(1)).await;
+    ///                     ctx.send(MyMsg::Tick);
+    ///                 }
+    ///             }
+    ///         })
+    ///     ]
+    /// }
+    /// ```
+    ///
+    /// # Common Use Cases
+    ///
+    /// - **Timers**: Periodic updates (e.g., clocks, progress bars)
+    /// - **Network requests**: Fetching data from APIs
+    /// - **File watching**: Monitoring file system changes
+    /// - **WebSocket connections**: Real-time communication
+    /// - **Background calculations**: Heavy computations that shouldn't block UI
     #[cfg(feature = "effects")]
     fn effects(&self, _ctx: &Context) -> Vec<Effect> {
         vec![]
