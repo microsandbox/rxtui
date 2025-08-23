@@ -107,8 +107,15 @@ where
 /// ```ignore
 /// use rxtui::prelude::*;
 ///
-/// #[derive(Component, Clone, Default)]
-/// struct Counter {}
+/// // Components can be unit structs or structs with fields
+/// #[derive(Component, Clone)]
+/// struct Counter;
+///
+/// // Or with fields:
+/// // #[derive(Component, Clone)]
+/// // struct Counter {
+/// //     initial_value: i32,
+/// // }
 ///
 /// impl Counter {
 ///     // Using the #[update] macro - handles downcasting and state automatically
@@ -147,7 +154,7 @@ where
 /// use std::time::Duration;
 ///
 /// #[derive(Component, Clone)]
-/// struct Timer {}
+/// struct Timer;
 ///
 /// #[component]  // This macro handles effect collection
 /// impl Timer {

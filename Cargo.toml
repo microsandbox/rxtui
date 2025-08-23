@@ -1,3 +1,17 @@
+[package]
+name = "rxtui-workspace"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[features]
+default = ["effects"]
+effects = ["rxtui/effects"]
+
+[[example]]
+name = "timer"
+path = "examples/timer.rs"
+
 [workspace]
 resolver = "2"
 members = [
@@ -17,6 +31,10 @@ documentation = "https://docs.rs/rxtui"
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "2.0"
+
+[dependencies]
+rxtui = { path = "rxtui", features = ["effects"] }
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "time", "sync", "macros"] }
 
 # Profile configurations
 [profile.release]

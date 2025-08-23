@@ -9,11 +9,12 @@ RxTUI is a reactive terminal user interface framework inspired by React's compon
 ```text
 ┌─────────────────────────────────────────────────────────┐
 │                     Component System                    │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │  Components  │  │   Messages   │  │    Topics    │   │
-│  │  - update()  │  │  - Direct    │  │  - Ownership │   │
-│  │  - view()    │  │  - Topic     │  │  - Broadcast │   │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │  Components  │  │   Messages   │  │    Topics    │  │
+│  │  - update()  │  │  - Direct    │  │  - Ownership │  │
+│  │  - view()    │  │  - Topic     │  │  - Broadcast │  │
+│  │  - effects() │  │  - Async     │  │  - State     │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  │
 │         │                 │                 │           │
 │  ┌──────▼─────────────────▼─────────────────▼────────┐  │
 │  │                     Context                       │  │
@@ -59,8 +60,10 @@ The component system is the heart of the framework, providing a React-like compo
 pub trait Component: 'static {
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action;
     fn view(&self, ctx: &Context) -> Node;
-    fn get_id(&self) -> Option<ComponentId>;
-    fn set_id(&mut self, id: ComponentId);
+    fn effects(&self, ctx: &Context) -> Vec<Effect>;  // Optional, requires "effects" feature
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+    fn clone_box(&self) -> Box<dyn Component>;
 }
 ```
 
@@ -68,19 +71,22 @@ pub trait Component: 'static {
 - Components are stateless - all state is managed by Context
 - Update method receives optional topic for cross-component messaging
 - Components can be derived using `#[derive(Component)]` macro
+- Components must implement Clone for tree manipulation
+- Effects support async background tasks (with feature flag)
 
 #### Message and State Traits
 
-Both Message and State traits are auto-implemented for any type that is `Clone + Send + 'static`:
+Both Message and State traits are auto-implemented for any type that is `Clone + Send + Sync + 'static`:
 
 ```rust
-pub trait Message: Any + Send + 'static {
+pub trait Message: Any + Send + Sync + 'static {
     fn as_any(&self) -> &dyn Any;
     fn clone_box(&self) -> Box<dyn Message>;
 }
 
-pub trait State: Any + Send + 'static {
+pub trait State: Any + Send + Sync + 'static {
     fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
     fn clone_box(&self) -> Box<dyn State>;
 }
 ```
@@ -117,26 +123,27 @@ The Context provides components with everything they need to function:
 - `topic_message_queues`: Topic message queues
 
 **StateMap:**
-- Stores component states with interior mutability
+- Stores component states with interior mutability using `Arc<RwLock<HashMap>>`
 - `get_or_init<T>()`: Get state or initialize with Default
 - Type-safe state retrieval with automatic downcasting
 
 **Dispatcher:**
 - Routes messages to components or topics
-- `send(component_id, message)`: Direct component messaging
+- `send_to_id(component_id, message)`: Direct component messaging
 - `send_to_topic(topic, message)`: Topic-based messaging
 
 **TopicStore:**
 - Manages topic ownership (first writer becomes owner)
 - Stores topic states separately from component states
 - Tracks which component owns which topic
+- Thread-safe with RwLock protection
 
 #### Message Flow
 
 1. **Direct Messages**: Sent to specific component via `ctx.handler(msg)`
 2. **Topic Messages**: Sent via `ctx.send_to_topic(topic, msg)`
    - If topic has owner → delivered only to owner
-   - If no owner → cloned to all components until one claims it
+   - If no owner → broadcast to all components until one claims it
 
 ### 3. Topic-Based Messaging System
 
@@ -146,19 +153,19 @@ A unique feature for cross-component communication without direct references:
 
 - **Topics**: Named channels for messages (e.g., "counter_a", "global_state")
 - **Ownership**: First component to write to a topic becomes its owner
-- **Unassigned Messages**: Messages to unclaimed topics are cloned to all components
+- **Unassigned Messages**: Messages to unclaimed topics are broadcast to all components
 
 #### How It Works
 
 1. **Sending Messages:**
    ```rust
-   ctx.send_to_topic("my-topic", Box::new(MyMessage));
+   ctx.send_to_topic("my-topic", MyMessage);
    ```
 
 2. **Claiming Ownership:**
    ```rust
    // First component to return this action owns the topic
-   Action::update_topic("my-topic", MyState)
+   Action::UpdateTopic("my-topic", MyState)
    ```
 
 3. **Handling Topic Messages (Using Macros):**
@@ -171,25 +178,16 @@ A unique feature for cross-component communication without direct references:
            Messages::TopicMsg(msg) => { /* handle topic message */ }
        }
    }
-
-   // Or manually without macro:
-   fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action {
-       if let Some(topic) = topic {
-           if topic == "my-topic" {
-               // Handle message for this topic
-           }
-       }
-   }
    ```
 
 4. **Reading Topic State:**
    ```rust
-   let state: MyState = ctx.read_topic("my-topic")?;
+   let state: Option<MyState> = ctx.read_topic("my-topic");
    ```
 
 **Design Rationale:**
 - Enables decoupled component communication
-- Supports both single-writer/multiple-reader and multiple-writer/single-reader patterns
+- Supports both single-writer/multiple-reader and broadcast patterns
 - Automatic ownership management prevents conflicts
 
 ### 4. Application Core (`lib/app/core.rs`)
@@ -204,19 +202,21 @@ App::new()
 - Hides cursor and enables mouse capture
 - Initializes double buffer for flicker-free rendering
 - Sets up event handling
+- Creates effect runtime (if feature enabled)
 
 #### Event Loop
 
 The main loop (`run_loop`) follows this sequence:
 
-1. **Message Processing**:
+1. **Component Tree Expansion**:
+   - Start with root component
+   - Recursively expand components to VNodes
+   - Assign component IDs based on tree position
+
+2. **Message Processing**:
    - Components drain all pending messages (regular + topic)
    - Messages trigger state updates via component's `update` method
-
-2. **Tree Expansion**:
-   - Root component's `view` method generates Node tree
-   - Child components are recursively expanded
-   - Component IDs are assigned based on tree position
+   - Handle actions (Update, UpdateTopic, Exit, None)
 
 3. **Virtual DOM Update**:
    - VDom diffs new tree against current
@@ -229,9 +229,14 @@ The main loop (`run_loop`) follows this sequence:
    - Diff buffers and apply changes to terminal
 
 5. **Event Handling**:
-   - Process keyboard/mouse events
-   - Events trigger new messages
-   - Loop continues
+   - Process keyboard/mouse events (poll with 16ms timeout by default)
+   - Events trigger new messages via event handlers
+   - Handle terminal resize events
+
+6. **Effect Management** (if feature enabled):
+   - Spawn effects for newly mounted components
+   - Cleanup effects for unmounted components
+   - Effects run in Tokio runtime
 
 #### Component Tree Expansion
 
@@ -252,12 +257,12 @@ The `expand_component_tree` method is crucial:
 
 Three levels of node representation:
 
-#### Node (`lib/node.rs`)
+#### Node (`lib/node/`)
 High-level component tree:
 ```rust
 pub enum Node {
     Component(Box<dyn Component>), // Component instance
-    Div(Div),                      // Div with children
+    Div(Div),                      // Container with children
     Text(Text),                    // Text content
     RichText(RichText),           // Styled text with multiple spans
 }
@@ -280,6 +285,10 @@ pub struct RenderNode {
     pub node_type: RenderNodeType,
     pub x: u16, pub y: u16,           // Position
     pub width: u16, pub height: u16,   // Size
+    pub content_width: u16,            // Actual content size
+    pub content_height: u16,
+    pub scroll_y: u16,                 // Vertical scroll offset
+    pub scrollable: bool,              // Has overflow:scroll/auto
     pub style: Option<Style>,          // Visual style
     pub children: Vec<Rc<RefCell<RenderNode>>>,
     pub parent: Option<Weak<RefCell<RenderNode>>>,
@@ -290,7 +299,7 @@ pub struct RenderNode {
 }
 ```
 
-### 6. Div System (`lib/div.rs`)
+### 6. Div System (`lib/node/div.rs`)
 
 Divs are the building blocks of the UI:
 
@@ -300,6 +309,7 @@ Divs are the building blocks of the UI:
 - **Styling**: Background, padding, borders, overflow
 - **Focus**: Focusable flag, focus styles
 - **Events**: Click/key handlers (global and local)
+- **Scrolling**: overflow, show_scrollbar flags
 
 #### Builder Pattern
 ```rust
@@ -310,10 +320,10 @@ Div::new()
     .width(20)
     .height_percent(0.5)
     .focusable(true)
-    .focus_style(Style::default().background(Color::White))
-    .on_click(ctx.handler(MyMsg::Click))
-    .on_key(Key::Enter, ctx.handler(MyMsg::Enter))
-    .on_char_global('q', ctx.handler(MyMsg::Quit))
+    .overflow(Overflow::Scroll)
+    .show_scrollbar(true)
+    .on_click(handler)
+    .on_key(Key::Enter, handler)
     .children(vec![...])
 ```
 
@@ -334,16 +344,17 @@ Manages UI state and efficient updates:
 Generates minimal patches:
 ```rust
 pub enum Patch {
-    Create(VNode, Vec<usize>),           // Add node at path
-    Delete(Vec<usize>),                  // Remove node
-    Replace(VNode, Vec<usize>),          // Replace subtree
-    UpdateDiv(Div, Vec<usize>),      // Update properties
-    UpdateText(Text, Vec<usize>),        // Update text
-    Move(Vec<usize>, Vec<usize>),        // Reorder children
+    Create(VNode, Vec<usize>),        // Add node at path
+    Delete(Vec<usize>),               // Remove node
+    Replace(VNode, Vec<usize>),       // Replace subtree
+    UpdateDiv(Div, Vec<usize>),       // Update properties
+    UpdateText(Text, Vec<usize>),     // Update text
+    UpdateRichText(RichText, Vec<usize>), // Update rich text
+    Move(Vec<usize>, Vec<usize>),     // Reorder children
 }
 ```
 
-### 8. Layout System (`lib/render_tree/`)
+### 8. Layout System (`lib/render_tree/tree.rs`)
 
 Sophisticated layout engine supporting multiple sizing modes:
 
@@ -373,6 +384,14 @@ Multiple wrapping modes supported:
 - `Word`: Break at word boundaries
 - `WordBreak`: Try words, break if necessary
 
+#### Scrolling Support
+- **Vertical scrolling**: Implemented with scroll_y offset
+- **Scrollbar rendering**: Optional visual indicator
+- **Keyboard navigation**: Up/Down arrows, PageUp/PageDown, Home/End
+- **Mouse wheel**: ScrollUp/ScrollDown events
+- **Content tracking**: content_height vs container height
+- **Note**: Horizontal scrolling not yet implemented
+
 ### 9. Rendering Pipeline (`lib/app/renderer.rs`)
 
 Converts render tree to terminal output:
@@ -382,10 +401,13 @@ Converts render tree to terminal output:
 1. **Clear Background**: Fill with parent background color
 2. **Draw Borders**: Render border characters if present
 3. **Apply Padding**: Adjust content area
-4. **Render Content**:
+4. **Handle Scrolling**: Apply scroll_y offset for scrollable containers
+5. **Render Content**:
    - For containers: Recurse into children
    - For text: Draw text with wrapping
-5. **Apply Clipping**: Ensure content stays within bounds
+   - For rich text: Draw styled segments
+6. **Apply Clipping**: Ensure content stays within bounds
+7. **Draw Scrollbar**: Show position indicator if enabled
 
 #### Style Inheritance
 - Text nodes inherit parent's background if not specified
@@ -413,6 +435,7 @@ pub struct Cell {
     pub char: char,
     pub fg: Option<Color>,
     pub bg: Option<Color>,
+    pub style: TextStyle,  // Bitflags for bold, italic, etc.
 }
 ```
 
@@ -430,7 +453,7 @@ Optimized output with multiple strategies:
 1. **Batch Updates**: Group cells with same colors
 2. **Skip Unchanged**: Only update modified cells
 3. **Optimize Movements**: Minimize cursor jumps
-4. **Run-Length Encoding**: Compress repeated characters
+4. **Style Batching**: Combine style changes
 
 ### 11. Event System (`lib/app/events.rs`)
 
@@ -441,6 +464,11 @@ Comprehensive input handling:
 **Focus Navigation:**
 - Tab: Next focusable element
 - Shift+Tab: Previous focusable element
+
+**Scrolling (for focused scrollable elements):**
+- Up/Down arrows: Scroll by 1 line
+- PageUp/PageDown: Scroll by container height
+- Home/End: Jump to top/bottom
 
 **Event Routing:**
 1. Global handlers always receive events
@@ -453,6 +481,11 @@ Comprehensive input handling:
 1. Find node at click position
 2. Set focus if focusable
 3. Trigger click handler
+
+**Scroll Handling:**
+1. Find scrollable node under cursor
+2. Apply scroll delta
+3. Clamp to content bounds
 
 ### 12. RichText System (`lib/node/rich_text.rs`)
 
@@ -487,15 +520,14 @@ RichText::new()
 - **Top-Level Styling**: Apply wrapping or common styles to all spans
 - **Helper Methods**: `bold_all()`, `color()` for all spans
 - **Text Wrapping**: Preserves span styles across wrapped lines
-- **Internal Cursor Support**: Used by TextInput component
 
 ### 13. Style System (`lib/style.rs`)
 
 Rich styling capabilities:
 
 #### Colors
-- 16 standard terminal colors
-- Bright variants
+- 16 standard terminal colors (Black, Red, Green, Yellow, Blue, Magenta, Cyan, White)
+- Bright variants (BrightBlack through BrightWhite)
 - RGB support (24-bit color)
 
 #### Text Styles
@@ -519,18 +551,74 @@ Multiple styles supported:
 - Single, Double, Rounded, Thick
 - Configurable edges (top, right, bottom, left)
 
-#### Focus System
+#### Overflow
 ```rust
-pub struct Style {
-    pub background: Option<Color>,
-    pub padding: Option<Spacing>,
-    pub border: Option<BorderStyle>,
-    pub border_color: Option<Color>,
-    pub border_edges: BorderEdges,
-    pub overflow: Overflow,
-    pub opacity: f32,
+pub enum Overflow {
+    None,   // Content not clipped
+    Hidden, // Content clipped at boundaries
+    Scroll, // Content clipped but scrollable
+    Auto,   // Auto show scrollbars
 }
 ```
+
+### 14. Macro System (`lib/macros/`)
+
+Provides ergonomic APIs for building UIs:
+
+#### node! Macro
+JSX-like syntax for building UI trees:
+```rust
+node! {
+    div(bg: blue, pad: 2) [
+        text("Hello", color: white),
+        div(border: white) [
+            text("Nested")
+        ]
+    ]
+}
+```
+
+#### Attribute Macros
+
+**#[derive(Component)]**: Auto-implements Component trait boilerplate
+
+**#[component]**: Collects #[effect] methods for async support
+
+**#[update]**: Handles message downcasting and state management
+
+**#[view]**: Automatically fetches component state
+
+**#[effect]**: Marks async methods as effects
+
+### 15. Effects System (`lib/effect/`, requires feature flag)
+
+Supports async background tasks:
+
+#### Effect Runtime
+- Spawns Tokio runtime for async execution
+- Manages effect lifecycle per component
+- Automatic cleanup on component unmount
+
+#### Effect Definition
+```rust
+#[component]
+impl MyComponent {
+    #[effect]
+    async fn background_task(&self, ctx: &Context) {
+        loop {
+            tokio::time::sleep(Duration::from_secs(1)).await;
+            ctx.send(MyMsg::Tick);
+        }
+    }
+}
+```
+
+#### Common Use Cases
+- Timers and periodic updates
+- Network requests
+- File system monitoring
+- WebSocket connections
+- Background computations
 
 ## Performance Optimizations
 
@@ -547,11 +635,10 @@ pub struct Style {
 ### 3. Terminal Renderer
 - Batch color changes
 - Optimize cursor movements
-- Run-length encoding
 - Skip unchanged regions
 
 ### 4. Message System
-- Zero-copy message routing
+- Zero-copy message routing where possible
 - Lazy state cloning
 - Efficient topic distribution
 
@@ -560,138 +647,26 @@ pub struct Style {
 - Weak references prevent cycles
 - Minimal allocations during render
 
-## Example: Complete Application
+## Configuration
 
-```rust
-use rxtui::prelude::*;
+### RenderConfig
+Controls rendering behavior for debugging:
+- `poll_duration_ms`: Event poll timeout (default 16ms)
+- `use_double_buffer`: Enable/disable double buffering
+- `use_diffing`: Enable/disable cell diffing
+- `use_alternate_screen`: Use alternate screen buffer
 
-// Messages
-#[derive(Debug, Clone)]
-enum CounterMsg {
-    Increment,
-    Decrement,
-}
+## Future Enhancements
 
-#[derive(Debug, Clone)]
-struct ResetSignal;
+### Planned Features
+- Horizontal scrolling support
+- More built-in components (Button, Select, Table)
+- Animation system
+- Layout constraints
+- Accessibility features
 
-// State
-#[derive(Debug, Clone, Default)]
-struct CounterState {
-    count: i32,
-}
-
-// Component
-#[derive(Component, Clone)]
-struct Counter {
-    topic_name: String,
-    label: String,
-}
-
-impl Counter {
-    fn new(topic: &str, label: &str) -> Self {
-        Self {
-            topic_name: topic.into(),
-            label: label.into(),
-        }
-    }
-
-    // Using the new #[update] macro with dynamic topic support
-    #[update(msg = CounterMsg, topics = [self.topic_name => ResetSignal])]
-    fn update(&self, ctx: &Context, messages: Messages, mut state: CounterState) -> Action {
-        match messages {
-            Messages::CounterMsg(msg) => {
-                match msg {
-                    CounterMsg::Increment => state.count += 1,
-                    CounterMsg::Decrement => state.count -= 1,
-                }
-                Action::update(state)
-            }
-            Messages::ResetSignal(_) => {
-                Action::update(CounterState::default())
-            }
-        }
-    }
-
-    // Using the new #[view] macro
-    #[view]
-    fn view(&self, ctx: &Context, state: CounterState) -> Node {
-
-        Div::new()
-            .background(Color::Blue)
-            .padding(Spacing::all(1))
-            .direction(Direction::Vertical)
-            .focusable(true)
-            .focus_style(Style::default().background(Color::Cyan))
-            .on_key(Key::Up, ctx.handler(CounterMsg::Increment))
-            .on_key(Key::Down, ctx.handler(CounterMsg::Decrement))
-            .children(vec![
-                Text::new(&self.label).color(Color::White).into(),
-                Text::new(format!("Count: {}", state.count))
-                    .color(Color::BrightWhite)
-                    .into(),
-                Div::new()
-                    .direction(Direction::Horizontal)
-                    .gap(2)
-                    .children(vec![
-                        Div::new()
-                            .background(Color::Green)
-                            .padding(Spacing::horizontal(1))
-                            .on_click(ctx.handler(CounterMsg::Increment))
-                            .children(vec![Text::new("+").into()])
-                            .into(),
-                        Div::new()
-                            .background(Color::Red)
-                            .padding(Spacing::horizontal(1))
-                            .on_click(ctx.handler(CounterMsg::Decrement))
-                            .children(vec![Text::new("-").into()])
-                            .into(),
-                    ])
-                    .into(),
-            ])
-            .into()
-    }
-}
-
-// Dashboard with reset button
-#[derive(Component, Clone, Default)]
-struct Dashboard {}
-
-impl Dashboard {
-    #[update]
-    fn update(&self, ctx: &Context, msg: ResetSignal) -> Action {
-        // Send reset to all counters via topics
-        ctx.send_to_topic("counter_a", Box::new(ResetSignal));
-        ctx.send_to_topic("counter_b", Box::new(ResetSignal));
-        Action::none()
-    }
-
-    #[view]
-    fn view(&self, ctx: &Context) -> Node {
-        Div::new()
-            .padding(Spacing::all(2))
-            .direction(Direction::Vertical)
-            .on_char_global('q', ctx.handler(ExitSignal))
-            .on_char_global('r', ctx.handler(ResetSignal))
-            .children(vec![
-                Text::new("Dashboard - Press 'r' to reset, 'q' to quit")
-                    .color(Color::Yellow)
-                    .into(),
-                Div::new()
-                    .direction(Direction::Horizontal)
-                    .gap(2)
-                    .children(vec![
-                        Node::Component(Box::new(Counter::new("counter_a", "Counter A"))),
-                        Node::Component(Box::new(Counter::new("counter_b", "Counter B"))),
-                    ])
-                    .into(),
-            ])
-            .into()
-    }
-}
-
-fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(Dashboard::default())
-}
-```
+### Known Limitations
+- Horizontal scrolling not implemented
+- No built-in form validation
+- Limited animation support
+- No tree-shaking for unused features
