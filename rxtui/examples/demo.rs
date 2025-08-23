@@ -20,7 +20,7 @@ struct DemoState {
     current_page: i32,
 }
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default)]
 struct Demo {}
 
 //--------------------------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ impl Demo {
 // Tab Bar Component
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default)]
 struct TabBar {
     current_page: i32,
 }
@@ -175,7 +175,7 @@ impl TabBar {
 // Individual Tab Component
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default)]
 struct Tab {
     page_num: i32,
     label: String,

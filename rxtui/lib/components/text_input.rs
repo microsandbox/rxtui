@@ -145,7 +145,6 @@ pub struct TextInputState {
 ///     .content_bold(true)                // Bold typed text
 ///     .placeholder("Type here...");      // Placeholder remains default style
 /// ```
-#[derive(Clone)]
 pub struct TextInput {
     placeholder: Option<String>,
     placeholder_style: Option<TextStyle>,
@@ -1179,10 +1178,6 @@ impl Component for TextInput {
 
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
-    }
-
-    fn clone_box(&self) -> Box<dyn Component> {
-        Box::new(self.clone())
     }
 }
 

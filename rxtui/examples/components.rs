@@ -22,7 +22,7 @@ struct CounterState {
 #[derive(Debug, Clone)]
 struct ResetSignal;
 
-#[derive(Component, Clone)]
+#[derive(Component)]
 struct Counter {
     topic_name: String,
     label: String,
@@ -44,7 +44,7 @@ struct DashboardState {
     title: String,
 }
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default)]
 struct Dashboard {}
 
 //--------------------------------------------------------------------------------------------------

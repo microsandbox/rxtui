@@ -108,11 +108,11 @@ where
 /// use rxtui::prelude::*;
 ///
 /// // Components can be unit structs or structs with fields
-/// #[derive(Component, Clone)]
+/// #[derive(Component)]
 /// struct Counter;
 ///
 /// // Or with fields:
-/// // #[derive(Component, Clone)]
+/// // #[derive(Component)]
 /// // struct Counter {
 /// //     initial_value: i32,
 /// // }
@@ -153,7 +153,7 @@ where
 /// use rxtui::prelude::*;
 /// use std::time::Duration;
 ///
-/// #[derive(Component, Clone)]
+/// #[derive(Component)]
 /// struct Timer;
 ///
 /// #[component]  // This macro handles effect collection
@@ -289,13 +289,6 @@ pub trait Component: 'static {
     fn as_any(&self) -> &dyn Any;
 
     fn as_any_mut(&mut self) -> &mut dyn Any;
-
-    fn clone_box(&self) -> Box<dyn Component>;
-}
-
-/// Helper trait for cloning Component trait objects
-pub trait ComponentClone {
-    fn clone_box(&self) -> Box<dyn Component>;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -357,15 +350,6 @@ where
     }
 
     fn clone_box(&self) -> Box<dyn Message> {
-        Box::new(self.clone())
-    }
-}
-
-impl<T> ComponentClone for T
-where
-    T: Component + Clone + 'static,
-{
-    fn clone_box(&self) -> Box<dyn Component> {
         Box::new(self.clone())
     }
 }

@@ -104,19 +104,18 @@ fn extract_param_info(arg: &FnArg) -> Option<(Ident, Type)> {
 /// Derive macro that implements the Component trait
 ///
 /// This macro automatically implements all the boilerplate methods
-/// required by the Component trait. The component struct must also
-/// implement Clone.
+/// required by the Component trait.
 ///
 /// # Example
 ///
 /// ```ignore
-/// #[derive(Component, Clone)]
+/// #[derive(Component)]
 /// struct MyComponent {
 ///     // any fields you need
 /// }
 ///
 /// // Or for unit structs:
-/// #[derive(Component, Clone)]
+/// #[derive(Component)]
 /// struct MyComponent;
 ///
 /// impl MyComponent {
@@ -145,10 +144,6 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
                 self
             }
 
-            fn clone_box(&self) -> Box<dyn rxtui::Component> {
-                Box::new(self.clone())
-            }
-
             // Forward to the user's implementations
             fn update(&self, ctx: &rxtui::Context, msg: Box<dyn rxtui::Message>, topic: Option<&str>) -> rxtui::Action {
                 <#name>::update(self, ctx, msg, topic)
@@ -158,13 +153,14 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
                 <#name>::view(self, ctx)
             }
 
-            // Forward effects if using #[component] macro
-            // This will fail to compile if #[component] isn't used, which is the correct behavior
-            // since #[component] is required for effects support
+            // Use method resolution to call inherent __component_effects_impl if it exists,
+            // otherwise fall back to the trait's default implementation (empty vec)
             fn effects(&self, ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
-                <#name>::effects(self, ctx)
+                use rxtui::effect::EffectsProvider;
+                self.__component_effects_impl(ctx)
             }
         }
+
     };
 
     TokenStream::from(expanded)
@@ -743,15 +739,17 @@ pub fn component(_args: TokenStream, input: TokenStream) -> TokenStream {
             .collect::<Vec<_>>();
 
         quote! {
-            // Generated effects method with collected effects
-            fn effects(&self, ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
+            // Generated method that shadows the EffectsProvider trait method
+            // This will be called by Component::effects() through method resolution
+            fn __component_effects_impl(&self, ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
                 vec![#(#effect_calls),*]
             }
         }
     } else {
         quote! {
-            // No effects defined, return empty vec
-            fn effects(&self, _ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
+            // No effects defined, but still generate the method to shadow the trait
+            // This ensures consistent behavior whether effects are present or not
+            fn __component_effects_impl(&self, _ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
                 vec![]
             }
         }
@@ -760,5 +758,6 @@ pub fn component(_args: TokenStream, input: TokenStream) -> TokenStream {
     let effects_item: ImplItem = syn::parse2(effects_method).unwrap();
     impl_block.items.push(effects_item);
 
+    // Just return the impl block with the effects method
     TokenStream::from(quote! { #impl_block })
 }

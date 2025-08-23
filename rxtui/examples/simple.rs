@@ -22,7 +22,7 @@ struct ColorDemoState {
 }
 
 /// Color demo component showing interactive color cycling
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default)]
 struct ColorDemo {}
 
 //--------------------------------------------------------------------------------------------------

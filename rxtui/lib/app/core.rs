@@ -16,6 +16,7 @@ use crossterm::{
 use std::cell::RefCell;
 use std::io;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use super::config::RenderConfig;
 use super::events::{handle_key_event, handle_mouse_event};
@@ -179,7 +180,7 @@ impl App {
     /// This method blocks until the application exits.
     pub fn run<C>(&mut self, root_component: C) -> io::Result<()>
     where
-        C: Component + Clone,
+        C: Component,
     {
         self.run_loop(root_component)
     }
@@ -252,16 +253,16 @@ impl App {
     /// 4. Terminal is resized
     fn run_loop<C>(&mut self, root_component: C) -> io::Result<()>
     where
-        C: Component + Clone,
+        C: Component,
     {
         let mut context = Context::new();
-        let mut components: HashMap<ComponentId, Box<dyn Component>> = HashMap::new();
+        let mut components: HashMap<ComponentId, Arc<dyn Component>> = HashMap::new();
 
         // Store the root component
         let root_id = ComponentId::default();
         components.insert(
             root_id.clone(),
-            Box::new(root_component) as Box<dyn Component>,
+            Arc::new(root_component) as Arc<dyn Component>,
         );
 
         let mut needs_render = true; // Initial render
@@ -405,7 +406,7 @@ impl App {
         &self,
         component: &dyn Component,
         context: &mut Context,
-        components: &mut HashMap<ComponentId, Box<dyn Component>>,
+        components: &mut HashMap<ComponentId, Arc<dyn Component>>,
     ) -> Result<VNode, ExitSignal> {
         // Process all pending messages (regular, owned topics, and unassigned topics)
         let messages = context.drain_all_messages();
@@ -464,7 +465,7 @@ impl App {
         &self,
         node: Node,
         context: &mut Context,
-        components: &mut HashMap<ComponentId, Box<dyn Component>>,
+        components: &mut HashMap<ComponentId, Arc<dyn Component>>,
         child_index: usize,
     ) -> Result<VNode, ExitSignal> {
         match node {
@@ -480,7 +481,7 @@ impl App {
                 let vnode = self.expand_component_tree(component.as_ref(), context, components)?;
 
                 // Store the component for future updates
-                components.insert(component_id, component);
+                components.insert(component_id, Arc::clone(&component));
 
                 // Restore parent context
                 context.current_component_id = parent_id;
