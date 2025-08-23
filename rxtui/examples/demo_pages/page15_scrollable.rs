@@ -19,7 +19,7 @@ struct ScrollDemoState {
     info_text: String,
 }
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default)]
 pub struct Page15ScrollableDemo {}
 
 //--------------------------------------------------------------------------------------------------

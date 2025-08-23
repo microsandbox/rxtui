@@ -5,7 +5,7 @@
 
 use rxtui::prelude::*;
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default)]
 pub struct Page13 {}
 
 impl Page13 {

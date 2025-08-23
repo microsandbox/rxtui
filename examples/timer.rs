@@ -6,7 +6,7 @@ enum TimerMsg {
     Exit,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component)]
 struct Timer;
 
 #[component]

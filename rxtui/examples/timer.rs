@@ -22,7 +22,7 @@ struct State {
     running: bool,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component)]
 struct Timer;
 
 //--------------------------------------------------------------------------------------------------

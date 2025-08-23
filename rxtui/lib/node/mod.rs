@@ -1,4 +1,5 @@
 use crate::component::Component;
+use std::sync::Arc;
 
 pub mod div;
 pub mod rich_text;
@@ -16,7 +17,7 @@ pub use text::Text;
 #[allow(clippy::large_enum_variant)]
 pub enum Node {
     /// A component that can be expanded
-    Component(Box<dyn Component>),
+    Component(Arc<dyn Component>),
 
     /// A div that can have children
     Div(Div<Node>),
@@ -74,7 +75,7 @@ impl Node {
 impl Clone for Node {
     fn clone(&self) -> Self {
         match self {
-            Node::Component(c) => Node::Component(c.clone_box()),
+            Node::Component(c) => Node::Component(Arc::clone(c)),
             Node::Div(div) => Node::Div(div.clone()),
             Node::Text(text) => Node::Text(text.clone()),
             Node::RichText(rich) => Node::RichText(rich.clone()),
@@ -116,8 +117,8 @@ impl From<RichText> for Node {
     }
 }
 
-impl From<Box<dyn Component>> for Node {
-    fn from(component: Box<dyn Component>) -> Self {
+impl From<Arc<dyn Component>> for Node {
+    fn from(component: Arc<dyn Component>) -> Self {
         Node::Component(component)
     }
 }

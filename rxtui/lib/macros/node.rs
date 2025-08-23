@@ -456,7 +456,7 @@ macro_rules! tui_parse_element {
 
     // Component
     (node($comp:expr)) => {{
-        $crate::Node::Component(Box::new($comp))
+        $crate::Node::Component(std::sync::Arc::new($comp))
     }};
 
     // Input with properties
@@ -466,7 +466,7 @@ macro_rules! tui_parse_element {
 
     // Input without properties
     (input) => {{
-        $crate::Node::Component(Box::new($crate::TextInput::new()))
+        $crate::Node::Component(std::sync::Arc::new($crate::TextInput::new()))
     }};
 
     // VStack with properties
@@ -1601,7 +1601,7 @@ macro_rules! tui_text {
 #[macro_export]
 macro_rules! tui_build_input {
     () => {{
-        $crate::Node::Component(Box::new($crate::TextInput::new()))
+        $crate::Node::Component(std::sync::Arc::new($crate::TextInput::new()))
     }};
 
     ($($props:tt)*) => {{
@@ -1609,7 +1609,7 @@ macro_rules! tui_build_input {
         let __input = $crate::TextInput::new();
         // Always add trailing comma for consistent parsing
         let __input = $crate::tui_apply_input_props!(__input, $($props)* ,);
-        $crate::Node::Component(Box::new(__input))
+        $crate::Node::Component(std::sync::Arc::new(__input))
     }};
 }
 

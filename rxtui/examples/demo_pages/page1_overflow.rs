@@ -31,7 +31,7 @@ struct OverflowDemoState {
     level3_color_idx: usize,
 }
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default)]
 pub struct Page1OverflowDemo {}
 
 //--------------------------------------------------------------------------------------------------

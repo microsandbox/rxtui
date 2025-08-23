@@ -104,19 +104,18 @@ fn extract_param_info(arg: &FnArg) -> Option<(Ident, Type)> {
 /// Derive macro that implements the Component trait
 ///
 /// This macro automatically implements all the boilerplate methods
-/// required by the Component trait. The component struct must also
-/// implement Clone.
+/// required by the Component trait.
 ///
 /// # Example
 ///
 /// ```ignore
-/// #[derive(Component, Clone)]
+/// #[derive(Component)]
 /// struct MyComponent {
 ///     // any fields you need
 /// }
 ///
 /// // Or for unit structs:
-/// #[derive(Component, Clone)]
+/// #[derive(Component)]
 /// struct MyComponent;
 ///
 /// impl MyComponent {
@@ -143,10 +142,6 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 
             fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
                 self
-            }
-
-            fn clone_box(&self) -> Box<dyn rxtui::Component> {
-                Box::new(self.clone())
             }
 
             // Forward to the user's implementations

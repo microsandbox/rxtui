@@ -4,7 +4,7 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default)]
 pub struct Page12FocusDemo {}
 
 //--------------------------------------------------------------------------------------------------
@@ -92,7 +92,7 @@ enum FocusButtonMsg {
     Blurred,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component)]
 struct FocusButton {
     label: String,
     color: Color,
