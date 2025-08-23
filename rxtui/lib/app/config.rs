@@ -13,6 +13,10 @@ pub struct RenderConfig {
 
     /// Enable cell-level diffing (default: true)
     pub cell_diffing: bool,
+
+    /// Event polling duration in milliseconds (default: 100ms)
+    /// Lower values make the app more responsive but use more CPU
+    pub poll_duration_ms: u64,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -26,6 +30,7 @@ impl RenderConfig {
             double_buffering: false,
             terminal_optimizations: false,
             cell_diffing: false,
+            poll_duration_ms: 100,
         }
     }
 }
@@ -40,6 +45,7 @@ impl Default for RenderConfig {
             double_buffering: true,
             terminal_optimizations: true,
             cell_diffing: true,
+            poll_duration_ms: 100,
         }
     }
 }
