@@ -1,7 +1,7 @@
 # RxTUI
 
 > [!WARNING]
-> This library is highly experimental and under active development. APIs may change significantly between versions. Use in production at your own risk.
+> RxTUI is under active development. The API may change between versions.
 
 A reactive terminal user interface framework for Rust that brings modern web development patterns to the terminal. Build sophisticated TUIs with the same mental model as React, but optimized for terminal constraints.
 
@@ -52,8 +52,8 @@ struct CounterState {
 }
 
 // 3. Create your component
-#[derive(Component, Clone, Default)]
-struct Counter {}
+#[derive(Component, Clone)]
+struct Counter;
 
 impl Counter {
     #[update] // Handle messages and update state
@@ -98,7 +98,7 @@ impl Counter {
 // 4. Run your app
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    app.run(Counter::default())
+    app.run(Counter)
 }
 ```
 
@@ -168,8 +168,8 @@ struct Task {
 }
 
 // Finally, create your component
-#[derive(Component, Clone, Default)]
-struct TodoList {}
+#[derive(Component, Clone)]
+struct TodoList;
 ```
 
 The beauty of this pattern is that each component is independent. You can develop, test, and reason about them in isolation, then compose them into larger applications.
