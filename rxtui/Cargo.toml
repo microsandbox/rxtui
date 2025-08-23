@@ -15,6 +15,10 @@ categories = ["command-line-interface", "gui"]
 name = "rxtui"
 path = "lib/lib.rs"
 
+[features]
+default = []
+effects = ["tokio", "futures"]
+
 [dependencies]
 rxtui-macros = { version = "0.1.0", path = "../rxtui-macros" }
 bitflags = "2.4"
@@ -22,3 +26,7 @@ crossterm = "0.28"
 serde.workspace = true
 thiserror.workspace = true
 unicode-width = "0.2"
+
+# Optional dependencies for effects
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "time", "sync", "macros"], optional = true }
+futures = { version = "0.3", optional = true }

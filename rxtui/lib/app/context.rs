@@ -76,6 +76,12 @@ impl Dispatcher {
             .push_back(Box::new(message));
     }
 
+    /// Send an already-boxed message to a component
+    pub fn send_boxed_to_id(&self, component_id: ComponentId, message: Box<dyn Message>) {
+        let mut queues = self.queues.write().unwrap();
+        queues.entry(component_id).or_default().push_back(message);
+    }
+
     pub fn send_to_topic(&self, topic: String, message: impl Message) {
         let mut queues = self.topic_queues.write().unwrap();
         queues
@@ -394,6 +400,31 @@ impl Context {
                 queue.clear();
             }
         }
+    }
+
+    /// Check if there are any pending messages in any queue
+    pub fn has_pending_messages(&self) -> bool {
+        // Check component message queues
+        {
+            let queues = self.message_queues.read().unwrap();
+            for queue in queues.values() {
+                if !queue.is_empty() {
+                    return true;
+                }
+            }
+        }
+
+        // Check topic message queues
+        {
+            let queues = self.topic_message_queues.read().unwrap();
+            for queue in queues.values() {
+                if !queue.is_empty() {
+                    return true;
+                }
+            }
+        }
+
+        false
     }
 }
 

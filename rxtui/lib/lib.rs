@@ -147,6 +147,11 @@ pub mod macros;
 /// Provides pre-built components like TextInput, Button, etc.
 pub mod components;
 
+/// Async effects system for running background tasks
+/// Requires the "effects" feature flag
+#[cfg(feature = "effects")]
+pub mod effect;
+
 //--------------------------------------------------------------------------------------------------
 // Exports
 //--------------------------------------------------------------------------------------------------

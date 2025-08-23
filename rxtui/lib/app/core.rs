@@ -21,6 +21,11 @@ use super::config::RenderConfig;
 use super::events::{handle_key_event, handle_mouse_event};
 use super::renderer::render_node_to_buffer;
 use std::collections::HashMap;
+#[cfg(feature = "effects")]
+use std::collections::HashSet;
+
+#[cfg(feature = "effects")]
+use crate::effect::EffectRuntime;
 
 //--------------------------------------------------------------------------------------------------
 // Types
@@ -97,6 +102,10 @@ pub struct App {
 
     /// Rendering configuration for debugging and optimization control
     config: RenderConfig,
+
+    /// Effect runtime for managing async tasks
+    #[cfg(feature = "effects")]
+    effect_runtime: Option<EffectRuntime>,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -136,6 +145,10 @@ impl App {
         // Get initial terminal size for double buffer
         let (width, height) = terminal::size()?;
 
+        // Initialize effect runtime if feature is enabled
+        #[cfg(feature = "effects")]
+        let effect_runtime = Some(EffectRuntime::new());
+
         Ok(Self {
             vdom: VDom::new(),
             running,
@@ -144,6 +157,8 @@ impl App {
             render_log_fn: None,
             terminal_renderer: TerminalRenderer::new(),
             config: RenderConfig::default(),
+            #[cfg(feature = "effects")]
+            effect_runtime,
         })
     }
 
@@ -229,8 +244,27 @@ impl App {
 
         let mut needs_render = true; // Initial render
 
+        // Track which components have active effects - OUTSIDE the loop so it persists
+        #[cfg(feature = "effects")]
+        let mut component_effects: HashSet<ComponentId> = HashSet::new();
+
+        // Spawn effects for root component ONCE before entering the loop
+        #[cfg(feature = "effects")]
+        if let Some(runtime) = &self.effect_runtime
+            && let Some(root_comp) = components.get(&root_id)
+        {
+            let effects = root_comp.effects(&context);
+            if !effects.is_empty() {
+                runtime.spawn(root_id.clone(), effects);
+                component_effects.insert(root_id.clone());
+            }
+        }
+
         while *self.running.borrow() {
-            // Messages are now processed during tree expansion, not here
+            // Check if we have pending messages that need processing
+            if context.has_pending_messages() {
+                needs_render = true;
+            }
 
             // Expand component tree to VNode tree
             let vnode_tree = if let Some(root_component) = components.get(&root_id) {
@@ -245,6 +279,42 @@ impl App {
                     &mut temp_components,
                 ) {
                     Ok(vnode) => {
+                        // Handle effects for dynamically mounted/unmounted components
+                        #[cfg(feature = "effects")]
+                        if let Some(runtime) = &self.effect_runtime {
+                            // Track current components in tree (excluding root which was handled before loop)
+                            let current_components: HashSet<ComponentId> =
+                                temp_components.keys().cloned().collect();
+
+                            // Spawn effects for newly mounted components (not root)
+                            for (comp_id, component) in &temp_components {
+                                // Skip root component as it's already handled
+                                if comp_id != &root_id && !component_effects.contains(comp_id) {
+                                    // This is a newly mounted component
+                                    let effects = component.effects(&context);
+                                    if !effects.is_empty() {
+                                        runtime.spawn(comp_id.clone(), effects);
+                                        component_effects.insert(comp_id.clone());
+                                    }
+                                }
+                            }
+
+                            // Cleanup effects for unmounted components (excluding root)
+                            component_effects.retain(|comp_id| {
+                                // Never cleanup root component effects
+                                if comp_id == &root_id {
+                                    return true;
+                                }
+
+                                if !current_components.contains(comp_id) {
+                                    runtime.cleanup(comp_id);
+                                    false
+                                } else {
+                                    true
+                                }
+                            });
+                        }
+
                         // Merge temp_components back into main components map
                         // This is critical for nested components to receive messages
                         components.extend(temp_components);

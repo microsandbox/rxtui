@@ -3,6 +3,9 @@ use crate::node::Node;
 use std::any::Any;
 use std::fmt::Debug;
 
+#[cfg(feature = "effects")]
+use crate::effect::Effect;
+
 //--------------------------------------------------------------------------------------------------
 // Types
 //--------------------------------------------------------------------------------------------------
@@ -156,6 +159,14 @@ pub trait Component: 'static {
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, topic: Option<&str>) -> Action;
 
     fn view(&self, ctx: &Context) -> Node;
+
+    /// Define effects for this component
+    /// Effects are async tasks that run outside the main event loop
+    /// They are spawned when the component mounts and cancelled when it unmounts
+    #[cfg(feature = "effects")]
+    fn effects(&self, _ctx: &Context) -> Vec<Effect> {
+        vec![]
+    }
 
     fn as_any(&self) -> &dyn Any;
 

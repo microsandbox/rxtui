@@ -151,6 +151,12 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
             fn view(&self, ctx: &rxtui::Context) -> rxtui::Node {
                 <#name>::view(self, ctx)
             }
+
+            // Forward effects method when feature is enabled
+            #[cfg(feature = "effects")]
+            fn effects(&self, ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
+                <#name>::effects(self, ctx)
+            }
         }
     };
 
