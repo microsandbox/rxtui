@@ -153,11 +153,8 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
                 <#name>::view(self, ctx)
             }
 
-            // Forward effects method when feature is enabled
-            #[cfg(feature = "effects")]
-            fn effects(&self, ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
-                <#name>::effects(self, ctx)
-            }
+            // Don't forward effects - let the trait's default implementation be used
+            // unless the type explicitly implements it via the #[component] attribute macro
         }
     };
 
