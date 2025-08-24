@@ -1,5 +1,9 @@
 <div align="center">
-  <h1>RxTUI</h1>
+  <img width="450" alt="RxTUI Logo" src="https://github.com/user-attachments/assets/4d8cc0f6-9f17-43bf-8368-9ad616c1f91f" />
+
+  <br />
+  <br />
+
   <b>———&nbsp;&nbsp;&nbsp;reactive terminal UI framework for rust&nbsp;&nbsp;&nbsp;———</b>
 </div>
 
@@ -19,7 +23,7 @@
 
 <br />
 
-<div align='center'>• • •</div>
+<br />
 
 # <sub>WHY RXTUI?</sub>
 
