@@ -64,71 +64,67 @@ impl Form {
 
                 // Form fields with callbacks
                 vstack [
-                    text("Name:", color: white, bold),
+                    text(" Name:", color: white, bold),
                     node(TextInput::new()
                         .placeholder("Enter your full name...")
                         .border(if state.name.is_empty() { Color::White } else { Color::Green })
                         .focusable(true)
                         .width(40)
-                        // .on_change(ctx.handler_with_value(Msg::NameChanged))
-                        // .on_submit(ctx.handler(Msg::Submit))
+                        .on_change(ctx.handler_with_value(Msg::NameChanged))
+                        .on_submit(ctx.handler(Msg::Submit))
                     )
                 ],
                 spacer(1),
 
                 vstack [
-                    text("Email:", color: white, bold),
+                    text(" Email:", color: white, bold),
                     node(TextInput::new()
                         .placeholder("your.email@example.com")
-                        .border(if state.email.is_empty() { Color::Blue } else { Color::Green })
+                        .border(if state.email.is_empty() { Color::White } else { Color::Green })
                         .focusable(true)
                         .width(40)
-                        // .on_change(ctx.handler_with_value(Msg::EmailChanged))
-                        // .on_submit(ctx.handler(Msg::Submit))
+                        .on_change(ctx.handler_with_value(Msg::EmailChanged))
+                        .on_submit(ctx.handler(Msg::Submit))
                     )
                 ],
                 spacer(1),
 
                 vstack [
-                    text("Password:", color: white, bold),
+                    text(" Password:", color: white, bold),
                     node(TextInput::new()
                         .placeholder("Enter secure password...")
                         .password(true)
-                        .border(if state.password.is_empty() { Color::Red } else { Color::Green })
+                        .border(if state.password.is_empty() { Color::White } else { Color::Green })
                         .focusable(true)
                         .width(40)
-                        // .on_change(ctx.handler_with_value(Msg::PasswordChanged))
-                        // .on_submit(ctx.handler(Msg::Submit))
+                        .on_change(ctx.handler_with_value(Msg::PasswordChanged))
+                        .on_submit(ctx.handler(Msg::Submit))
                     )
                 ],
-                spacer(2),
+                spacer(1),
 
                 // Buttons
-                div(dir: horizontal, gap: 2) [
-                    div(
-                        bg: (if state.name.is_empty() || state.email.is_empty() || state.password.is_empty() {
-                            Color::BrightBlack
-                        } else {
-                            Color::Green
-                        }),
-                        pad_h: 2,
-                        pad_v: 1,
-                        border: white
-                    ) [
-                        text("Submit [Enter]", color: white, bold),
-                        @key(Enter): ctx.handler(Msg::Submit)
+                div(
+                    bg: (if state.name.is_empty() || state.email.is_empty() || state.password.is_empty() {
+                        Color::BrightBlack
+                    } else {
+                        Color::Green
+                    }),
+                    w: 40,
+                    border: white,
+                    focusable
+                ) [
+                    hstack [
+                        div(w_pct: 0.9, h: 1)[],
+                        text("Submit", color: black, bold),
                     ],
-
-                    div(bg: red, pad_h: 2, pad_v: 1, border: white) [
-                        text("Clear [C]", color: white, bold),
-                        @char('c'): ctx.handler(Msg::Clear),
-                        @char('C'): ctx.handler(Msg::Clear)
-                    ]
+                    @click: ctx.handler(Msg::Submit)
                 ],
+
                 spacer(2),
 
                 // Live state display
-                div(border: white, pad: 1) [
+                div(border: white, pad: 1, w: 40) [
                     text("Current Form State:", color: yellow, bold),
                     spacer(1),
                     richtext [
@@ -159,8 +155,10 @@ impl Form {
                     node! { spacer(0) }
                 }),
 
-                // Exit handler
-                @key(Esc): ctx.handler(Msg::Exit)
+                // Global key handlers
+                @key(Esc): ctx.handler(Msg::Exit),
+                @char('c'): ctx.handler(Msg::Clear),
+                @char('C'): ctx.handler(Msg::Clear)
             ]
         }
     }
