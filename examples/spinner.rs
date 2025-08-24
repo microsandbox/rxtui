@@ -26,12 +26,9 @@ impl Spinner {
 
         node! {
             div(bg: black, pad: 2) [
-                vstack(bg: black, gap: 1) [
-                    richtext [
-                        text(frame, color: cyan, bold),
-                        text(" Loading...", color: white),
-                    ],
-                    text("Press Esc to exit", color: bright_black, italic)
+                richtext [
+                    text(frame, color: cyan, bold),
+                    text(" Press Esc to exit", color: bright_black, italic)
                 ],
                 @key(Esc): ctx.handler(Msg::Exit)
             ]
