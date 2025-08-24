@@ -55,7 +55,7 @@ impl Timer {
         let status = if state.running { "Running" } else { "Paused" };
 
         node! {
-            div(bg: black, dir: vertical, pad: 2, h: 12, gap: 2, @key(Char(' ')): ctx.handler(Msg::Toggle), @key(Char('r')): ctx.handler(Msg::Reset), @key(Char('q')): ctx.handler(Msg::Exit), @key(Esc): ctx.handler(Msg::Exit)) [
+            div(bg: black, dir: vertical, pad: 2, h: 12, gap: 2, @key(Char(' ')): ctx.handler(Msg::Toggle), @key(Char('r')): ctx.handler(Msg::Reset), @key(Char('q')): ctx.handler(Msg::Exit), @key(esc): ctx.handler(Msg::Exit)) [
                 // Timer display
                 div(bg: "#1a1a1a", border: white, pad: 1, w_pct: 1.0) [
                     div(dir: vertical) [

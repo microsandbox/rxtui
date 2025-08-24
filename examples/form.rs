@@ -54,7 +54,7 @@ impl Form {
     #[view]
     fn view(&self, ctx: &Context, state: FormState) -> Node {
         node! {
-            div(bg: black, pad: 2, w_pct: 1.0, @key(Esc): ctx.handler(Msg::Exit), @char('c'): ctx.handler(Msg::Clear), @char('C'): ctx.handler(Msg::Clear)) [
+            div(bg: black, pad: 2, w_pct: 1.0, @key(esc): ctx.handler(Msg::Exit), @char('c'): ctx.handler(Msg::Clear), @char('C'): ctx.handler(Msg::Clear)) [
                 // Title
                 text("Form Example with Callbacks", color: cyan, bold),
                 spacer(1),

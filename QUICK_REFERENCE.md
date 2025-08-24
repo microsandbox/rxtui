@@ -37,7 +37,7 @@ impl MyComponent {
             div(bg: black, pad: 2) [
                 text(format!("Count: {}", state.counter)),
                 @click: ctx.handler(MyMsg::Click),
-                @key_global(Esc): ctx.handler(MyMsg::Exit)
+                @key_global(esc): ctx.handler(MyMsg::Exit)
             ]
         }
     }
@@ -179,12 +179,12 @@ div(
     @click: handler,
     // Keyboard (requires focus)
     @char('a'): handler,
-    @key(Enter): handler,
-    @key(Backspace): handler,
+    @key(enter): handler,
+    @key(backspace): handler,
     @char('-'): handler,  // For character keys, use @char
     // Global (no focus needed)
     @char_global('q'): handler,
-    @key_global(Esc): handler,
+    @key_global(esc): handler,
     // Focus
     @focus: handler,
     @blur: handler,
