@@ -18,7 +18,7 @@ Let's start with the simplest possible RxTUI app.
 use rxtui::prelude::*;
 
 // Define a component
-#[derive(Component, Default)]
+#[derive(Component)]
 struct HelloWorld;
 
 impl HelloWorld {
@@ -36,7 +36,7 @@ impl HelloWorld {
 fn main() -> std::io::Result<()> {
     // Create and run the app
     let mut app = App::new()?;
-    app.run(HelloWorld::default())
+    app.run(HelloWorld)
 }
 ```
 
@@ -69,7 +69,7 @@ struct CounterState {
     count: i32,
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 struct Counter;
 
 impl Counter {
@@ -85,7 +85,7 @@ impl Counter {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    app.run(Counter::default())
+    app.run(Counter)
 }
 ```
 
@@ -113,7 +113,7 @@ struct CounterState {
     count: i32,
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 struct Counter;
 
 impl Counter {
@@ -296,7 +296,7 @@ struct FormState {
     submitted: bool,
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 struct Form;
 
 impl Form {
@@ -412,7 +412,7 @@ impl Child {
 }
 
 // Parent that receives updates
-#[derive(Component, Default)]
+#[derive(Component)]
 struct Parent;
 
 impl Parent {
@@ -607,7 +607,7 @@ impl Default for Filter {
     fn default() -> Self { Filter::All }
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 struct TodoApp;
 
 impl TodoApp {
@@ -741,7 +741,7 @@ impl TodoApp {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    app.run(TodoApp::default())
+    app.run(TodoApp)
 }
 ```
 

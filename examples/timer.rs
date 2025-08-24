@@ -40,6 +40,5 @@ impl Timer {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(Timer)
+    App::new()?.run(Timer)
 }

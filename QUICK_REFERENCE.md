@@ -16,7 +16,7 @@ struct MyState {
     counter: i32,
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 struct MyComponent;
 
 impl MyComponent {
@@ -506,7 +506,6 @@ let mut app = App::with_config(RenderConfig {
 2. **State cloning**: State is cloned on update
 3. **Topic ownership**: First updater owns topic
 4. **Scrolling**: Container must be `focusable`
-5. **Colors**: Use names without `Color::` prefix in node!
 
 ## Import Everything
 

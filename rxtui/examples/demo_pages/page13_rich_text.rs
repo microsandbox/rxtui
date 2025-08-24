@@ -5,8 +5,8 @@
 
 use rxtui::prelude::*;
 
-#[derive(Component, Default)]
-pub struct Page13 {}
+#[derive(Component)]
+pub struct Page13;
 
 impl Page13 {
     #[update]

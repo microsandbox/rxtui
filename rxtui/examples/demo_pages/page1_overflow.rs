@@ -31,8 +31,8 @@ struct OverflowDemoState {
     level3_color_idx: usize,
 }
 
-#[derive(Component, Default)]
-pub struct Page1OverflowDemo {}
+#[derive(Component)]
+pub struct Page1OverflowDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations

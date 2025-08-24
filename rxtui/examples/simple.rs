@@ -22,8 +22,8 @@ struct ColorDemoState {
 }
 
 /// Color demo component showing interactive color cycling
-#[derive(Component, Default)]
-struct ColorDemo {}
+#[derive(Component)]
+struct ColorDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -114,8 +114,7 @@ impl ColorDemo {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    let root = ColorDemo::default();
-    app.run(root)
+    app.run(ColorDemo)
 }
 
 fn next_color(color: Color) -> Color {

@@ -36,7 +36,7 @@ Create your first app:
 ```rust
 use rxtui::prelude::*;
 
-#[derive(Component, Default)]
+#[derive(Component)]
 struct HelloWorld;
 
 impl HelloWorld {
@@ -52,7 +52,7 @@ impl HelloWorld {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    app.run(HelloWorld::default())
+    app.run(HelloWorld)
 }
 ```
 
@@ -101,7 +101,7 @@ struct CounterState {
 }
 
 // Define component
-#[derive(Component, Default)]
+#[derive(Component)]
 struct Counter;
 
 impl Counter {
@@ -300,7 +300,7 @@ node! {
     div [
         // Embed other components
         node(MyComponent::new("config")),
-        node(Counter::default())
+        node(Counter)
     ]
 }
 ```
@@ -930,7 +930,7 @@ struct State {
     count: i32,
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 struct CounterApp;
 
 impl CounterApp {
@@ -985,7 +985,7 @@ impl CounterApp {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    app.run(CounterApp::default())
+    app.run(CounterApp)
 }
 ```
 

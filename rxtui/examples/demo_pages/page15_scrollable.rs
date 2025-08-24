@@ -19,8 +19,8 @@ struct ScrollDemoState {
     info_text: String,
 }
 
-#[derive(Component, Default)]
-pub struct Page15ScrollableDemo {}
+#[derive(Component)]
+pub struct Page15ScrollableDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations

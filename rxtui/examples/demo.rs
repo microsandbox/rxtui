@@ -20,8 +20,8 @@ struct DemoState {
     current_page: i32,
 }
 
-#[derive(Component, Default)]
-struct Demo {}
+#[derive(Component)]
+struct Demo;
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -223,6 +223,5 @@ impl Tab {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    let root = Demo::default();
-    app.run(root)
+    app.run(Demo)
 }

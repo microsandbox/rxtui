@@ -16,8 +16,8 @@ struct AbsoluteDemoState {
     selected_layer: i32,
 }
 
-#[derive(Component, Default)]
-pub struct Page5AbsoluteDemo {}
+#[derive(Component)]
+pub struct Page5AbsoluteDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Methods

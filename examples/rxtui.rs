@@ -28,6 +28,5 @@ impl RxTuiLogo {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(RxTuiLogo)
+    App::new()?.run(RxTuiLogo)
 }

@@ -44,8 +44,8 @@ struct DashboardState {
     title: String,
 }
 
-#[derive(Component, Default)]
-struct Dashboard {}
+#[derive(Component)]
+struct Dashboard;
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -204,6 +204,5 @@ impl Dashboard {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new()?;
-    let root = Dashboard::default();
-    app.run(root)
+    app.run(Dashboard)
 }

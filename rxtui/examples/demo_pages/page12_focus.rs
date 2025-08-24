@@ -4,8 +4,8 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Default)]
-pub struct Page12FocusDemo {}
+#[derive(Component)]
+pub struct Page12FocusDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Methods

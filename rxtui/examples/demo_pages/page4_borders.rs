@@ -4,8 +4,8 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Default)]
-pub struct Page4BordersDemo {}
+#[derive(Component)]
+pub struct Page4BordersDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Methods
