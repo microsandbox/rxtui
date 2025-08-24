@@ -42,7 +42,7 @@ impl ListExample {
             .iter()
             .map(|item| {
                 node! {
-                    div(pad: 1, border: white) [
+                    div(pad: 1, border: white, w_auto) [
                         text(item)
                     ]
                 }
