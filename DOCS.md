@@ -677,7 +677,7 @@ node! {
         text("RGB", color: (Color::Rgb(255, 128, 0))),
 
         // Conditional
-        text("Status", color: (if ok { green } else { red }))
+        text("Status", color: (if ok { Color::Green } else { Color::Red }))
     ]
 }
 ```
@@ -768,12 +768,15 @@ Most events require the element to be focused:
 node! {
     div(
         focusable,
+
         // Mouse
         @click: ctx.handler(Msg::Clicked),
+
         // Keyboard
         @char('a'): ctx.handler(Msg::PressedA),
         @key(enter): ctx.handler(Msg::Confirmed),
         @key(backspace): ctx.handler(Msg::Delete),
+
         // Focus
         @focus: ctx.handler(Msg::GainedFocus),
         @blur: ctx.handler(Msg::LostFocus)
