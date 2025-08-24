@@ -25,11 +25,9 @@ impl Spinner {
         let frame = frames[state];
 
         node! {
-            div(bg: black, pad: 2) [
+            div(bg: black, pad: 2, @key(Esc): ctx.handler(Msg::Exit)) [
                 text(format!("Spinner: {frame}"), color: white, bold),
-                text("press esc to exit", color: bright_black),
-
-                @key(Esc): ctx.handler(Msg::Exit)
+                text("press esc to exit", color: bright_black)
             ]
         }
     }

@@ -86,21 +86,8 @@ impl Demo {
 
         // Now we can use expressions in the node! macro
         node! {
-            div(bg: black, dir: vertical, pad: 1, w_pct: 1.0, h_pct: 1.0) [
-                // Header
-                div(bg: bright_black, dir: horizontal, pad: 1, w_pct: 1.0, h: 3) [
-                    text("Radical TUI Demo", color: bright_cyan),
-                    div(w: 10) [],
-                    text("Use ← → or 1-9 to navigate, 'q' to quit", color: bright_yellow)
-                ],
-
-                // Tab bar
-                node(TabBar::new(state.current_page)),
-
-                // Page content using expression
-                (page_content),
-
-                // Global event handlers
+            div(
+                bg: black, dir: vertical, pad: 1, w_pct: 1.0, h_pct: 1.0,
                 @char_global('q'): ctx.handler(DemoMessage::Exit),
                 @key_global(Esc): ctx.handler(DemoMessage::Exit),
                 @char('1'): ctx.handler(DemoMessage::SetPage(1)),
@@ -120,6 +107,19 @@ impl Demo {
                 @char('\\'): ctx.handler(DemoMessage::SetPage(15)),
                 @key(Right): ctx.handler(DemoMessage::NextPage),
                 @key(Left): ctx.handler(DemoMessage::PrevPage)
+            ) [
+                // Header
+                div(bg: bright_black, dir: horizontal, pad: 1, w_pct: 1.0, h: 3) [
+                    text("Radical TUI Demo", color: bright_cyan),
+                    div(w: 10) [],
+                    text("Use ← → or 1-9 to navigate, 'q' to quit", color: bright_yellow)
+                ],
+
+                // Tab bar
+                node(TabBar::new(state.current_page)),
+
+                // Page content using expression
+                (page_content)
             ]
         }
     }
@@ -206,9 +206,8 @@ impl Tab {
         let page_num = self.page_num;
 
         node! {
-            div(bg: (bg_color), pad: 1, h: 3, w_auto) [
-                text(label, color: (text_color)),
-                @click: ctx.topic_handler("navigation", DemoMessage::SetPage(page_num))
+            div(bg: (bg_color), pad: 1, h: 3, w_auto, @click: ctx.topic_handler("navigation", DemoMessage::SetPage(page_num))) [
+                text(label, color: (text_color))
             ]
         }
     }

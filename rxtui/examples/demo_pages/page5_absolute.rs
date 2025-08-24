@@ -68,7 +68,8 @@ impl Page5AbsoluteDemo {
                         z: (if state.selected_layer == 1 { 100 } else { 1 }),
                         bg: (if state.selected_layer == 1 { Color::BrightRed } else { Color::Red }),
                         border: white,
-                        pad: 1
+                        pad: 1,
+                        @click: ctx.handler(AbsoluteDemoMsg::SetSelectedLayer(1))
                     ) [
                         text(
                             format!("Layer 1 (z-index: {})", if state.selected_layer == 1 { 100 } else { 1 }),
@@ -77,8 +78,7 @@ impl Page5AbsoluteDemo {
                         text(
                             if state.selected_layer == 1 { "SELECTED - Top" } else { "Click to bring to top" },
                             color: bright_white
-                        ),
-                        @click: ctx.handler(AbsoluteDemoMsg::SetSelectedLayer(1))
+                        )
                     ],
 
                     // Layer 2 (z-index: dynamic based on selection)
@@ -91,7 +91,8 @@ impl Page5AbsoluteDemo {
                         z: (if state.selected_layer == 2 { 100 } else { 2 }),
                         bg: (if state.selected_layer == 2 { Color::BrightGreen } else { Color::Green }),
                         border_style: (BorderStyle::Double, Color::White),
-                        pad: 1
+                        pad: 1,
+                        @click: ctx.handler(AbsoluteDemoMsg::SetSelectedLayer(2))
                     ) [
                         text(
                             format!("Layer 2 (z-index: {})", if state.selected_layer == 2 { 100 } else { 2 }),
@@ -100,8 +101,7 @@ impl Page5AbsoluteDemo {
                         text(
                             if state.selected_layer == 2 { "SELECTED - Top" } else { "Click to bring to top" },
                             color: bright_black
-                        ),
-                        @click: ctx.handler(AbsoluteDemoMsg::SetSelectedLayer(2))
+                        )
                     ],
 
                     // Layer 3 (z-index: dynamic based on selection)
@@ -114,7 +114,8 @@ impl Page5AbsoluteDemo {
                         z: (if state.selected_layer == 3 { 100 } else { 3 }),
                         bg: (if state.selected_layer == 3 { Color::BrightBlue } else { Color::Blue }),
                         border_style: (BorderStyle::Thick, Color::White),
-                        pad: 1
+                        pad: 1,
+                        @click: ctx.handler(AbsoluteDemoMsg::SetSelectedLayer(3))
                     ) [
                         text(
                             format!("Layer 3 (z-index: {})", if state.selected_layer == 3 { 100 } else { 3 }),
@@ -123,8 +124,7 @@ impl Page5AbsoluteDemo {
                         text(
                             if state.selected_layer == 3 { "SELECTED - Top" } else { "Click to bring to top" },
                             color: bright_white
-                        ),
-                        @click: ctx.handler(AbsoluteDemoMsg::SetSelectedLayer(3))
+                        )
                     ],
 
                     // Fixed notification badge (always on top)
@@ -162,9 +162,7 @@ impl Page5AbsoluteDemo {
                 // Info text
                 spacer(1),
                 text("Click on overlapping layers to bring them to the front", color: white),
-                text("Press 'm' to show modal dialog overlay", color: bright_white),
-
-                @char('m'): ctx.handler(AbsoluteDemoMsg::ToggleModal)
+                text("Press 'm' to show modal dialog overlay", color: bright_white)
             ]
         };
 

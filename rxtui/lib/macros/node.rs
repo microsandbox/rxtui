@@ -556,114 +556,6 @@ macro_rules! tui_parse_children {
         }
     }};
 
-    // Event: @click (with more children)
-    ($children:ident, $container:expr, @click: $handler:expr, $($rest:tt)*) => {{
-        let container = $container.on_click($handler);
-        $crate::tui_parse_children!($children, container, $($rest)*)
-    }};
-
-    // Event: @click (last item)
-    ($children:ident, $container:expr, @click: $handler:expr) => {{
-        let container = $container.on_click($handler);
-        $crate::tui_parse_children!($children, container)
-    }};
-
-    // Event: @char (with more children)
-    ($children:ident, $container:expr, @char($ch:literal): $handler:expr, $($rest:tt)*) => {{
-        let container = $container.on_char($ch, $handler);
-        $crate::tui_parse_children!($children, container, $($rest)*)
-    }};
-
-    // Event: @char (last item)
-    ($children:ident, $container:expr, @char($ch:literal): $handler:expr) => {{
-        let container = $container.on_char($ch, $handler);
-        $crate::tui_parse_children!($children, container)
-    }};
-
-    // Event: @char_global (with more children)
-    ($children:ident, $container:expr, @char_global($ch:literal): $handler:expr, $($rest:tt)*) => {{
-        let container = $container.on_char_global($ch, $handler);
-        $crate::tui_parse_children!($children, container, $($rest)*)
-    }};
-
-    // Event: @char_global (last item)
-    ($children:ident, $container:expr, @char_global($ch:literal): $handler:expr) => {{
-        let container = $container.on_char_global($ch, $handler);
-        $crate::tui_parse_children!($children, container)
-    }};
-
-    // Event: @key with Char(...) (with more children)
-    ($children:ident, $container:expr, @key(Char($ch:literal)): $handler:expr, $($rest:tt)*) => {{
-        let container = $container.on_key($crate::Key::Char($ch), $handler);
-        $crate::tui_parse_children!($children, container, $($rest)*)
-    }};
-
-    // Event: @key with Char(...) (last item)
-    ($children:ident, $container:expr, @key(Char($ch:literal)): $handler:expr) => {{
-        let container = $container.on_key($crate::Key::Char($ch), $handler);
-        $crate::tui_parse_children!($children, container)
-    }};
-
-    // Event: @key (with more children)
-    ($children:ident, $container:expr, @key($key:ident): $handler:expr, $($rest:tt)*) => {{
-        let container = $container.on_key($crate::Key::$key, $handler);
-        $crate::tui_parse_children!($children, container, $($rest)*)
-    }};
-
-    // Event: @key (last item)
-    ($children:ident, $container:expr, @key($key:ident): $handler:expr) => {{
-        let container = $container.on_key($crate::Key::$key, $handler);
-        $crate::tui_parse_children!($children, container)
-    }};
-
-    // Event: @key_global (with more children)
-    ($children:ident, $container:expr, @key_global($key:ident): $handler:expr, $($rest:tt)*) => {{
-        let container = $container.on_key_global($crate::Key::$key, $handler);
-        $crate::tui_parse_children!($children, container, $($rest)*)
-    }};
-
-    // Event: @key_global (last item)
-    ($children:ident, $container:expr, @key_global($key:ident): $handler:expr) => {{
-        let container = $container.on_key_global($crate::Key::$key, $handler);
-        $crate::tui_parse_children!($children, container)
-    }};
-
-    // Event: @focus (with more children)
-    ($children:ident, $container:expr, @focus: $handler:expr, $($rest:tt)*) => {{
-        let container = $container.on_focus($handler);
-        $crate::tui_parse_children!($children, container, $($rest)*)
-    }};
-
-    // Event: @focus (last item)
-    ($children:ident, $container:expr, @focus: $handler:expr) => {{
-        let container = $container.on_focus($handler);
-        $crate::tui_parse_children!($children, container)
-    }};
-
-    // Event: @blur (with more children)
-    ($children:ident, $container:expr, @blur: $handler:expr, $($rest:tt)*) => {{
-        let container = $container.on_blur($handler);
-        $crate::tui_parse_children!($children, container, $($rest)*)
-    }};
-
-    // Event: @blur (last item)
-    ($children:ident, $container:expr, @blur: $handler:expr) => {{
-        let container = $container.on_blur($handler);
-        $crate::tui_parse_children!($children, container)
-    }};
-
-    // Event: @any_char (with more children)
-    ($children:ident, $container:expr, @any_char: $handler:expr, $($rest:tt)*) => {{
-        let container = $container.on_any_char($handler);
-        $crate::tui_parse_children!($children, container, $($rest)*)
-    }};
-
-    // Event: @any_char (last item)
-    ($children:ident, $container:expr, @any_char: $handler:expr) => {{
-        let container = $container.on_any_char($handler);
-        $crate::tui_parse_children!($children, container)
-    }};
-
     // Child: div with props (and more children)
     ($children:ident, $container:expr, div($($props:tt)*) [$($inner:tt)*], $($rest:tt)*) => {{
         let child = $crate::tui_parse_element!(div($($props)*) [$($inner)*]);
@@ -1295,6 +1187,89 @@ macro_rules! tui_apply_props {
     ($container:expr, overflow: $mode:tt) => {{
         $container.overflow($crate::overflow_value!($mode))
     }};
+
+    // Event handlers
+
+    // @click handler
+    ($container:expr, @click: $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_click($handler);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @click: $handler:expr) => {{
+        $container.on_click($handler)
+    }};
+
+    // @char handler
+    ($container:expr, @char($ch:literal): $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_char($ch, $handler);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @char($ch:literal): $handler:expr) => {{
+        $container.on_char($ch, $handler)
+    }};
+
+    // @char_global handler
+    ($container:expr, @char_global($ch:literal): $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_char_global($ch, $handler);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @char_global($ch:literal): $handler:expr) => {{
+        $container.on_char_global($ch, $handler)
+    }};
+
+    // @key with Char(...) handler
+    ($container:expr, @key(Char($ch:literal)): $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_key($crate::Key::Char($ch), $handler);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @key(Char($ch:literal)): $handler:expr) => {{
+        $container.on_key($crate::Key::Char($ch), $handler)
+    }};
+
+    // @key handler
+    ($container:expr, @key($key:ident): $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_key($crate::Key::$key, $handler);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @key($key:ident): $handler:expr) => {{
+        $container.on_key($crate::Key::$key, $handler)
+    }};
+
+    // @key_global handler
+    ($container:expr, @key_global($key:ident): $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_key_global($crate::Key::$key, $handler);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @key_global($key:ident): $handler:expr) => {{
+        $container.on_key_global($crate::Key::$key, $handler)
+    }};
+
+    // @focus handler
+    ($container:expr, @focus: $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_focus($handler);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @focus: $handler:expr) => {{
+        $container.on_focus($handler)
+    }};
+
+    // @blur handler
+    ($container:expr, @blur: $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_blur($handler);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @blur: $handler:expr) => {{
+        $container.on_blur($handler)
+    }};
+
+    // @any_char handler
+    ($container:expr, @any_char: $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_any_char($handler);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @any_char: $handler:expr) => {{
+        $container.on_any_char($handler)
+    }};
 }
 
 /// Build text with properties (internal)
@@ -1843,5 +1818,23 @@ macro_rules! tui_apply_input_props {
     }};
     ($input:expr, password) => {{
         $input.password(true)
+    }};
+
+    // @change handler
+    ($input:expr, @change: $handler:expr, $($rest:tt)*) => {{
+        let i = $input.on_change($handler);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, @change: $handler:expr) => {{
+        $input.on_change($handler)
+    }};
+
+    // @submit handler
+    ($input:expr, @submit: $handler:expr, $($rest:tt)*) => {{
+        let i = $input.on_submit($handler);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, @submit: $handler:expr) => {{
+        $input.on_submit($handler)
     }};
 }

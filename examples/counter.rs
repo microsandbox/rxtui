@@ -16,13 +16,9 @@ impl Counter {
     #[view]
     fn view(&self, ctx: &Context, count: i32) -> Node {
         node! {
-            div(bg: black, pad: 2) [
+            div(bg: black, pad: 2, @key_global(Up): ctx.handler("increment"), @key_global(Down): ctx.handler("decrement"), @key_global(Esc): ctx.handler("exit")) [
                 text(format!("Count: {count}"), color: white, bold),
-                text("use ↑/↓ to change, esc to exit", color: bright_black),
-
-                @key_global(Up): ctx.handler("increment"),
-                @key_global(Down): ctx.handler("decrement"),
-                @key_global(Esc): ctx.handler("exit")
+                text("use ↑/↓ to change, esc to exit", color: bright_black)
             ]
         }
     }
