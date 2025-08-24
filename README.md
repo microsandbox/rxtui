@@ -23,7 +23,9 @@
 
 <br />
 
-<br />
+> [!WARNING]
+>
+> This project is in early development. APIs may change, and bugs may exist.
 
 # <sub>WHY RXTUI?</sub>
 
@@ -47,7 +49,6 @@ Add to your `Cargo.toml`:
 ```toml
 [dependencies]
 rxtui = "0.1"
-tokio = { version = "1", features = ["full"] }  # For async effects
 ```
 
 ### <span>2</span>&nbsp;&nbsp;Create Your First App
