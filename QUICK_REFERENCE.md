@@ -44,8 +44,7 @@ impl MyComponent {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(MyComponent::default())
+    App::new()?.run(MyComponent)
 }
 ```
 

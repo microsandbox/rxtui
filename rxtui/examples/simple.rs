@@ -113,8 +113,7 @@ impl ColorDemo {
 //--------------------------------------------------------------------------------------------------
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(ColorDemo)
+    App::new()?.run(ColorDemo)
 }
 
 fn next_color(color: Color) -> Color {

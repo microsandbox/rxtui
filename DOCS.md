@@ -51,8 +51,7 @@ impl HelloWorld {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(HelloWorld)
+    App::new()?.run(HelloWorld)
 }
 ```
 
@@ -984,8 +983,7 @@ impl CounterApp {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(CounterApp)
+    App::new()?.run(CounterApp)
 }
 ```
 

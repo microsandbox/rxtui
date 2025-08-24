@@ -203,6 +203,5 @@ impl Dashboard {
 //--------------------------------------------------------------------------------------------------
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(Dashboard)
+    App::new()?.run(Dashboard)
 }

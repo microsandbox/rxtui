@@ -34,9 +34,7 @@ impl HelloWorld {
 }
 
 fn main() -> std::io::Result<()> {
-    // Create and run the app
-    let mut app = App::new()?;
-    app.run(HelloWorld)
+    App::new()?.run(HelloWorld)
 }
 ```
 
@@ -84,8 +82,7 @@ impl Counter {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(Counter)
+    App::new()?.run(Counter)
 }
 ```
 
@@ -553,8 +550,7 @@ impl Clock {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(Clock)
+    App::new()?.run(Clock)
 }
 ```
 
@@ -740,8 +736,7 @@ impl TodoApp {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(TodoApp)
+    App::new()?.run(TodoApp)
 }
 ```
 

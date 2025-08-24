@@ -66,22 +66,22 @@ impl Demo {
     #[view]
     fn view(&self, ctx: &Context, state: DemoState) -> Node {
         let page_content = match state.current_page {
-            1 => node! { node(page1_overflow::Page1OverflowDemo::default()) },
-            2 => node! { node(page2_direction::Page2DirectionDemo::default()) },
-            3 => node! { node(page3_percentages::Page3PercentagesDemo::default()) },
-            4 => node! { node(page4_borders::Page4BordersDemo::default()) },
-            5 => node! { node(page5_absolute::Page5AbsoluteDemo::default()) },
-            6 => node! { node(page6_text_styles::Page6TextStylesDemo::default()) },
-            7 => node! { node(page7_auto_sizing::Page7AutoSizingDemo::default()) },
-            8 => node! { node(page8_text_wrap::Page8TextWrapDemo::default()) },
-            9 => node! { node(page9_element_wrap::Page9ElementWrapDemo::default()) },
-            10 => node! { node(page10_unicode::Page10UnicodeDemo::default()) },
-            11 => node! { node(page11_content_sizing::Page11ContentSizingDemo::default()) },
-            12 => node! { node(page12_focus::Page12FocusDemo::default()) },
-            13 => node! { node(page13_rich_text::Page13::default()) },
-            14 => node! { node(page14_text_input::Page14TextInputDemo::default()) },
-            15 => node! { node(page15_scrollable::Page15ScrollableDemo::default()) },
-            _ => node! { node(page1_overflow::Page1OverflowDemo::default()) },
+            1 => node! { node(page1_overflow::Page1OverflowDemo) },
+            2 => node! { node(page2_direction::Page2DirectionDemo) },
+            3 => node! { node(page3_percentages::Page3PercentagesDemo) },
+            4 => node! { node(page4_borders::Page4BordersDemo) },
+            5 => node! { node(page5_absolute::Page5AbsoluteDemo) },
+            6 => node! { node(page6_text_styles::Page6TextStylesDemo) },
+            7 => node! { node(page7_auto_sizing::Page7AutoSizingDemo) },
+            8 => node! { node(page8_text_wrap::Page8TextWrapDemo) },
+            9 => node! { node(page9_element_wrap::Page9ElementWrapDemo) },
+            10 => node! { node(page10_unicode::Page10UnicodeDemo) },
+            11 => node! { node(page11_content_sizing::Page11ContentSizingDemo) },
+            12 => node! { node(page12_focus::Page12FocusDemo) },
+            13 => node! { node(page13_rich_text::Page13) },
+            14 => node! { node(page14_text_input::Page14TextInputDemo) },
+            15 => node! { node(page15_scrollable::Page15ScrollableDemo) },
+            _ => node! { node(page1_overflow::Page1OverflowDemo) },
         };
 
         // Since node! macro doesn't support variables as children, I need to create this manually
@@ -132,7 +132,7 @@ impl Demo {
 // Tab Bar Component
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Default)]
+#[derive(Component)]
 struct TabBar {
     current_page: i32,
 }
@@ -222,6 +222,5 @@ impl Tab {
 //--------------------------------------------------------------------------------------------------
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    app.run(Demo)
+    App::new()?.run(Demo)
 }
