@@ -26,10 +26,9 @@ impl HelloWorld {
     #[view]
     fn view(&self, ctx: &Context) -> Node {
         node! {
-            div(bg: blue, pad: 2) [
+            div(bg: blue, pad: 2, @key_global(Esc): ctx.handler(())) [
                 text("Hello, RxTUI!", color: white, bold),
-                text("Press Esc to exit", color: white),
-                @key_global(Esc): ctx.handler(())
+                text("Press Esc to exit", color: white)
             ]
         }
     }
@@ -135,14 +134,9 @@ impl Counter {
     #[view]
     fn view(&self, ctx: &Context, state: CounterState) -> Node {
         node! {
-            div(bg: black, pad: 2) [
+            div(bg: black, pad: 2, @char_global('+'): ctx.handler(CounterMsg::Increment), @char_global('-'): ctx.handler(CounterMsg::Decrement), @char_global('q'): ctx.handler(CounterMsg::Exit)) [
                 text(format!("Count: {}", state.count), color: white),
-                text("Press +/- to change, q to quit", color: gray),
-
-                // Global keyboard handlers
-                @char_global('+'): ctx.handler(CounterMsg::Increment),
-                @char_global('-'): ctx.handler(CounterMsg::Decrement),
-                @char_global('q'): ctx.handler(CounterMsg::Exit)
+                text("Press +/- to change, q to quit", color: gray)
             ]
         }
     }
@@ -246,18 +240,16 @@ fn view(&self, ctx: &Context, state: AppState) -> Node {
                         Style::default()
                             .background(Color::Blue)
                             .border(Color::Yellow)
-                    })
-                ) [
-                    text("Button 1"),
+                    }),
                     @click: ctx.handler(AppMsg::ButtonClicked("One".into())),
                     @key(Enter): ctx.handler(AppMsg::ButtonClicked("One".into()))
+                ) [
+                    text("Button 1")
                 ],
 
                 // Another button
-                div(border: white, pad: 1, focusable) [
-                    text("Button 2"),
-                    @click: ctx.handler(AppMsg::ButtonClicked("Two".into())),
-                    @key(Enter): ctx.handler(AppMsg::ButtonClicked("Two".into()))
+                div(border: white, pad: 1, focusable, @click: ctx.handler(AppMsg::ButtonClicked("Two".into())), @key(Enter): ctx.handler(AppMsg::ButtonClicked("Two".into()))) [
+                    text("Button 2")
                 ]
             ],
 
@@ -313,7 +305,7 @@ impl Form {
     #[view]
     fn view(&self, ctx: &Context, state: FormState) -> Node {
         node! {
-            div(pad: 2) [
+            div(pad: 2, @key_global(Esc): ctx.handler(FormMsg::Exit)) [
                 text("User Form", bold, color: cyan),
 
                 // Text inputs
@@ -344,18 +336,14 @@ impl Form {
                 spacer(2),
 
                 // Submit button
-                div(border: green, pad: 1, focusable) [
-                    text("Submit"),
-                    @click: ctx.handler(FormMsg::Submit),
-                    @key(Enter): ctx.handler(FormMsg::Submit)
+                div(border: green, pad: 1, focusable, @click: ctx.handler(FormMsg::Submit), @key(Enter): ctx.handler(FormMsg::Submit)) [
+                    text("Submit")
                 ],
 
                 // Status
                 if state.submitted {
                     text("Form submitted!", color: green)
-                },
-
-                @key_global(Esc): ctx.handler(FormMsg::Exit)
+                }
             ]
         }
     }
@@ -402,9 +390,8 @@ impl Child {
     #[view]
     fn view(&self, ctx: &Context, _state: ChildState) -> Node {
         node! {
-            div(border: white, pad: 1) [
-                text(format!("Child: {}", self.id)),
-                @click: ctx.handler(ChildMsg::SendUpdate)
+            div(border: white, pad: 1, @click: ctx.handler(ChildMsg::SendUpdate)) [
+                text(format!("Child: {}", self.id))
             ]
         }
     }
@@ -531,12 +518,9 @@ impl Clock {
         let time = format!("{:02}:{:02}", state.seconds / 60, state.seconds % 60);
 
         node! {
-            div(bg: black, pad: 2) [
+            div(bg: black, pad: 2, @char_global('r'): ctx.handler(ClockMsg::Reset), @char_global('q'): ctx.handler(ClockMsg::Exit)) [
                 text(&time, color: cyan, bold),
-                text("Press r to reset, q to quit", color: gray),
-
-                @char_global('r'): ctx.handler(ClockMsg::Reset),
-                @char_global('q'): ctx.handler(ClockMsg::Exit)
+                text("Press r to reset, q to quit", color: gray)
             ]
         }
     }
@@ -651,7 +635,7 @@ impl TodoApp {
         let active_count = state.todos.iter().filter(|t| !t.completed).count();
 
         node! {
-            div(bg: black, pad: 2) [
+            div(bg: black, pad: 2, @key_global(Esc): ctx.handler(TodoMsg::Exit)) [
                 // Header
                 div(bg: blue, pad: 1, w_pct: 1.0) [
                     text("TODO LIST", color: white, bold)
@@ -666,9 +650,8 @@ impl TodoApp {
                         w: 40,
                         focusable
                     ),
-                    div(border: green, pad: 1, focusable) [
-                        text("Add"),
-                        @click: ctx.handler(TodoMsg::AddTodo)
+                    div(border: green, pad: 1, focusable, @click: ctx.handler(TodoMsg::AddTodo)) [
+                        text("Add")
                     ]
                 ],
 
@@ -697,19 +680,18 @@ impl TodoApp {
                                 div(
                                     w: 3,
                                     focusable,
-                                    border: (if todo.completed { green } else { white })
-                                ) [
-                                    text(if todo.completed { "✓" } else { " " }),
+                                    border: (if todo.completed { green } else { white }),
                                     @click: ctx.handler(TodoMsg::ToggleTodo(idx))
+                                ) [
+                                    text(if todo.completed { "✓" } else { " " })
                                 ],
 
                                 // Todo text
                                 text(&todo.text, style: style),
 
                                 // Delete button
-                                div(border: red, pad_h: 1, focusable) [
-                                    text("×"),
-                                    @click: ctx.handler(TodoMsg::DeleteTodo(idx))
+                                div(border: red, pad_h: 1, focusable, @click: ctx.handler(TodoMsg::DeleteTodo(idx))) [
+                                    text("×")
                                 ]
                             ]
                         }
@@ -722,16 +704,13 @@ impl TodoApp {
                 hstack(gap: 2) [
                     text(format!("{} items left", active_count)),
 
-                    div(border: yellow, pad: 1, focusable) [
-                        text("Clear completed"),
-                        @click: ctx.handler(TodoMsg::ClearCompleted)
+                    div(border: yellow, pad: 1, focusable, @click: ctx.handler(TodoMsg::ClearCompleted)) [
+                        text("Clear completed")
                     ]
                 ],
 
                 spacer(1),
-                text("Press ESC to exit", color: gray),
-
-                @key_global(Esc): ctx.handler(TodoMsg::Exit)
+                text("Press ESC to exit", color: gray)
             ]
         }
     }

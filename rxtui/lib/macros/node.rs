@@ -228,31 +228,21 @@
 /// ## Event Handlers
 /// ```ignore
 /// node! {
-///     div(bg: black) [
+///     div(bg: black, @char_global('q'): ctx.handler(Msg::Quit), @key_global(Esc): ctx.handler(Msg::Exit)) [
 ///         // Click handler
-///         container(bg: blue, focusable) [
-///             text("Click me", color: white),
-///             @click: ctx.handler(Msg::Clicked)
+///         container(bg: blue, focusable, @click: ctx.handler(Msg::Clicked)) [
+///             text("Click me", color: white)
 ///         ],
 ///
 ///         // Keyboard handlers
-///         container(focusable) [
-///             text("Press keys here"),
-///             @char('a'): ctx.handler(Msg::KeyA),
-///             @key(Enter): ctx.handler(Msg::Enter),
-///             @key(Backspace): ctx.handler(Msg::Back)
+///         container(focusable, @char('a'): ctx.handler(Msg::KeyA), @key(Enter): ctx.handler(Msg::Enter), @key(Backspace): ctx.handler(Msg::Back)) [
+///             text("Press keys here")
 ///         ],
 ///
 ///         // Focus handlers
-///         container(focusable) [
-///             text("Focus me"),
-///             @focus: ctx.handler(Msg::GotFocus),
-///             @blur: ctx.handler(Msg::LostFocus)
-///         ],
-///
-///         // Global handlers (work without focus)
-///         @char_global('q'): ctx.handler(Msg::Quit),
-///         @key_global(Esc): ctx.handler(Msg::Exit)
+///         container(focusable, @focus: ctx.handler(Msg::GotFocus), @blur: ctx.handler(Msg::LostFocus)) [
+///             text("Focus me")
+///         ]
 ///     ]
 /// }
 /// ```
@@ -392,7 +382,7 @@
 ///
 /// 1. **Div is the default root** - The macro expects a div as the root element
 /// 2. **Text content comes first** - For readability, text content precedes styling properties
-/// 3. **Events go in children** - Event handlers are placed inside the children brackets
+/// 3. **Events go in properties** - Event handlers are placed in the property parentheses
 /// 4. **Colors without prefix** - No need for `Color::` prefix on named colors
 /// 5. **Expressions need parens** - Complex expressions should be wrapped in parentheses
 #[macro_export]

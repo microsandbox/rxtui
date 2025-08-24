@@ -54,7 +54,7 @@ tokio = { version = "1", features = ["full"] }  # For async effects
 
 ### <span>2</span>&nbsp;&nbsp;Create Your First App
 
-Complete counter app in a few lines of code:
+Complete counter app in 30 lines of code:
 
 ```rust
 use rxtui::prelude::*;
