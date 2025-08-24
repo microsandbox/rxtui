@@ -7,8 +7,8 @@ impl Counter {
     #[update]
     fn update(&self, _ctx: &Context, msg: &str, mut count: i32) -> Action {
         match msg {
-            "increment" => Action::update(count + 1),
-            "decrement" => Action::update(count - 1),
+            "inc" => Action::update(count + 1),
+            "dec" => Action::update(count - 1),
             _ => Action::exit(),
         }
     }
@@ -16,7 +16,7 @@ impl Counter {
     #[view]
     fn view(&self, ctx: &Context, count: i32) -> Node {
         node! {
-            div(bg: black, pad: 2, @key_global(Up): ctx.handler("increment"), @key_global(Down): ctx.handler("decrement"), @key_global(Esc): ctx.handler("exit")) [
+            div(@key_global(Up): ctx.handler("inc"), @key_global(Down): ctx.handler("dec"), @key_global(Esc): ctx.handler("exit")) [
                 text(format!("Count: {count}"), color: white, bold),
                 text("use ↑/↓ to change, esc to exit", color: bright_black)
             ]

@@ -96,16 +96,13 @@ The `node!` macro is how you actually build your UI. It gives you a clean, decla
 #[view]
 fn view(&self, ctx: &Context, state: AppState) -> Node {
     node! {
-        div(bg: blue, pad: 2, border: white) [
+        div(bg: blue, pad: 2, border: white, @key_global(Esc): ctx.handler(Msg::Exit)) [
             text(format!("Count: {}", state.count), color: yellow),
 
-            hstack(gap: 2) [
-                text("Click me!"),
+            hstack(gap: 2, @click: ctx.handler(Msg::Increment)) [
+                text("Click me!")
                 // Events here trigger messages that go to update()
-                @click: ctx.handler(Msg::Increment),
-            ],
-
-            @key_global(Esc): ctx.handler(Msg::Exit)
+            ]
         ]
     }
 }
@@ -280,15 +277,12 @@ The `node!` macro provides a declarative syntax for building UI trees, inspired 
 ```rust
 node! {
     // Root element (usually div)
-    div(properties) [
+    div(properties, @click: handler, @key(Enter): handler) [
         // Children
         text("content", properties),
         div(properties) [
             // Nested children
-        ],
-        // Event handlers
-        @click: handler,
-        @key(Enter): handler
+        ]
     ]
 }
 ```
@@ -492,27 +486,24 @@ node! {
 
 ```rust
 node! {
-    div(focusable) [
-        text("Interactive"),
-
+    div(
+        focusable,
         // Mouse events
         @click: ctx.handler(Msg::Clicked),
-
         // Keyboard events (requires focus)
         @char('a'): ctx.handler(Msg::KeyA),
         @key(Enter): ctx.handler(Msg::Enter),
         @key(Char('-')): ctx.handler(Msg::Minus),
-
         // Focus events
         @focus: ctx.handler(Msg::Focused),
         @blur: ctx.handler(Msg::Blurred),
-
         // Global events (work without focus)
         @char_global('q'): ctx.handler(Msg::Quit),
         @key_global(Esc): ctx.handler(Msg::Exit),
-
         // Any character handler
         @any_char: |ch| ctx.handler(Msg::Typed(ch))
+    ) [
+        text("Interactive")
     ]
 }
 ```
@@ -919,20 +910,19 @@ Most events require the element to be focused:
 
 ```rust
 node! {
-    div(focusable) [
-        text("Click or press keys"),
-
+    div(
+        focusable,
         // Mouse
         @click: ctx.handler(Msg::Clicked),
-
         // Keyboard
         @char('a'): ctx.handler(Msg::PressedA),
         @key(Enter): ctx.handler(Msg::Confirmed),
         @key(Backspace): ctx.handler(Msg::Delete),
-
         // Focus
         @focus: ctx.handler(Msg::GainedFocus),
         @blur: ctx.handler(Msg::LostFocus)
+    ) [
+        text("Click or press keys")
     ]
 }
 ```
@@ -1124,31 +1114,22 @@ impl CounterApp {
     #[view]
     fn view(&self, ctx: &Context, state: State) -> Node {
         node! {
-            div(bg: black, pad: 2) [
+            div(bg: black, pad: 2, @char_global('q'): ctx.handler(Msg::Exit), @key_global(Esc): ctx.handler(Msg::Exit)) [
                 text(format!("Count: {}", state.count), color: white, bold),
 
                 hstack(gap: 2) [
-                    div(border: white, pad: 1, focusable) [
-                        text("-"),
-                        @click: ctx.handler(Msg::Decrement),
-                        @key(Char('-')): ctx.handler(Msg::Decrement)
+                    div(border: white, pad: 1, focusable, @click: ctx.handler(Msg::Decrement), @key(Char('-')): ctx.handler(Msg::Decrement)) [
+                        text("-")
                     ],
-                    div(border: white, pad: 1, focusable) [
-                        text("+"),
-                        @click: ctx.handler(Msg::Increment),
-                        @key(Char('+')): ctx.handler(Msg::Increment)
+                    div(border: white, pad: 1, focusable, @click: ctx.handler(Msg::Increment), @key(Char('+')): ctx.handler(Msg::Increment)) [
+                        text("+")
                     ],
-                    div(border: white, pad: 1, focusable) [
-                        text("Reset"),
-                        @click: ctx.handler(Msg::Reset),
-                        @key(Char('r')): ctx.handler(Msg::Reset)
+                    div(border: white, pad: 1, focusable, @click: ctx.handler(Msg::Reset), @key(Char('r')): ctx.handler(Msg::Reset)) [
+                        text("Reset")
                     ]
                 ],
 
-                text("Press +/- to change, r to reset, q to quit", color: gray),
-
-                @char_global('q'): ctx.handler(Msg::Exit),
-                @key_global(Esc): ctx.handler(Msg::Exit)
+                text("Press +/- to change, r to reset, q to quit", color: gray)
             ]
         }
     }
