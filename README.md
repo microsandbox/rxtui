@@ -48,13 +48,6 @@ rxtui = "0.1"
 tokio = { version = "1", features = ["full"] }  # For async effects
 ```
 
-> [!NOTE]
-> The `effects` feature is enabled by default. To disable it for smaller binary size:
->
-> ```toml
-> rxtui = { version = "0.1", default-features = false }
-> ```
-
 ### <span>2</span>&nbsp;&nbsp;Create Your First App
 
 Complete counter app in 30 lines:
@@ -119,46 +112,70 @@ That's it! No manual rendering, no state management boilerplate, no event loop. 
 
 ### Core Architecture
 
-- [x] Virtual DOM with efficient diffing
-- [x] Component-based architecture
-- [x] Reactive state management
-- [x] Message-based updates
-- [x] Automatic re-rendering
+- [x] Virtual DOM with patch-based updates
+- [x] Component lifecycle management
+- [x] Automatic state persistence
+- [x] Topic-based messaging system
+- [x] Async effects with Tokio integration
 
 </td>
 <td>
 
-### UI Components
+### Styling & Layout
 
-- [x] Flexible layout system
-- [x] Rich text styling
-- [x] Built-in TextInput widget
-- [x] Scrollable containers
-- [x] Modal overlays
+- [x] Flexbox-inspired layout system
+- [x] Percentage & fixed sizing
+- [x] Content-based sizing
+- [x] Absolute & fixed positioning
+- [x] Z-index layering
 
 </td>
 </tr>
 <tr>
 <td>
 
-### Event Handling
+### Visual Features
 
-- [x] Keyboard events (local & global)
-- [x] Mouse click support
-- [x] Focus management
-- [x] Custom event handlers
-- [x] Event bubbling
+- [x] 16 colors + RGB support
+- [x] Border styles (single, double, rounded, thick)
+- [x] Custom border edges (top, bottom, sides)
+- [x] Text styling (bold, italic, underline, strikethrough)
+- [x] Configurable padding & gaps
 
 </td>
 <td>
 
-### Developer Experience
+### Interaction
 
-- [x] Declarative `node!` macro
-- [x] Expression support `(expr)`
-- [x] Spread operator `...(vec)`
-- [x] Hot-reload friendly
-- [x] Zero flicker rendering
+- [x] Keyboard events with modifiers
+- [x] Global & local event handlers
+- [x] Mouse click detection
+- [x] Scroll wheel support
+- [x] Focus system with Tab navigation
+
+</td>
+</tr>
+<tr>
+<td>
+
+### Text & Content
+
+- [x] Text wrapping modes (word, character)
+- [x] Rich text with mixed styles
+- [x] Built-in TextInput component
+- [x] Password input masking
+- [x] Scrollable areas with scrollbars
+
+</td>
+<td>
+
+### Performance
+
+- [x] Differential rendering
+- [x] Double buffering support
+- [x] Cell-level diffing
+- [x] Configurable update rates
+- [x] Cross-platform terminal support
 
 </td>
 </tr>
