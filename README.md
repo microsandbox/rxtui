@@ -50,7 +50,7 @@ tokio = { version = "1", features = ["full"] }  # For async effects
 
 ### <span>2</span>&nbsp;&nbsp;Create Your First App
 
-Complete counter app in 30 lines:
+Complete counter app in less than 40 lines:
 
 ```rust
 use rxtui::prelude::*;
@@ -100,7 +100,7 @@ fn main() -> std::io::Result<()> {
 cargo run
 ```
 
-That's it! No manual rendering, no state management boilerplate, no event loop. Just your logic.
+That's it!
 
 <div align='center'>• • •</div>
 
