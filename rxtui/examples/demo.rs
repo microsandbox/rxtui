@@ -84,47 +84,44 @@ impl Demo {
             _ => node! { node(page1_overflow::Page1OverflowDemo) },
         };
 
-        // Since node! macro doesn't support variables as children, I need to create this manually
-        let header = node! {
-            div(bg: bright_black, dir: horizontal, pad: 1, w_pct: 1.0, h: 3) [
-                text("Radical TUI Demo", color: bright_cyan),
-                div(w: 10) [],
-                text("Use ← → or 1-9 to navigate, 'q' to quit", color: bright_yellow)
+        // Now we can use expressions in the node! macro
+        node! {
+            div(bg: black, dir: vertical, pad: 1, w_pct: 1.0, h_pct: 1.0) [
+                // Header
+                div(bg: bright_black, dir: horizontal, pad: 1, w_pct: 1.0, h: 3) [
+                    text("Radical TUI Demo", color: bright_cyan),
+                    div(w: 10) [],
+                    text("Use ← → or 1-9 to navigate, 'q' to quit", color: bright_yellow)
+                ],
+
+                // Tab bar
+                node(TabBar::new(state.current_page)),
+
+                // Page content using expression
+                (page_content),
+
+                // Global event handlers
+                @char_global('q'): ctx.handler(DemoMessage::Exit),
+                @key_global(Esc): ctx.handler(DemoMessage::Exit),
+                @char('1'): ctx.handler(DemoMessage::SetPage(1)),
+                @char('2'): ctx.handler(DemoMessage::SetPage(2)),
+                @char('3'): ctx.handler(DemoMessage::SetPage(3)),
+                @char('4'): ctx.handler(DemoMessage::SetPage(4)),
+                @char('5'): ctx.handler(DemoMessage::SetPage(5)),
+                @char('6'): ctx.handler(DemoMessage::SetPage(6)),
+                @char('7'): ctx.handler(DemoMessage::SetPage(7)),
+                @char('8'): ctx.handler(DemoMessage::SetPage(8)),
+                @char('9'): ctx.handler(DemoMessage::SetPage(9)),
+                @char('0'): ctx.handler(DemoMessage::SetPage(10)),
+                @char('-'): ctx.handler(DemoMessage::SetPage(11)),
+                @char('='): ctx.handler(DemoMessage::SetPage(12)),
+                @char('['): ctx.handler(DemoMessage::SetPage(13)),
+                @char(']'): ctx.handler(DemoMessage::SetPage(14)),
+                @char('\\'): ctx.handler(DemoMessage::SetPage(15)),
+                @key(Right): ctx.handler(DemoMessage::NextPage),
+                @key(Left): ctx.handler(DemoMessage::PrevPage)
             ]
-        };
-
-        let tab_bar = node! { node(TabBar::new(state.current_page)) };
-
-        // Combine using builder pattern
-        let container = Div::default()
-            .background(Color::Black)
-            .direction(Direction::Vertical)
-            .padding(Spacing::all(1))
-            .width_percent(1.0)
-            .height_percent(1.0)
-            .children(vec![header, tab_bar, page_content])
-            // Global event handlers
-            .on_char_global('q', ctx.handler(DemoMessage::Exit))
-            .on_key_global(Key::Esc, ctx.handler(DemoMessage::Exit))
-            .on_char('1', ctx.handler(DemoMessage::SetPage(1)))
-            .on_char('2', ctx.handler(DemoMessage::SetPage(2)))
-            .on_char('3', ctx.handler(DemoMessage::SetPage(3)))
-            .on_char('4', ctx.handler(DemoMessage::SetPage(4)))
-            .on_char('5', ctx.handler(DemoMessage::SetPage(5)))
-            .on_char('6', ctx.handler(DemoMessage::SetPage(6)))
-            .on_char('7', ctx.handler(DemoMessage::SetPage(7)))
-            .on_char('8', ctx.handler(DemoMessage::SetPage(8)))
-            .on_char('9', ctx.handler(DemoMessage::SetPage(9)))
-            .on_char('0', ctx.handler(DemoMessage::SetPage(10)))
-            .on_char('-', ctx.handler(DemoMessage::SetPage(11)))
-            .on_char('=', ctx.handler(DemoMessage::SetPage(12)))
-            .on_char('[', ctx.handler(DemoMessage::SetPage(13)))
-            .on_char(']', ctx.handler(DemoMessage::SetPage(14)))
-            .on_char('\\', ctx.handler(DemoMessage::SetPage(15)))
-            .on_key(Key::Right, ctx.handler(DemoMessage::NextPage))
-            .on_key(Key::Left, ctx.handler(DemoMessage::PrevPage));
-
-        container.into()
+        }
     }
 }
 

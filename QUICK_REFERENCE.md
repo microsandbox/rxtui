@@ -219,76 +219,60 @@ color: (if ok { green } else { red })
 
 ### Loading State
 
-Use the builder pattern or pre-compute nodes when you need dynamic content:
+Use expressions in parentheses for dynamic content:
 
 ```rust
-// Option 1: Pre-compute the node
-let status_node = match state.status {
-    Loading => node! { text("Loading...", color: yellow) },
-    Error(e) => node! { text(format!("Error: {}", e), color: red) },
-    Success(data) => node! { text(format!("Data: {}", data)) },
-};
-
 node! {
     div [
-        node(status_node)
+        (match state.status {
+            Loading => node! { text("Loading...", color: yellow) },
+            Error(e) => node! { text(format!("Error: {}", e), color: red) },
+            Success(data) => node! { text(format!("Data: {}", data)) },
+        })
     ]
 }
-
-// Option 2: Use builder pattern
-let content = match state.status {
-    Loading => Text::new("Loading...").color(Color::Yellow).into(),
-    Error(e) => Text::new(format!("Error: {}", e)).color(Color::Red).into(),
-    Success(data) => Text::new(format!("Data: {}", data)).into(),
-};
-
-Div::default()
-    .children(vec![content])
-    .into()
 ```
 
 ### List Rendering
 
-Build lists outside the macro or use the builder pattern:
+Use expressions for dynamic lists:
 
 ```rust
-// Pre-build the list of nodes
-let item_nodes: Vec<Node> = state.items.iter()
-    .map(|item| node! {
-        div [
-            text(&item.name)
-        ]
-    })
-    .collect();
-
-// Then use builder pattern to combine
-Div::default()
-    .children(item_nodes)
-    .into()
+node! {
+    div [
+        (state.items.iter().map(|item| {
+            node! {
+                div [
+                    text(&item.name)
+                ]
+            }
+        }).collect::<Vec<_>>())
+    ]
+}
 ```
 
 ### Conditional Rendering
 
-Handle conditions outside the macro:
+Use expressions for conditional content:
 
 ```rust
-// Build conditional elements
-let mut children = vec![];
+node! {
+    div [
+        (if state.show_header {
+            node! { text("Header", bold) }
+        } else {
+            node! { spacer(0) }  // Empty placeholder
+        }),
 
-if state.show_header {
-    children.push(node! { text("Header", bold) });
+        text("Always visible"),
+
+        (if let Some(message) = &state.message {
+            node! { text(message, color: yellow) }
+        } else {
+            node! { spacer(0) }
+        })
+    ]
 }
-
-children.push(node! { text("Always visible") });
-
-if let Some(message) = &state.message {
-    children.push(node! { text(message, color: yellow) });
-}
-
-// Use builder pattern
-Div::default()
-    .children(children)
-    .into()
 ```
 
 ### Scrollable Container

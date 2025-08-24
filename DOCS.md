@@ -295,6 +295,38 @@ node! {
 
 ### Elements
 
+#### Expressions
+
+You can use any Rust expression that returns a `Node` by wrapping it in parentheses:
+
+```rust
+node! {
+    div [
+        // Variable
+        (my_node_variable),
+
+        // Match expression
+        (match state.status {
+            Loading => node! { text("Loading...") },
+            Ready => node! { text("Ready!") },
+        }),
+
+        // If expression
+        (if condition {
+            node! { text("True branch") }
+        } else {
+            node! { text("False branch") }
+        }),
+
+        // Method call
+        (self.create_node()),
+
+        // Iterator
+        (items.iter().map(|i| node! { text(&i.name) }).collect::<Vec<_>>())
+    ]
+}
+```
+
 #### Div Container
 
 ```rust
