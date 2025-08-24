@@ -150,7 +150,8 @@ fn render_node_with_offset(
     match &node.node_type {
         RenderNodeType::Element => {
             // Determine the effective background for the node's text children
-            let mut effective_bg = None;
+            // Start with parent's background to ensure proper inheritance chain
+            let mut effective_bg = parent_bg;
 
             // Render the element itself (border and background) using element_clip
             // This ensures the element doesn't render outside its parent's bounds
@@ -226,6 +227,8 @@ fn render_node_with_offset(
                             let mut cell = Cell::new(ch);
                             if ch != ' ' {
                                 cell.fg = Some(border.color);
+                                // Inherit background from element or parent
+                                cell.bg = effective_bg;
                             }
                             buffer.set_cell(x, rendered_y, cell);
                         }
@@ -256,6 +259,8 @@ fn render_node_with_offset(
                             let mut cell = Cell::new(ch);
                             if ch != ' ' {
                                 cell.fg = Some(border.color);
+                                // Inherit background from element or parent
+                                cell.bg = effective_bg;
                             }
                             buffer.set_cell(x, bottom_y, cell);
                         }
@@ -272,6 +277,8 @@ fn render_node_with_offset(
                         {
                             let mut cell = Cell::new(left);
                             cell.fg = Some(border.color);
+                            // Inherit background from element or parent
+                            cell.bg = effective_bg;
                             buffer.set_cell(rendered_x, y, cell);
                         }
 
@@ -283,6 +290,8 @@ fn render_node_with_offset(
                         {
                             let mut cell = Cell::new(right);
                             cell.fg = Some(border.color);
+                            // Inherit background from element or parent
+                            cell.bg = effective_bg;
                             buffer.set_cell(right_x, y, cell);
                         }
                     }
@@ -298,6 +307,8 @@ fn render_node_with_offset(
                     {
                         let mut cell = Cell::new(top_left);
                         cell.fg = Some(border.color);
+                        // Inherit background from element or parent
+                        cell.bg = effective_bg;
                         buffer.set_cell(rendered_x, rendered_y, cell);
                     }
                     let right_x = rendered_x + node.width - 1;
@@ -311,6 +322,8 @@ fn render_node_with_offset(
                     {
                         let mut cell = Cell::new(top_right);
                         cell.fg = Some(border.color);
+                        // Inherit background from element or parent
+                        cell.bg = effective_bg;
                         buffer.set_cell(right_x, rendered_y, cell);
                     }
                     let bottom_y = rendered_y + node.height - 1;
@@ -324,6 +337,8 @@ fn render_node_with_offset(
                     {
                         let mut cell = Cell::new(bottom_left);
                         cell.fg = Some(border.color);
+                        // Inherit background from element or parent
+                        cell.bg = effective_bg;
                         buffer.set_cell(rendered_x, bottom_y, cell);
                     }
                     let right_x = rendered_x + node.width - 1;
@@ -338,6 +353,8 @@ fn render_node_with_offset(
                     {
                         let mut cell = Cell::new(bottom_right);
                         cell.fg = Some(border.color);
+                        // Inherit background from element or parent
+                        cell.bg = effective_bg;
                         buffer.set_cell(right_x, bottom_y, cell);
                     }
                 }
