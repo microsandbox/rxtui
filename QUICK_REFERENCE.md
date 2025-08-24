@@ -34,10 +34,8 @@ impl MyComponent {
     #[view]
     fn view(&self, ctx: &Context, state: MyState) -> Node {
         node! {
-            div(bg: black, pad: 2) [
-                text(format!("Count: {}", state.counter)),
-                @click: ctx.handler(MyMsg::Click),
-                @key_global(esc): ctx.handler(MyMsg::Exit)
+            div(bg: black, pad: 2, @click: ctx.handler(MyMsg::Click), @key_global(esc): ctx.handler(MyMsg::Exit)) [
+                text(format!("Count: {}", state.counter))
             ]
         }
     }

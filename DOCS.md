@@ -46,10 +46,9 @@ impl HelloWorld {
     #[view]
     fn view(&self, ctx: &Context) -> Node {
         node! {
-            div(bg: blue, pad: 2) [
+            div(bg: blue, pad: 2, @key_global(esc): ctx.handler(())) [
                 text("Hello, Terminal!", color: white, bold),
-                text("Press Esc to exit", color: white),
-                @key_global(esc): ctx.handler(())
+                text("Press Esc to exit", color: white)
             ]
         }
     }
@@ -792,11 +791,13 @@ Global events work regardless of focus:
 
 ```rust
 node! {
-    div [
+    div(
         // Application-wide shortcuts
         @char_global('q'): ctx.handler(Msg::Quit),
         @key_global(esc): ctx.handler(Msg::Cancel),
         @char_global('/'): ctx.handler(Msg::Search)
+    ) [
+        // Children here
     ]
 }
 ```
