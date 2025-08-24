@@ -16,6 +16,11 @@ enum DemoMessage {
 }
 
 #[derive(Debug, Clone)]
+enum NavMsg {
+    SetPage(i32),
+}
+
+#[derive(Debug, Clone)]
 struct DemoState {
     current_page: i32,
 }
@@ -38,9 +43,13 @@ impl Default for DemoState {
 //--------------------------------------------------------------------------------------------------
 
 impl Demo {
-    // Since demo only handles navigation topic messages, we'll simplify this
-    #[update]
-    fn update(&self, ctx: &Context, msg: DemoMessage, mut state: DemoState) -> Action {
+    #[update(msg = DemoMessage, topics = ["navigation" => NavMsg])]
+    fn update(&self, ctx: &Context, messages: Messages, mut state: DemoState) -> Action {
+        let msg = match messages {
+            Messages::DemoMessage(msg) => msg,
+            Messages::NavMsg(NavMsg::SetPage(page)) => DemoMessage::SetPage(page),
+        };
+
         match msg {
             DemoMessage::SetPage(page) => {
                 state.current_page = page;
@@ -206,7 +215,7 @@ impl Tab {
         let page_num = self.page_num;
 
         node! {
-            div(bg: (bg_color), pad: 1, h: 3, w_auto, @click: ctx.topic_handler("navigation", DemoMessage::SetPage(page_num))) [
+            div(bg: (bg_color), pad: 1, h: 3, w_auto, @click: ctx.topic_handler("navigation", NavMsg::SetPage(page_num))) [
                 text(label, color: (text_color))
             ]
         }

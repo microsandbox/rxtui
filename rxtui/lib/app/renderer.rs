@@ -227,9 +227,9 @@ fn render_node_with_offset(
                             let mut cell = Cell::new(ch);
                             if ch != ' ' {
                                 cell.fg = Some(border.color);
-                                // Inherit background from element or parent
-                                cell.bg = effective_bg;
                             }
+                            // Always set background for border cells (including empty corners)
+                            cell.bg = style.background.or(parent_bg);
                             buffer.set_cell(x, rendered_y, cell);
                         }
                     }
@@ -259,9 +259,9 @@ fn render_node_with_offset(
                             let mut cell = Cell::new(ch);
                             if ch != ' ' {
                                 cell.fg = Some(border.color);
-                                // Inherit background from element or parent
-                                cell.bg = effective_bg;
                             }
+                            // Always set background for border cells (including empty corners)
+                            cell.bg = style.background.or(parent_bg);
                             buffer.set_cell(x, bottom_y, cell);
                         }
                     }
@@ -277,8 +277,8 @@ fn render_node_with_offset(
                         {
                             let mut cell = Cell::new(left);
                             cell.fg = Some(border.color);
-                            // Inherit background from element or parent
-                            cell.bg = effective_bg;
+                            // Use element's background if it has one, otherwise inherit from parent
+                            cell.bg = style.background.or(parent_bg);
                             buffer.set_cell(rendered_x, y, cell);
                         }
 
@@ -290,8 +290,8 @@ fn render_node_with_offset(
                         {
                             let mut cell = Cell::new(right);
                             cell.fg = Some(border.color);
-                            // Inherit background from element or parent
-                            cell.bg = effective_bg;
+                            // Use element's background if it has one, otherwise inherit from parent
+                            cell.bg = style.background.or(parent_bg);
                             buffer.set_cell(right_x, y, cell);
                         }
                     }
@@ -307,8 +307,8 @@ fn render_node_with_offset(
                     {
                         let mut cell = Cell::new(top_left);
                         cell.fg = Some(border.color);
-                        // Inherit background from element or parent
-                        cell.bg = effective_bg;
+                        // Use element's background if it has one, otherwise inherit from parent
+                        cell.bg = style.background.or(parent_bg);
                         buffer.set_cell(rendered_x, rendered_y, cell);
                     }
                     let right_x = rendered_x + node.width - 1;
@@ -322,8 +322,8 @@ fn render_node_with_offset(
                     {
                         let mut cell = Cell::new(top_right);
                         cell.fg = Some(border.color);
-                        // Inherit background from element or parent
-                        cell.bg = effective_bg;
+                        // Use element's background if it has one, otherwise inherit from parent
+                        cell.bg = style.background.or(parent_bg);
                         buffer.set_cell(right_x, rendered_y, cell);
                     }
                     let bottom_y = rendered_y + node.height - 1;
@@ -337,8 +337,8 @@ fn render_node_with_offset(
                     {
                         let mut cell = Cell::new(bottom_left);
                         cell.fg = Some(border.color);
-                        // Inherit background from element or parent
-                        cell.bg = effective_bg;
+                        // Use element's background if it has one, otherwise inherit from parent
+                        cell.bg = style.background.or(parent_bg);
                         buffer.set_cell(rendered_x, bottom_y, cell);
                     }
                     let right_x = rendered_x + node.width - 1;
@@ -353,8 +353,8 @@ fn render_node_with_offset(
                     {
                         let mut cell = Cell::new(bottom_right);
                         cell.fg = Some(border.color);
-                        // Inherit background from element or parent
-                        cell.bg = effective_bg;
+                        // Use element's background if it has one, otherwise inherit from parent
+                        cell.bg = style.background.or(parent_bg);
                         buffer.set_cell(right_x, bottom_y, cell);
                     }
                 }

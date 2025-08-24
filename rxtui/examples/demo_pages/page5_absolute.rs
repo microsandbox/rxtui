@@ -47,7 +47,7 @@ impl Page5AbsoluteDemo {
         };
 
         let main_content = node! {
-            div(bg: black, dir: vertical, pad: 1, w_pct: 1.0, h: 60) [
+            div(bg: black, dir: vertical, pad: 1, w_pct: 1.0, h: 60, @char('m'): ctx.handler(AbsoluteDemoMsg::ToggleModal)) [
                 // Title and instructions
                 text("Page 5: Absolute Positioning & Z-Index Demo", color: bright_white),
                 text(
@@ -188,7 +188,7 @@ impl Page5AbsoluteDemo {
                         text("with z-index 1001 to overlay everything.", color: black)
                     ],
                     div(pad: 1) [
-                        text("Press 'm' to close", color: bright_black)
+                        text("Press 'm' again to close", color: bright_black)
                     ]
                 ]
             };
