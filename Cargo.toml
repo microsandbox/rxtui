@@ -20,6 +20,14 @@ path = "examples/form.rs"
 name = "stopwatch"
 path = "examples/stopwatch.rs"
 
+[[example]]
+name = "demo"
+path = "examples/demo.rs"
+
+[[example]]
+name = "components"
+path = "examples/components.rs"
+
 [workspace]
 resolver = "2"
 members = [

@@ -46,7 +46,7 @@ impl ProgressBar {
                 @key_global(esc): ctx.handler(Msg::Exit),
                 @char_global('q'): ctx.handler(Msg::Exit)
             ) [
-                hstack(gap: 2) [
+                hstack(gap: 1) [
                     // Progress bar with smooth gradient
                     hstack [
                         ...((0..filled).map(|i| {
@@ -63,10 +63,10 @@ impl ProgressBar {
                             node! {
                                 text("█", color: (Color::Rgb(r, g, b)))
                             }
-                        }).collect::<Vec<Node>>())
+                        }).collect::<Vec<Node>>()),
+                        text("·".repeat(empty), color: (Color::Rgb(50, 50, 50))),
                     ],
 
-                    text("·".repeat(empty), color: (Color::Rgb(50, 50, 50))),
                     text(format!("{:>3}%", percentage), color: white, bold)
                 ],
 

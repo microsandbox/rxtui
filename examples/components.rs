@@ -15,10 +15,6 @@ struct CounterState {
     count: i32,
 }
 
-//--------------------------------------------------------------------------------------------------
-// Types: Topic Messages
-//--------------------------------------------------------------------------------------------------
-
 #[derive(Debug, Clone)]
 struct ResetSignal;
 
@@ -39,25 +35,12 @@ enum DashboardMsg {
     Exit,
 }
 
-#[derive(Debug, Clone)]
-struct DashboardState {
-    title: String,
-}
-
 #[derive(Component)]
 struct Dashboard;
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
 //--------------------------------------------------------------------------------------------------
-
-impl Default for DashboardState {
-    fn default() -> Self {
-        Self {
-            title: "RGB Counter Dashboard".to_string(),
-        }
-    }
-}
 
 //--------------------------------------------------------------------------------------------------
 // Methods: Counter
@@ -91,31 +74,23 @@ impl Counter {
     fn view(&self, ctx: &Context, state: CounterState) -> Node {
         node! {
             div(
-                bg: black,
                 border: white,
-                pad: 1,
+                pad_h: 1,
                 w: 25,
                 dir: vertical,
                 focusable,
-                focus_style: ({
-                    Style::default()
-                        .background(self.color)
-                        .border(self.color)
-                        .padding(Spacing::all(1))
-                }),
-                @key(Char('-')): ctx.handler(CounterMsg::Decrement),
-                @key(Char('+')): ctx.handler(CounterMsg::Increment),
+                focus_style: (Style::default().background(self.color)),
                 @key(down): ctx.handler(CounterMsg::Decrement),
                 @key(up): ctx.handler(CounterMsg::Increment)
             ) [
                 text(&self.label, color: white),
                 text(format!("Count: {}", state.count), color: bright_white),
-
+                spacer(1),
                 hstack(gap: 2) [
-                    div(bg: black, border: white, pad_h: 1, @click: ctx.handler(CounterMsg::Decrement)) [
+                    div(bg: "#8b0a0a", pad_h: 2, @click: ctx.handler(CounterMsg::Decrement)) [
                         text("-", color: white)
                     ],
-                    div(bg: black, border: white, pad_h: 1, @click: ctx.handler(CounterMsg::Increment)) [
+                    div(bg: "#0a29a4", pad_h: 2, @click: ctx.handler(CounterMsg::Increment)) [
                         text("+", color: white)
                     ]
                 ]
@@ -130,32 +105,26 @@ impl Counter {
 
 impl Dashboard {
     #[update]
-    fn update(&self, ctx: &Context, msg: DashboardMsg, mut state: DashboardState) -> Action {
+    fn update(&self, ctx: &Context, msg: DashboardMsg) -> Action {
         match msg {
             DashboardMsg::ResetAll => {
                 ctx.send_to_topic("counter_r", ResetSignal);
                 ctx.send_to_topic("counter_g", ResetSignal);
                 ctx.send_to_topic("counter_b", ResetSignal);
-
-                state.title = "RGB Counter Dashboard (Reset!)".to_string();
-                Action::update(state)
+                Action::none()
             }
             DashboardMsg::Exit => Action::exit(),
         }
     }
 
     #[view]
-    fn view(&self, ctx: &Context, state: DashboardState) -> Node {
+    fn view(&self, ctx: &Context) -> Node {
         node! {
-            div(bg: black, pad: 2, dir: vertical) [
-                div(bg: blue, pad: 1, w_pct: 1.0) [
-                    text(&state.title, color: bright_white)
-                ],
-
+            div(pad: 2, dir: vertical, @char_global('q'): ctx.handler(DashboardMsg::Exit), @key_global(esc): ctx.handler(DashboardMsg::Exit)) [
                 spacer(1),
 
                 text(
-                    "Use Tab to focus counters. Press +/- or ↑/↓ to change values. Click buttons also work.",
+                    "Use Tab to focus counters. Press ↑/↓ to change values. Click buttons also work.",
                     color: bright_yellow
                 ),
                 text("Press 'r' to reset all counters, 'q' to quit.", color: bright_cyan),
@@ -173,23 +142,14 @@ impl Dashboard {
                 div(
                     bg: black,
                     border: white,
-                    pad: 1,
-                    w: 20,
+                    pad_h: 1,
                     focusable,
-                    focus_style: ({
-                        Style::default()
-                            .background(Color::Yellow)
-                            .border(Color::Yellow)
-                            .padding(Spacing::all(1))
-                    })
+                    focus_style: (Style::default().background(Color::Magenta)),
                     @click: ctx.handler(DashboardMsg::ResetAll),
                     @char('r'): ctx.handler(DashboardMsg::ResetAll)
                 ) [
                     text("Reset All (R)", color: white)
-                ],
-
-                @char_global('q'): ctx.handler(DashboardMsg::Exit),
-                @key_global(esc): ctx.handler(DashboardMsg::Exit)
+                ]
             ]
         }
     }

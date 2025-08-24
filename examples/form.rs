@@ -2,8 +2,7 @@ use rxtui::prelude::*;
 
 #[derive(Debug, Clone)]
 enum Msg {
-    NameChanged(String),
-    EmailChanged(String),
+    UsernameChanged(String),
     PasswordChanged(String),
     Submit,
     Clear,
@@ -12,8 +11,7 @@ enum Msg {
 
 #[derive(Debug, Clone, Default)]
 struct FormState {
-    name: String,
-    email: String,
+    username: String,
     password: String,
     submitted: bool,
 }
@@ -25,13 +23,8 @@ impl Form {
     #[update]
     fn update(&self, _ctx: &Context, msg: Msg, mut state: FormState) -> Action {
         match msg {
-            Msg::NameChanged(value) => {
-                state.name = value;
-                state.submitted = false;
-                Action::update(state)
-            }
-            Msg::EmailChanged(value) => {
-                state.email = value;
+            Msg::UsernameChanged(value) => {
+                state.username = value;
                 state.submitted = false;
                 Action::update(state)
             }
@@ -41,7 +34,7 @@ impl Form {
                 Action::update(state)
             }
             Msg::Submit => {
-                if !state.name.is_empty() && !state.email.is_empty() && !state.password.is_empty() {
+                if !state.username.is_empty() && !state.password.is_empty() {
                     state.submitted = true;
                 }
                 Action::update(state)
@@ -54,43 +47,26 @@ impl Form {
     #[view]
     fn view(&self, ctx: &Context, state: FormState) -> Node {
         node! {
-            div(bg: black, pad: 2, w_pct: 1.0, @key(esc): ctx.handler(Msg::Exit), @char('c'): ctx.handler(Msg::Clear), @char('C'): ctx.handler(Msg::Clear)) [
-                // Title
-                text("Form Example with Callbacks", color: cyan, bold),
-                spacer(1),
-
+            div(pad: 2, w_pct: 1.0, @key(esc): ctx.handler(Msg::Exit), @char('c'): ctx.handler(Msg::Clear), @char('C'): ctx.handler(Msg::Clear)) [
                 text("tab to navigate | enter to submit | esc to exit", color: bright_black),
-                spacer(2),
+                spacer(1),
 
                 // Form fields with callbacks
                 vstack [
-                    text(" Name:", color: white, bold),
+                    text("Username:", color: white, bold),
                     input(
-                        placeholder: "Enter your full name...",
-                        border: (if state.name.is_empty() { Color::White } else { Color::Green }),
+                        placeholder: "Enter your username...",
+                        border: (if state.username.is_empty() { Color::White } else { Color::Green }),
                         focusable,
                         w: 40,
-                        @change: ctx.handler_with_value(Msg::NameChanged),
+                        @change: ctx.handler_with_value(Msg::UsernameChanged),
                         @submit: ctx.handler(Msg::Submit)
                     )
                 ],
                 spacer(1),
 
                 vstack [
-                    text(" Email:", color: white, bold),
-                    input(
-                        placeholder: "your.email@example.com",
-                        border: (if state.email.is_empty() { Color::White } else { Color::Green }),
-                        focusable,
-                        w: 40,
-                        @change: ctx.handler_with_value(Msg::EmailChanged),
-                        @submit: ctx.handler(Msg::Submit)
-                    )
-                ],
-                spacer(1),
-
-                vstack [
-                    text(" Password:", color: white, bold),
+                    text("Password:", color: white, bold),
                     input(
                         placeholder: "Enter secure password...",
                         password,
@@ -105,8 +81,8 @@ impl Form {
 
                 // Buttons
                 div(
-                    bg: (if state.name.is_empty() || state.email.is_empty() || state.password.is_empty() {
-                        Color::BrightBlack
+                    bg: (if state.username.is_empty() || state.password.is_empty() {
+                        Color::White
                     } else {
                         Color::Green
                     }),
@@ -128,12 +104,8 @@ impl Form {
                     text("Current Form State:", color: yellow, bold),
                     spacer(1),
                     richtext [
-                        text("Name: ", color: cyan),
-                        text(&state.name, color: white)
-                    ],
-                    richtext [
-                        text("Email: ", color: cyan),
-                        text(&state.email, color: white)
+                        text("Username: ", color: cyan),
+                        text(&state.username, color: white)
                     ],
                     richtext [
                         text("Password: ", color: cyan),
