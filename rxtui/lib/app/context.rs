@@ -222,16 +222,16 @@ impl Context {
     }
 
     /// Creates a message handler that captures the current component ID
-    pub fn handler<T: Message + Clone + 'static>(&self, msg: T) -> impl Fn() + 'static {
+    pub fn handler<T: Message + Clone + 'static>(&self, msg: T) -> Box<dyn Fn() + 'static> {
         let id = self.current_component_id.clone();
         let dispatcher = self.dispatch.clone();
-        move || {
+        Box::new(move || {
             dispatcher.send_to_id(id.clone(), msg.clone());
-        }
+        })
     }
 
     /// Creates a message handler with a value parameter
-    pub fn handler_with_value<T, M, F>(&self, msg_fn: F) -> impl Fn(T) + 'static
+    pub fn handler_with_value<T, M, F>(&self, msg_fn: F) -> Box<dyn Fn(T) + 'static>
     where
         T: 'static,
         M: Message + 'static,
@@ -239,9 +239,9 @@ impl Context {
     {
         let id = self.current_component_id.clone();
         let dispatcher = self.dispatch.clone();
-        move |value| {
+        Box::new(move |value| {
             dispatcher.send_to_id(id.clone(), msg_fn(value));
-        }
+        })
     }
 
     /// Get the state for the current component, initializing with Default if not already present

@@ -13,6 +13,10 @@ name = "counter"
 path = "examples/counter.rs"
 
 [[example]]
+name = "form"
+path = "examples/form.rs"
+
+[[example]]
 name = "stopwatch"
 path = "examples/stopwatch.rs"
 

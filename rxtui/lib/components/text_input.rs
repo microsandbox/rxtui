@@ -62,6 +62,9 @@ pub enum TextInputMsg {
     Cut,
     Copy,
     Paste(String),
+
+    /// Submit (Enter key)
+    Submit,
 }
 
 /// State for TextInput component
@@ -155,6 +158,8 @@ pub struct TextInput {
     focusable: bool,
     wrap: Option<TextWrap>,
     password_mode: bool,
+    on_change: Option<Box<dyn Fn(String)>>,
+    on_submit: Option<Box<dyn Fn()>>,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -367,6 +372,8 @@ impl TextInput {
             focusable: true,                 // Text inputs are focusable by default
             wrap: Some(TextWrap::WordBreak), // Default to WordBreak for better text wrapping
             password_mode: false,            // Default to normal text mode
+            on_change: None,
+            on_submit: None,
         }
     }
 
@@ -385,6 +392,18 @@ impl TextInput {
     /// Enables password mode which masks the input content
     pub fn password(mut self, password: bool) -> Self {
         self.password_mode = password;
+        self
+    }
+
+    /// Sets the callback to be called when the input content changes
+    pub fn on_change(mut self, callback: impl Fn(String) + 'static) -> Self {
+        self.on_change = Some(Box::new(callback));
+        self
+    }
+
+    /// Sets the callback to be called when Enter is pressed
+    pub fn on_submit(mut self, callback: impl Fn() + 'static) -> Self {
+        self.on_submit = Some(Box::new(callback));
         self
     }
 
@@ -426,6 +445,11 @@ impl TextInput {
                             chars.insert(char_pos, *ch);
                             state.content = chars.into_iter().collect();
                             state.cursor_position += 1;
+
+                            // Call on_change callback
+                            if let Some(callback) = &self.on_change {
+                                callback(state.content.clone());
+                            }
                         }
                     }
                 }
@@ -440,6 +464,11 @@ impl TextInput {
                             chars.remove(state.cursor_position - 1);
                             state.content = chars.into_iter().collect();
                             state.cursor_position -= 1;
+
+                            // Call on_change callback
+                            if let Some(callback) = &self.on_change {
+                                callback(state.content.clone());
+                            }
                         }
                     }
                 }
@@ -453,6 +482,11 @@ impl TextInput {
                             if state.cursor_position < chars.len() {
                                 chars.remove(state.cursor_position);
                                 state.content = chars.into_iter().collect();
+
+                                // Call on_change callback
+                                if let Some(callback) = &self.on_change {
+                                    callback(state.content.clone());
+                                }
                             }
                         }
                     }
@@ -463,6 +497,10 @@ impl TextInput {
                             self.delete_selection(&mut state);
                         } else {
                             self.delete_word_backward(&mut state);
+                            // Call on_change callback
+                            if let Some(callback) = &self.on_change {
+                                callback(state.content.clone());
+                            }
                         }
                     }
                 }
@@ -553,6 +591,12 @@ impl TextInput {
                 // TODO: Implement clipboard operations
                 TextInputMsg::Cut | TextInputMsg::Copy | TextInputMsg::Paste(_) => {
                     // Will be implemented when we add clipboard support
+                }
+                TextInputMsg::Submit => {
+                    // Call on_submit callback when Enter is pressed
+                    if let Some(callback) = &self.on_submit {
+                        callback();
+                    }
                 }
             }
 
@@ -664,7 +708,7 @@ impl TextInput {
             .on_any_char(ctx.handler_with_value(|ch| {
                 // Only handle regular character input
                 // Control sequences are handled by on_key_with_modifiers above
-                Box::new(TextInputMsg::CharInput(ch))
+                TextInputMsg::CharInput(ch)
             }));
 
         // Display content if present, otherwise show placeholder

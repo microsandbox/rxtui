@@ -489,12 +489,19 @@ impl App {
                 Ok(vnode)
             }
             Node::Div(div) => {
+                // Track the path through divs to ensure unique component IDs
+                let parent_id = context.current_component_id.clone();
+                context.current_component_id = parent_id.child(child_index);
+
                 // Convert div children
                 let mut vnode_children = Vec::new();
                 for (i, child) in div.children.into_iter().enumerate() {
                     // Propagate any exit signal from children
                     vnode_children.push(self.node_to_vnode(child, context, components, i)?);
                 }
+
+                // Restore parent context after processing div children
+                context.current_component_id = parent_id;
 
                 // Create VNode div with converted children
                 let mut vnode_div = Div::new();
