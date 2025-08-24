@@ -32,11 +32,9 @@ Terminal UIs have traditionally been painful to build. You either work with low-
 We bring the retained-mode, component-based architecture that revolutionized web development to the terminal:
 
 - [x] **Declarative UI** - Describe what your UI should look like, not how to change it
-- [x] **Zero Manual Optimization** - Automatic diffing, dirty tracking, and minimal redraws
+- [x] **TUI Optimizations** - Automatic diffing, dirty tracking, and minimal redraws
 - [x] **True Composability** - Build complex apps from simple, reusable components
-- [x] **Proven Patterns** - Combines React's components with Elm's message architecture
-- [x] **Async Effects** - Built-in support for timers, network requests, and streams
-- [x] **Rich Ecosystem** - Comprehensive styling, layout, and input handling
+- [x] **Best of Both Worlds** - Combines React's components with Elm's message architecture
 
 <div align='center'>• • •</div>
 
