@@ -18,7 +18,10 @@ impl Timer {
     fn view(&self, ctx: &Context, state: u64) -> Node {
         node! {
             div(bg: black, pad: 2) [
-                text(format!("Timer: {} seconds [Press Esc to exit]", state), color: white),
+                richtext [
+                    text(format!("Timer: {state}"), color: cyan, bold),
+                    text(" Press Esc to exit", color: bright_black, italic)
+                ],
                 @key(Esc): ctx.handler(false)
             ]
         }
