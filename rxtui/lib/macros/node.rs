@@ -748,6 +748,34 @@ macro_rules! tui_parse_children {
         $crate::tui_parse_children!($children, $container)
     }};
 
+    // Child: expression in parentheses (and more children)
+    ($children:ident, $container:expr, ($expr:expr), $($rest:tt)*) => {{
+        let child = $expr;
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: expression in parentheses (last child)
+    ($children:ident, $container:expr, ($expr:expr)) => {{
+        let child = $expr;
+        $children.push(child);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
+    // Child: spread expression with ... (and more children)
+    ($children:ident, $container:expr, ...($expr:expr), $($rest:tt)*) => {{
+        let items: Vec<$crate::Node> = $expr;
+        $children.extend(items);
+        $crate::tui_parse_children!($children, $container, $($rest)*)
+    }};
+
+    // Child: spread expression with ... (last child)
+    ($children:ident, $container:expr, ...($expr:expr)) => {{
+        let items: Vec<$crate::Node> = $expr;
+        $children.extend(items);
+        $crate::tui_parse_children!($children, $container)
+    }};
+
     // Child: input with props (and more children)
     ($children:ident, $container:expr, input($($props:tt)*), $($rest:tt)*) => {{
         let child = $crate::tui_parse_element!(input($($props)*));

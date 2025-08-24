@@ -295,6 +295,68 @@ node! {
 
 ### Elements
 
+#### Expressions
+
+You can use any Rust expression that returns a `Node` by wrapping it in parentheses:
+
+```rust
+node! {
+    div [
+        // Variable
+        (my_node_variable),
+
+        // Match expression
+        (match state.status {
+            Loading => node! { text("Loading...") },
+            Ready => node! { text("Ready!") },
+        }),
+
+        // If expression
+        (if condition {
+            node! { text("True branch") }
+        } else {
+            node! { text("False branch") }
+        }),
+
+        // Method call
+        (self.create_node()),
+    ]
+}
+```
+
+#### Spread Operator
+
+Use the `...` spread operator to expand a `Vec<Node>` as children:
+
+```rust
+node! {
+    div [
+        // Spread a vector of nodes
+        ...(vec![
+            node! { text("Item 1") },
+            node! { text("Item 2") },
+            node! { text("Item 3") },
+        ]),
+
+        // Spread from iterator
+        ...(state.items.iter().map(|item| {
+            node! {
+                div(pad: 1) [
+                    text(&item.name)
+                ]
+            }
+        }).collect::<Vec<Node>>()),
+
+        // Combine with regular children
+        text("Header", bold),
+        ...(item_nodes),
+        text("Footer"),
+    ]
+}
+```
+
+This is particularly useful for rendering lists or collections dynamically.
+
 #### Div Container
 
 ```rust

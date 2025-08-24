@@ -681,7 +681,7 @@ impl TodoApp {
                     show_scrollbar: true,
                     border: white
                 ) [
-                    {visible_todos.iter().map(|(idx, todo)| {
+                    ...(visible_todos.iter().map(|(idx, todo)| {
                         let idx = *idx;
                         let style = if todo.completed {
                             TextStyle::default()
@@ -713,7 +713,7 @@ impl TodoApp {
                                 ]
                             ]
                         }
-                    }).collect::<Vec<_>>()}
+                    }).collect::<Vec<Node>>())
                 ],
 
                 spacer(1),
