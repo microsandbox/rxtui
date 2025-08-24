@@ -71,127 +71,13 @@ fn main() -> std::io::Result<()> {
 
 That's it. No manual rendering, no state management boilerplate, no event loop. Just your logic.
 
-## Core Concepts
+## Documentation
 
-### 1. Components
+For comprehensive documentation including core concepts, component architecture, and advanced features, see [DOCS.md](DOCS.md).
 
-Everything is a component. Think of them as self-contained UI pieces that know how to manage their own state and behavior. Each component has two main jobs: handling events (through `update`) and rendering UI (through `view`):
-
-```rust
-#[derive(Component)]
-struct TodoList;
-
-impl TodoList {
-    #[update]
-    fn update(&self, ctx: &Context, msg: TodoMsg, mut state: TodoState) -> Action {
-        // Messages come here from events in your view
-        // You update state, then return Action::update(state) to re-render
-    }
-
-    #[view]
-    fn view(&self, ctx: &Context, state: TodoState) -> Node {
-        // This renders your UI using the current state
-        // Uses the node! macro to build the UI tree
-    }
-}
-```
-
-### 2. The node! Macro
-
-This is how you actually build your UI. The `node!` macro gives you a clean, declarative syntax that lives inside your component's `view` method. Instead of imperatively creating and configuring widgets, you describe what the UI should look like:
-
-```rust
-#[view]
-fn view(&self, ctx: &Context, state: AppState) -> Node {
-    node! {
-        div(bg: blue, pad: 2, border: white) [
-            text(format!("Count: {}", state.count), color: yellow),
-
-            hstack(gap: 2) [
-                text("Click me!"),
-                // Events here trigger messages that go to update()
-                @click: ctx.handler(Msg::Increment),
-            ],
-
-            @key_global(Esc): ctx.handler(Msg::Exit)
-        ]
-    }
-}
-```
-
-### 3. Messages & State
-
-These are the heart of your component's logic. State is just your data - what your component needs to remember. Messages are the things that can happen - user clicks, key presses, timers firing. When a message arrives, you update your state, and the UI automatically re-renders:
-
-```rust
-// Your state - the data your component needs
-#[derive(Debug, Clone, Default)]
-struct TodoState {
-    items: Vec<String>,
-    selected: usize,
-}
-
-// Messages - what can happen in your component
-#[derive(Debug, Clone)]
-enum TodoMsg {
-    AddItem(String),
-    RemoveItem(usize),
-    SelectItem(usize),
-}
-
-// In update(), messages modify state
-#[update]
-fn update(&self, ctx: &Context, msg: TodoMsg, mut state: TodoState) -> Action {
-    match msg {
-        TodoMsg::AddItem(text) => {
-            state.items.push(text);
-            Action::update(state)  // This triggers view() to re-render
-        }
-        // ... handle other messages
-    }
-}
-```
-
-The flow: **Event** (click) → **Message** (AddItem) → **Update** (modify state) → **View** (re-render with new state)
-
-### 4. Layout System
-
-Terminal sizes vary wildly - from tiny SSH windows to full-screen terminal apps. RxTUI's layout system adapts automatically. Use percentages for responsive design, fixed sizes for specific elements, and absolute positioning for overlays. All of this happens right in your `node!` macro:
-
-```rust
-node! {
-    // Percentage-based for responsive design
-    div(w_pct: 0.5, h_pct: 0.8) [
-        // This takes 50% width, 80% height of parent
-
-        // Direction-based layouts
-        div(dir: horizontal, gap: 2) [
-            text("Left"),
-            text("Right")
-        ],
-
-        // Absolute positioning for overlays
-        div(absolute, top: 5, right: 5, z: 100) [
-            text("Floating notification")
-        ]
-    ]
-}
-```
-
-### 5. Cross-Component Communication
-
-Sometimes components need to talk to each other - a sidebar needs to tell the main content what to display, or a notification system needs to listen for alerts from anywhere in the app. Topics make this easy without tight coupling:
-
-```rust
-// Send a message to a topic
-ctx.send_to_topic("notifications", Alert::new("Hello!"));
-
-// Listen to topics
-#[update(msg = MyMsg, topics = ["notifications" => Alert])]
-fn update(&self, ctx: &Context, messages: Messages, state: MyState) -> Action {
-    // Handle both regular messages and topic messages
-}
-```
+- **[Tutorial](TUTORIAL.md)** - Step-by-step guide from basics to advanced features
+- **[API Reference](API_REFERENCE.md)** - Complete API documentation
+- **[Quick Reference](QUICK_REFERENCE.md)** - Handy cheat sheet for common patterns
 
 ## Getting Started
 
@@ -200,14 +86,14 @@ Add RxTUI to your `Cargo.toml`:
 ```toml
 [dependencies]
 rxtui = "0.1"
+tokio = { version = "1", features = ["full"] }  # Required for async effects
 ```
 
-If you need async effects (timers, network requests, streams), add tokio:
+The `effects` feature is enabled by default. If you want to disable it (for smaller binary size when not using async):
 
 ```toml
 [dependencies]
-rxtui = "0.1"
-tokio = { version = "1", features = ["full"] }
+rxtui = { version = "0.1", default-features = false }
 ```
 
 Check out the examples:

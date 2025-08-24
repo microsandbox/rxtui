@@ -160,7 +160,7 @@ div(focusable) [
     @char('a'): handler,
     @key(Enter): handler,
     @key(Backspace): handler,
-    @key(Char('-')): handler,
+    @char('-'): handler,  // For character keys, use @char
 
     // Global (no focus needed)
     @char_global('q'): handler,
@@ -219,50 +219,76 @@ color: (if ok { green } else { red })
 
 ### Loading State
 
+Use the builder pattern or pre-compute nodes when you need dynamic content:
+
 ```rust
+// Option 1: Pre-compute the node
+let status_node = match state.status {
+    Loading => node! { text("Loading...", color: yellow) },
+    Error(e) => node! { text(format!("Error: {}", e), color: red) },
+    Success(data) => node! { text(format!("Data: {}", data)) },
+};
+
 node! {
     div [
-        match state.status {
-            Loading => text("Loading...", color: yellow),
-            Error(e) => text(format!("Error: {}", e), color: red),
-            Success(data) => text(format!("Data: {}", data)),
-        }
+        node(status_node)
     ]
 }
+
+// Option 2: Use builder pattern
+let content = match state.status {
+    Loading => Text::new("Loading...").color(Color::Yellow).into(),
+    Error(e) => Text::new(format!("Error: {}", e)).color(Color::Red).into(),
+    Success(data) => Text::new(format!("Data: {}", data)).into(),
+};
+
+Div::default()
+    .children(vec![content])
+    .into()
 ```
 
 ### List Rendering
 
+Build lists outside the macro or use the builder pattern:
+
 ```rust
-node! {
-    div [
-        {state.items.iter().map(|item| {
-            node! {
-                div [
-                    text(&item.name)
-                ]
-            }
-        }).collect::<Vec<_>>()}
-    ]
-}
+// Pre-build the list of nodes
+let item_nodes: Vec<Node> = state.items.iter()
+    .map(|item| node! {
+        div [
+            text(&item.name)
+        ]
+    })
+    .collect();
+
+// Then use builder pattern to combine
+Div::default()
+    .children(item_nodes)
+    .into()
 ```
 
 ### Conditional Rendering
 
+Handle conditions outside the macro:
+
 ```rust
-node! {
-    div [
-        if state.show_header {
-            text("Header", bold)
-        },
+// Build conditional elements
+let mut children = vec![];
 
-        text("Always visible"),
-
-        if let Some(message) = &state.message {
-            text(message, color: yellow)
-        }
-    ]
+if state.show_header {
+    children.push(node! { text("Header", bold) });
 }
+
+children.push(node! { text("Always visible") });
+
+if let Some(message) = &state.message {
+    children.push(node! { text(message, color: yellow) });
+}
+
+// Use builder pattern
+Div::default()
+    .children(children)
+    .into()
 ```
 
 ### Scrollable Container
@@ -342,6 +368,13 @@ fn update(&self, ctx: &Context, messages: Messages, state: State) -> Action {
 ```
 
 ## Effects (Async)
+
+Effects are enabled by default. Just add tokio:
+```toml
+[dependencies]
+rxtui = "0.1"
+tokio = { version = "1", features = ["full"] }
+```
 
 ### Timer Effect
 
@@ -472,23 +505,27 @@ Action::exit()              // Exit app
 ## App Configuration
 
 ```rust
-let mut app = App::with_config(RenderConfig {
-    poll_duration_ms: 16,      // Event poll timeout
-    use_double_buffer: true,   // Flicker-free rendering
-    use_diffing: true,         // Optimize updates
-    use_alternate_screen: true, // Separate screen
-})?;
+let mut app = App::new()?
+    .render_config(RenderConfig {
+        poll_duration_ms: 16,      // Event poll timeout
+        use_double_buffer: true,   // Flicker-free rendering
+        use_diffing: true,         // Optimize updates
+        use_alternate_screen: true, // Separate screen
+    });
+app.run(MyComponent)?;
 ```
 
 ## Debugging
 
 ```rust
 // Disable optimizations for debugging
-let mut app = App::with_config(RenderConfig {
-    use_double_buffer: false,
-    use_diffing: false,
-    poll_duration_ms: 100,
-})?;
+let mut app = App::new()?
+    .render_config(RenderConfig {
+        use_double_buffer: false,
+        use_diffing: false,
+        poll_duration_ms: 100,
+    });
+app.run(MyComponent)?;
 ```
 
 ## Performance Tips
@@ -515,7 +552,7 @@ use rxtui::prelude::*;
 Includes:
 - Core: `App`, `Context`, `Component`, `Node`, `Action`
 - State: `State`, `Message`
-- Style: `Color`, `Style`, `Direction`, `Spacing`
-- Macros: `node!`, `#[component]`, `#[update]`, `#[view]`
+- Style: `Color`, `Style`, `Direction`, `Spacing`, `Border`, `BorderStyle`
+- Macros: `node!`, `#[component]`, `#[update]`, `#[view]`, `#[effect]`
 - Components: `TextInput`
-- Keys: `Key`
+- Keys: `Key`, `KeyWithModifiers`

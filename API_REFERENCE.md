@@ -25,7 +25,8 @@ use rxtui::prelude::*;
 Imports all commonly used types:
 - Core: `App`, `Context`, `Component`, `Node`, `Action`
 - State: `State`, `StateExt`, `Message`, `MessageExt`
-- Style: `Color`, `Style`, `Direction`, `Spacing`, `BorderStyle`
+- Style: `Color`, `Style`, `Direction`, `Spacing`, `Border`, `BorderStyle`, `BorderEdges`
+- Key: `Key`, `KeyWithModifiers`
 - Macros: `node!`, `#[component]`, `#[update]`, `#[view]`, `#[effect]`
 
 ## Core Types
@@ -285,6 +286,43 @@ impl Style {
     pub fn padding(self, spacing: Spacing) -> Self;
     pub fn border(self, color: Color) -> Self;
     // ... builder methods for all fields
+}
+```
+
+### Key
+
+```rust
+pub enum Key {
+    // Regular character
+    Char(char),
+
+    // Special keys
+    Esc, Enter, Tab, BackTab, Backspace, Delete,
+
+    // Arrow keys
+    Up, Down, Left, Right,
+
+    // Navigation
+    PageUp, PageDown, Home, End,
+
+    // Function keys
+    F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
+}
+
+pub struct KeyWithModifiers {
+    pub key: Key,
+    pub ctrl: bool,
+    pub alt: bool,
+    pub shift: bool,
+    pub meta: bool,  // Cmd on macOS, Win on Windows
+}
+
+impl KeyWithModifiers {
+    pub fn new(key: Key) -> Self;
+    pub fn with_ctrl(key: Key) -> Self;
+    pub fn with_alt(key: Key) -> Self;
+    pub fn with_shift(key: Key) -> Self;
+    pub fn is_primary_modifier(&self) -> bool;  // Platform-aware (Cmd on macOS, Ctrl elsewhere)
 }
 ```
 

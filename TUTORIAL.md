@@ -24,10 +24,12 @@ struct HelloWorld;
 impl HelloWorld {
     // Define how it looks
     #[view]
-    fn view(&self, _ctx: &Context) -> Node {
+    fn view(&self, ctx: &Context) -> Node {
         node! {
             div(bg: blue, pad: 2) [
-                text("Hello, RxTUI!", color: white, bold)
+                text("Hello, RxTUI!", color: white, bold),
+                text("Press Esc to exit", color: white),
+                @key_global(Esc): ctx.handler(())
             ]
         }
     }
@@ -43,7 +45,7 @@ Run it:
 cargo run
 ```
 
-Press `Ctrl+C` to exit.
+Press `Esc` to exit.
 
 ### What's happening?
 

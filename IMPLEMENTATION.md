@@ -260,7 +260,7 @@ The main loop (`run_loop`) follows this sequence:
 1. **Component Tree Expansion**:
    - Start with root component
    - Recursively expand components to VNodes
-   - Assign component IDs based on tree position (e.g., "0", "0.1", "0.1.2")
+   - Assign component IDs based on tree position using `ComponentId::child(index)` method (e.g., "0", "0.0", "0.1")
 
 2. **Message Processing**:
    - Components drain all pending messages (regular + topic)
@@ -414,13 +414,36 @@ Manages UI state and efficient updates:
 Generates minimal patches:
 ```rust
 pub enum Patch {
-    Create(VNode, Vec<usize>),        // Add node at path
-    Delete(Vec<usize>),               // Remove node
-    Replace(VNode, Vec<usize>),       // Replace subtree
-    UpdateDiv(Div<VNode>, Vec<usize>), // Update properties
-    UpdateText(Text, Vec<usize>),     // Update text
-    UpdateRichText(RichText, Vec<usize>), // Update rich text
-    Move(Vec<usize>, Vec<usize>),     // Reorder children
+    Replace {
+        old: Rc<RefCell<RenderNode>>,
+        new: VNode,
+    },
+    UpdateText {
+        node: Rc<RefCell<RenderNode>>,
+        new_text: String,
+        new_style: Option<TextStyle>,
+    },
+    UpdateRichText {
+        node: Rc<RefCell<RenderNode>>,
+        new_spans: Vec<TextSpan>,
+    },
+    UpdateProps {
+        node: Rc<RefCell<RenderNode>>,
+        div: Div<VNode>,
+    },
+    AddChild {
+        parent: Rc<RefCell<RenderNode>>,
+        child: VNode,
+        index: usize,
+    },
+    RemoveChild {
+        parent: Rc<RefCell<RenderNode>>,
+        index: usize,
+    },
+    ReorderChildren {
+        parent: Rc<RefCell<RenderNode>>,
+        moves: Vec<Move>,
+    },
 }
 ```
 

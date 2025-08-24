@@ -24,11 +24,15 @@ Add RxTUI to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rxtui = { path = "rxtui" }
+rxtui = "0.1"
+tokio = { version = "1.0", features = ["full"] }  # Required for async effects
+```
 
-# For async effects support:
-rxtui = { path = "rxtui", features = ["effects"] }
-tokio = { version = "1.0", features = ["full"] }
+Note: The `effects` feature is enabled by default. To disable it:
+
+```toml
+[dependencies]
+rxtui = { version = "0.1", default-features = false }
 ```
 
 Create your first app:
@@ -41,10 +45,12 @@ struct HelloWorld;
 
 impl HelloWorld {
     #[view]
-    fn view(&self, _ctx: &Context) -> Node {
+    fn view(&self, ctx: &Context) -> Node {
         node! {
             div(bg: blue, pad: 2) [
-                text("Hello, Terminal!", color: white, bold)
+                text("Hello, Terminal!", color: white, bold),
+                text("Press Esc to exit", color: white),
+                @key_global(Esc): ctx.handler(())
             ]
         }
     }
@@ -57,25 +63,129 @@ fn main() -> std::io::Result<()> {
 
 ## Core Concepts
 
-RxTUI follows a component-based architecture where your UI is composed of reusable components that manage their own state and handle messages.
+RxTUI follows a component-based architecture where everything is built from self-contained, reusable pieces. Let's explore the fundamental concepts that make RxTUI work.
 
-### The Component Lifecycle
+### Components - The Foundation
 
-1. **Component** creates a **View** (UI tree)
-2. **Events** trigger **Messages**
-3. **Messages** are processed by **Update**
-4. **Update** modifies **State**
-5. **State** changes trigger re-render
-6. Back to step 1
+Everything in RxTUI is a component. Think of them as self-contained UI pieces that know how to manage their own state and behavior. Each component has two main jobs: handling events (through `update`) and rendering UI (through `view`):
 
-### Key Types
+```rust
+#[derive(Component)]
+struct TodoList;
 
-- **Component**: A reusable UI element with behavior
-- **Node**: The UI tree structure (divs, text, components)
-- **Message**: Events that trigger state changes
-- **State**: Component's data
-- **Action**: What to do after processing a message
-- **Context**: Provides access to state and message dispatch
+impl TodoList {
+    #[update]
+    fn update(&self, ctx: &Context, msg: TodoMsg, mut state: TodoState) -> Action {
+        // Messages come here from events in your view
+        // You update state, then return Action::update(state) to re-render
+    }
+
+    #[view]
+    fn view(&self, ctx: &Context, state: TodoState) -> Node {
+        // This renders your UI using the current state
+        // Uses the node! macro to build the UI tree
+    }
+}
+```
+
+### The node! Macro - Building Your UI
+
+The `node!` macro is how you actually build your UI. It gives you a clean, declarative syntax that lives inside your component's `view` method. Instead of imperatively creating and configuring widgets, you describe what the UI should look like:
+
+```rust
+#[view]
+fn view(&self, ctx: &Context, state: AppState) -> Node {
+    node! {
+        div(bg: blue, pad: 2, border: white) [
+            text(format!("Count: {}", state.count), color: yellow),
+
+            hstack(gap: 2) [
+                text("Click me!"),
+                // Events here trigger messages that go to update()
+                @click: ctx.handler(Msg::Increment),
+            ],
+
+            @key_global(Esc): ctx.handler(Msg::Exit)
+        ]
+    }
+}
+```
+
+### Messages & State - The Update Cycle
+
+These are the heart of your component's logic. State is just your data - what your component needs to remember. Messages are the things that can happen - user clicks, key presses, timers firing. When a message arrives, you update your state, and the UI automatically re-renders:
+
+```rust
+// Your state - the data your component needs
+#[derive(Debug, Clone, Default)]
+struct TodoState {
+    items: Vec<String>,
+    selected: usize,
+}
+
+// Messages - what can happen in your component
+#[derive(Debug, Clone)]
+enum TodoMsg {
+    AddItem(String),
+    RemoveItem(usize),
+    SelectItem(usize),
+}
+
+// In update(), messages modify state
+#[update]
+fn update(&self, ctx: &Context, msg: TodoMsg, mut state: TodoState) -> Action {
+    match msg {
+        TodoMsg::AddItem(text) => {
+            state.items.push(text);
+            Action::update(state)  // This triggers view() to re-render
+        }
+        // ... handle other messages
+    }
+}
+```
+
+The flow is simple and predictable:
+
+**Event** (click) → **Message** (AddItem) → **Update** (modify state) → **View** (re-render with new state)
+
+### Layout System - Responsive Terminal UIs
+
+Terminal sizes vary wildly - from tiny SSH windows to full-screen terminal apps. RxTUI's layout system adapts automatically. Use percentages for responsive design, fixed sizes for specific elements, and absolute positioning for overlays:
+
+```rust
+node! {
+    // Percentage-based for responsive design
+    div(w_pct: 0.5, h_pct: 0.8) [
+        // This takes 50% width, 80% height of parent
+
+        // Direction-based layouts
+        div(dir: horizontal, gap: 2) [
+            text("Left"),
+            text("Right")
+        ],
+
+        // Absolute positioning for overlays
+        div(absolute, top: 5, right: 5, z: 100) [
+            text("Floating notification")
+        ]
+    ]
+}
+```
+
+### Cross-Component Communication - Topics
+
+Sometimes components need to talk to each other - a sidebar needs to tell the main content what to display, or a notification system needs to listen for alerts from anywhere in the app. Topics make this easy without tight coupling:
+
+```rust
+// Send a message to a topic
+ctx.send_to_topic("notifications", Alert::new("Hello!"));
+
+// Listen to topics
+#[update(msg = MyMsg, topics = ["notifications" => Alert])]
+fn update(&self, ctx: &Context, messages: Messages, state: MyState) -> Action {
+    // Handle both regular messages and topic messages
+}
+```
 
 ## Components
 
@@ -1062,11 +1172,13 @@ impl Component for Button {
 ### Debugging
 
 ```rust
-let mut app = App::with_config(RenderConfig {
-    use_double_buffer: false,  // Disable for debugging
-    use_diffing: false,        // Show all updates
-    poll_duration_ms: 100,     // Slow down for observation
-})?;
+let mut app = App::new()?
+    .render_config(RenderConfig {
+        use_double_buffer: false,  // Disable for debugging
+        use_diffing: false,        // Show all updates
+        poll_duration_ms: 100,     // Slow down for observation
+    });
+app.run(MyComponent)?;
 ```
 
 ## Architecture Overview
