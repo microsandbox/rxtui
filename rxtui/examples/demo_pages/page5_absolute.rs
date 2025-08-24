@@ -196,12 +196,12 @@ impl Page5AbsoluteDemo {
             };
 
             // Create container with both main content and modal
-            let container = Div::new()
-                .width_percent(1.0)
-                .height_percent(1.0)
-                .children(vec![main_content, modal]);
-
-            container.into()
+            node! {
+                div(w_pct: 1.0, h_pct: 1.0) [
+                    (main_content),
+                    (modal)
+                ]
+            }
         } else {
             main_content
         }
