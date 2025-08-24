@@ -94,7 +94,7 @@ fn main() -> std::io::Result<()> {
 cargo run
 ```
 
-That's it!
+<img width="100%" alt="counter demo" src="https://github.com/user-attachments/assets/286fd51c-6be5-426c-8fc2-315b518d41eb" />
 
 <div align='center'>• • •</div>
 
