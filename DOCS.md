@@ -320,12 +320,42 @@ node! {
 
         // Method call
         (self.create_node()),
-
-        // Iterator
-        (items.iter().map(|i| node! { text(&i.name) }).collect::<Vec<_>>())
     ]
 }
 ```
+
+#### Spread Operator
+
+Use the `...` spread operator to expand a `Vec<Node>` as children:
+
+```rust
+node! {
+    div [
+        // Spread a vector of nodes
+        ...(vec![
+            node! { text("Item 1") },
+            node! { text("Item 2") },
+            node! { text("Item 3") },
+        ]),
+
+        // Spread from iterator
+        ...(state.items.iter().map(|item| {
+            node! {
+                div(pad: 1) [
+                    text(&item.name)
+                ]
+            }
+        }).collect::<Vec<Node>>()),
+
+        // Combine with regular children
+        text("Header", bold),
+        ...(item_nodes),
+        text("Footer"),
+    ]
+}
+```
+
+This is particularly useful for rendering lists or collections dynamically.
 
 #### Div Container
 

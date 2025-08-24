@@ -79,6 +79,27 @@ node! {
 }
 ```
 
+### Dynamic Content
+
+```rust
+node! {
+    div [
+        // Expression: Any expression that returns a Node
+        (if state.show {
+            node! { text("Visible") }
+        } else {
+            node! { spacer(0) }
+        }),
+
+        // Spread: Expand a Vec<Node> as children
+        ...(vec![
+            node! { text("Item 1") },
+            node! { text("Item 2") },
+        ])
+    ]
+}
+```
+
 ### Div Properties
 
 ```rust
@@ -235,18 +256,35 @@ node! {
 
 ### List Rendering
 
-Use expressions for dynamic lists:
+Use the spread operator `...` to expand collections:
 
 ```rust
+// Spread a Vec<Node> as children
 node! {
     div [
-        (state.items.iter().map(|item| {
+        ...(state.items.iter().map(|item| {
             node! {
                 div [
                     text(&item.name)
                 ]
             }
-        }).collect::<Vec<_>>())
+        }).collect::<Vec<Node>>())
+    ]
+}
+
+// Or prepare the list first
+let item_nodes: Vec<Node> = state.items.iter()
+    .map(|item| node! {
+        div [
+            text(&item.name)
+        ]
+    })
+    .collect();
+
+node! {
+    div [
+        text("Items:", bold),
+        ...(item_nodes)
     ]
 }
 ```
