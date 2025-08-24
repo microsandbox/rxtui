@@ -381,7 +381,11 @@ pub struct DivStyles {
 ```
 
 #### Builder Pattern
+
+Note: While the builder pattern is available for programmatic use, the `node!` macro is the recommended way to build UIs. The builder pattern is primarily used internally by the macro.
+
 ```rust
+// Internal API - used by the node! macro
 Div::new()
     .background(Color::Blue)
     .padding(Spacing::all(2))
@@ -395,6 +399,24 @@ Div::new()
     .on_key(Key::Enter, handler)
     .on_key_with_modifiers(KeyWithModifiers::with_ctrl(Key::Char('a')), handler)
     .children(vec![...])
+
+// Recommended: Use the node! macro instead
+node! {
+    div(
+        bg: blue,
+        pad: 2,
+        dir: horizontal,
+        w: 20,
+        h_pct: 0.5,
+        focusable,
+        overflow: scroll,
+        show_scrollbar: true
+    ) [
+        // Children using expressions or spread
+        (child_node),
+        ...(child_nodes)
+    ]
+}
 ```
 
 ### 7. Virtual DOM (`lib/vdom.rs`)
