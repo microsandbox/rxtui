@@ -85,12 +85,12 @@ impl Counter {
             ) [
                 text(&self.label, color: white),
                 text(format!("Count: {}", state.count), color: bright_white),
-
+                spacer(1),
                 hstack(gap: 2) [
-                    div(border: white, pad_h: 1, @click: ctx.handler(CounterMsg::Decrement)) [
+                    div(bg: "#8b0a0a", pad_h: 2, @click: ctx.handler(CounterMsg::Decrement)) [
                         text("-", color: white)
                     ],
-                    div(border: white, pad_h: 1, @click: ctx.handler(CounterMsg::Increment)) [
+                    div(bg: "#0a29a4", pad_h: 2, @click: ctx.handler(CounterMsg::Increment)) [
                         text("+", color: white)
                     ]
                 ]
@@ -121,14 +121,10 @@ impl Dashboard {
     fn view(&self, ctx: &Context) -> Node {
         node! {
             div(pad: 2, dir: vertical, @char_global('q'): ctx.handler(DashboardMsg::Exit), @key_global(esc): ctx.handler(DashboardMsg::Exit)) [
-                div(bg: blue, pad: 1, w_pct: 1.0) [
-                    text("RGB Counter Dashboard", color: bright_white)
-                ],
-
                 spacer(1),
 
                 text(
-                    "Use Tab to focus counters. Press +/- or ↑/↓ to change values. Click buttons also work.",
+                    "Use Tab to focus counters. Press ↑/↓ to change values. Click buttons also work.",
                     color: bright_yellow
                 ),
                 text("Press 'r' to reset all counters, 'q' to quit.", color: bright_cyan),

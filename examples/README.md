@@ -14,6 +14,8 @@ A minimal counter demonstrating:
 - Keyboard event handlers (`↑`/`↓` keys)
 - The absolute minimum code needed for an RxTUI app
 
+<br />
+
 ### [components.rs](./components.rs)
 ```bash
 cargo run --example components
@@ -24,6 +26,8 @@ Shows how to build complex UIs from reusable components:
 - Dynamic topic names in `#[update]` macro
 - Nested component structure (Dashboard → Counter components)
 - Both stateful (Counter) and stateless (Dashboard) components
+
+<br />
 
 ### [form.rs](./form.rs)
 ```bash
@@ -36,6 +40,8 @@ Demonstrates form building capabilities:
 - Keyboard navigation between fields
 - Error display and user feedback
 
+<br />
+
 ### [stopwatch.rs](./stopwatch.rs)
 ```bash
 cargo run --example stopwatch
@@ -45,6 +51,8 @@ Time-based UI updates:
 - Timer implementation with start/stop/reset
 - Formatting time display
 - Combining user actions with background updates
+
+<br />
 
 ## Feature Showcase
 
