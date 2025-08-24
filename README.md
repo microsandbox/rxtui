@@ -38,6 +38,10 @@ We bring the retained-mode, component-based architecture that revolutionized web
 - [x] **Best of Both Worlds** - Elm's message architecture meets React's components
 - [x] **TUI Optimizations** - Automatic diffing, dirty tracking, and minimal redraws
 
+<br />
+
+<img width="100%" alt="form demo" src="https://github.com/user-attachments/assets/86819d2c-a037-4569-9b3a-d12279b38351" />
+
 <div align='center'>• • •</div>
 
 # <sub>QUICK START</sub>
@@ -93,7 +97,7 @@ fn main() -> std::io::Result<()> {
 cargo run
 ```
 
-<img width="100%" alt="counter demo" src="https://github.com/user-attachments/assets/286fd51c-6be5-426c-8fc2-315b518d41eb" />
+<img width="100%" alt="counter demo" src="https://github.com/user-attachments/assets/3018cde1-f24a-4689-b2df-4f6249180282" />
 
 <div align='center'>• • •</div>
 
