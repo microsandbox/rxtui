@@ -48,12 +48,8 @@ impl Form {
     fn view(&self, ctx: &Context, state: FormState) -> Node {
         node! {
             div(pad: 2, w_pct: 1.0, @key(esc): ctx.handler(Msg::Exit), @char('c'): ctx.handler(Msg::Clear), @char('C'): ctx.handler(Msg::Clear)) [
-                // Title
-                text("Form Example with Callbacks", color: cyan, bold),
-                spacer(1),
-
                 text("tab to navigate | enter to submit | esc to exit", color: bright_black),
-                spacer(2),
+                spacer(1),
 
                 // Form fields with callbacks
                 vstack [
@@ -86,7 +82,7 @@ impl Form {
                 // Buttons
                 div(
                     bg: (if state.username.is_empty() || state.password.is_empty() {
-                        Color::BrightBlack
+                        Color::White
                     } else {
                         Color::Green
                     }),
