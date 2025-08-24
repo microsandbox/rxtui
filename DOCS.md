@@ -5,7 +5,6 @@ RxTUI is a reactive terminal user interface framework for Rust that brings moder
 ## Table of Contents
 
 - [Getting Started](#getting-started)
-- [Core Concepts](#core-concepts)
 - [Components](#components)
 - [The node! Macro](#the-node-macro)
 - [State Management](#state-management)
@@ -47,10 +46,9 @@ impl HelloWorld {
     #[view]
     fn view(&self, ctx: &Context) -> Node {
         node! {
-            div(bg: blue, pad: 2) [
+            div(bg: blue, pad: 2, @key_global(esc): ctx.handler(())) [
                 text("Hello, Terminal!", color: white, bold),
-                text("Press Esc to exit", color: white),
-                @key_global(esc): ctx.handler(())
+                text("Press Esc to exit", color: white)
             ]
         }
     }
@@ -61,13 +59,13 @@ fn main() -> std::io::Result<()> {
 }
 ```
 
-## Core Concepts
+<div align='center'>• • •</div>
 
-RxTUI follows a component-based architecture where everything is built from self-contained, reusable pieces. Let's explore the fundamental concepts that make RxTUI work.
-
-### Components - The Foundation
+## Components
 
 Everything in RxTUI is a component. Think of them as self-contained UI pieces that know how to manage their own state and behavior. Each component has two main jobs: handling events (through `update`) and rendering UI (through `view`):
+
+#### Basic Component
 
 ```rust
 #[derive(Component)]
@@ -88,167 +86,7 @@ impl TodoList {
 }
 ```
 
-### The node! Macro - Building Your UI
-
-The `node!` macro is how you actually build your UI. It gives you a clean, declarative syntax that lives inside your component's `view` method. Instead of imperatively creating and configuring widgets, you describe what the UI should look like:
-
-```rust
-#[view]
-fn view(&self, ctx: &Context, state: AppState) -> Node {
-    node! {
-        div(bg: blue, pad: 2, border: white, @key_global(esc): ctx.handler(Msg::Exit)) [
-            text(format!("Count: {}", state.count), color: yellow),
-
-            hstack(gap: 2, @click: ctx.handler(Msg::Increment)) [
-                text("Click me!")
-                // Events here trigger messages that go to update()
-            ]
-        ]
-    }
-}
-```
-
-### Messages & State - The Update Cycle
-
-These are the heart of your component's logic. State is just your data - what your component needs to remember. Messages are the things that can happen - user clicks, key presses, timers firing. When a message arrives, you update your state, and the UI automatically re-renders:
-
-```rust
-// Your state - the data your component needs
-#[derive(Debug, Clone, Default)]
-struct TodoState {
-    items: Vec<String>,
-    selected: usize,
-}
-
-// Messages - what can happen in your component
-#[derive(Debug, Clone)]
-enum TodoMsg {
-    AddItem(String),
-    RemoveItem(usize),
-    SelectItem(usize),
-}
-
-// In update(), messages modify state
-#[update]
-fn update(&self, ctx: &Context, msg: TodoMsg, mut state: TodoState) -> Action {
-    match msg {
-        TodoMsg::AddItem(text) => {
-            state.items.push(text);
-            Action::update(state)  // This triggers view() to re-render
-        }
-        // ... handle other messages
-    }
-}
-```
-
-The flow is simple and predictable:
-
-**Event** (click) → **Message** (AddItem) → **Update** (modify state) → **View** (re-render with new state)
-
-### Layout System - Responsive Terminal UIs
-
-Terminal sizes vary wildly - from tiny SSH windows to full-screen terminal apps. RxTUI's layout system adapts automatically. Use percentages for responsive design, fixed sizes for specific elements, and absolute positioning for overlays:
-
-```rust
-node! {
-    // Percentage-based for responsive design
-    div(w_pct: 0.5, h_pct: 0.8) [
-        // This takes 50% width, 80% height of parent
-
-        // Direction-based layouts
-        div(dir: horizontal, gap: 2) [
-            text("Left"),
-            text("Right")
-        ],
-
-        // Absolute positioning for overlays
-        div(absolute, top: 5, right: 5, z: 100) [
-            text("Floating notification")
-        ]
-    ]
-}
-```
-
-### Cross-Component Communication - Topics
-
-Sometimes components need to talk to each other - a sidebar needs to tell the main content what to display, or a notification system needs to listen for alerts from anywhere in the app. Topics make this easy without tight coupling:
-
-```rust
-// Send a message to a topic
-ctx.send_to_topic("notifications", Alert::new("Hello!"));
-
-// Listen to topics
-#[update(msg = MyMsg, topics = ["notifications" => Alert])]
-fn update(&self, ctx: &Context, messages: Messages, state: MyState) -> Action {
-    // Handle both regular messages and topic messages
-}
-```
-
-## Components
-
-Components are the building blocks of your UI. They encapsulate state, handle messages, and render views.
-
-### Basic Component
-
-```rust
-use rxtui::prelude::*;
-
-// Define messages
-#[derive(Debug, Clone)]
-enum CounterMsg {
-    Increment,
-    Decrement,
-}
-
-// Define state
-#[derive(Debug, Clone, Default)]
-struct CounterState {
-    count: i32,
-}
-
-// Define component
-#[derive(Component)]
-struct Counter;
-
-impl Counter {
-    // Handle messages and update state
-    #[update]
-    fn update(&self, _ctx: &Context, msg: CounterMsg, mut state: CounterState) -> Action {
-        match msg {
-            CounterMsg::Increment => {
-                state.count += 1;
-                Action::update(state)
-            }
-            CounterMsg::Decrement => {
-                state.count -= 1;
-                Action::update(state)
-            }
-        }
-    }
-
-    // Render the UI
-    #[view]
-    fn view(&self, ctx: &Context, state: CounterState) -> Node {
-        node! {
-            div(bg: black, pad: 2) [
-                text(format!("Count: {}", state.count)),
-                hstack(gap: 2) [
-                    div(border: white, pad: 1, focusable) [
-                        text("-"),
-                        @click: ctx.handler(CounterMsg::Decrement)
-                    ],
-                    div(border: white, pad: 1, focusable) [
-                        text("+"),
-                        @click: ctx.handler(CounterMsg::Increment)
-                    ]
-                ]
-            ]
-        }
-    }
-}
-```
-
-### Component Trait
+#### Component Trait
 
 The `#[derive(Component)]` macro automatically implements the Component trait. You can also implement it manually:
 
@@ -268,11 +106,13 @@ impl Component for MyComponent {
 }
 ```
 
+<div align='center'>• • •</div>
+
 ## The node! Macro
 
-The `node!` macro provides a declarative syntax for building UI trees, inspired by modern UI frameworks like SwiftUI and Jetpack Compose.
+The `node!` macro is how you actually build your UI. It gives you a clean, declarative syntax that lives inside your component's `view` method. Instead of imperatively creating and configuring widgets, you describe what the UI should look like:
 
-### Basic Syntax
+#### Basic Syntax
 
 ```rust
 node! {
@@ -287,9 +127,9 @@ node! {
 }
 ```
 
-### Elements
+#### Elements
 
-#### Expressions
+##### Expressions
 
 You can use any Rust expression that returns a `Node` by wrapping it in parentheses:
 
@@ -318,7 +158,7 @@ node! {
 }
 ```
 
-#### Spread Operator
+##### Spread Operator
 
 Use the `...` spread operator to expand a `Vec<Node>` as children:
 
@@ -351,7 +191,7 @@ node! {
 
 This is particularly useful for rendering lists or collections dynamically.
 
-#### Div Container
+##### Div Container
 
 ```rust
 node! {
@@ -396,7 +236,7 @@ node! {
 }
 ```
 
-#### Text
+##### Text
 
 ```rust
 node! {
@@ -416,7 +256,7 @@ node! {
 }
 ```
 
-#### Rich Text
+##### Rich Text
 
 ```rust
 node! {
@@ -438,7 +278,7 @@ node! {
 }
 ```
 
-#### Stacks
+##### Stacks
 
 ```rust
 node! {
@@ -458,7 +298,7 @@ node! {
 }
 ```
 
-#### Components
+##### Components
 
 ```rust
 node! {
@@ -470,7 +310,7 @@ node! {
 }
 ```
 
-#### Spacers
+##### Spacers
 
 ```rust
 node! {
@@ -482,7 +322,7 @@ node! {
 }
 ```
 
-### Event Handlers
+#### Event Handlers
 
 ```rust
 node! {
@@ -508,7 +348,7 @@ node! {
 }
 ```
 
-### Optional Properties
+#### Optional Properties
 
 Use `!` suffix for optional properties:
 
@@ -525,11 +365,13 @@ node! {
 }
 ```
 
+<div align='center'>• • •</div>
+
 ## State Management
 
-RxTUI provides automatic state management through the Context.
+These are the heart of your component's logic. State is just your data - what your component needs to remember.
 
-### Component State
+#### Component State
 
 ```rust
 #[derive(Debug, Clone, Default)]
@@ -560,7 +402,7 @@ impl MyComponent {
 }
 ```
 
-### Manual State Access
+#### Manual State Access
 
 ```rust
 fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
@@ -575,11 +417,13 @@ fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> 
 }
 ```
 
+<div align='center'>• • •</div>
+
 ## Message Handling
 
-Messages are how components respond to events.
+Messages are how components respond to events - user clicks, key presses, timers firing. When a message arrives, you update your state, and the UI automatically re-renders.
 
-### Basic Messages
+#### Basic Messages
 
 ```rust
 #[derive(Debug, Clone)]
@@ -610,7 +454,7 @@ impl MyComponent {
 }
 ```
 
-### Actions
+#### Actions
 
 Update methods return an Action:
 
@@ -623,7 +467,7 @@ pub enum Action {
 }
 ```
 
-### Message with Value
+#### Message with Value
 
 ```rust
 // In view
@@ -634,11 +478,13 @@ node! {
 }
 ```
 
+<div align='center'>• • •</div>
+
 ## Topic-Based Communication
 
 Topics enable cross-component communication without direct references.
 
-### Sending to Topics
+#### Sending to Topics
 
 ```rust
 impl Dashboard {
@@ -655,7 +501,7 @@ impl Dashboard {
 }
 ```
 
-### Receiving Topic Messages
+#### Receiving Topic Messages
 
 ```rust
 impl NotificationBar {
@@ -677,7 +523,7 @@ impl NotificationBar {
 }
 ```
 
-### Dynamic Topics
+#### Dynamic Topics
 
 ```rust
 struct Counter {
@@ -699,7 +545,7 @@ impl Counter {
 }
 ```
 
-### Topic State
+#### Topic State
 
 ```rust
 // Write topic state (first writer becomes owner)
@@ -709,11 +555,13 @@ Action::UpdateTopic("app.settings".to_string(), Box::new(settings))
 let settings: Option<Settings> = ctx.read_topic("app.settings");
 ```
 
+<div align='center'>• • •</div>
+
 ## Layout System
 
 RxTUI provides a flexible layout system with multiple sizing modes.
 
-### Dimension Types
+#### Dimension Types
 
 ```rust
 pub enum Dimension {
@@ -724,7 +572,7 @@ pub enum Dimension {
 }
 ```
 
-### Layout Examples
+#### Layout Examples
 
 ```rust
 node! {
@@ -752,7 +600,7 @@ node! {
 }
 ```
 
-### Direction and Wrapping
+#### Direction and Wrapping
 
 ```rust
 node! {
@@ -778,7 +626,7 @@ node! {
 }
 ```
 
-### Scrolling
+#### Scrolling
 
 ```rust
 node! {
@@ -798,6 +646,7 @@ node! {
 ```
 
 Scrolling controls:
+
 - **Arrow keys**: Scroll up/down by 1 line
 - **Page Up/Down**: Scroll by container height
 - **Home/End**: Jump to top/bottom
@@ -805,9 +654,11 @@ Scrolling controls:
 
 Note: Only vertical scrolling is currently implemented.
 
+<div align='center'>• • •</div>
+
 ## Styling
 
-### Colors
+#### Colors
 
 RxTUI supports multiple color formats:
 
@@ -825,16 +676,17 @@ node! {
         text("RGB", color: (Color::Rgb(255, 128, 0))),
 
         // Conditional
-        text("Status", color: (if ok { green } else { red }))
+        text("Status", color: (if ok { Color::Green } else { Color::Red }))
     ]
 }
 ```
 
 Available named colors:
+
 - Basic: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`
 - Bright: `bright_black`, `bright_red`, `bright_green`, `bright_yellow`, `bright_blue`, `bright_magenta`, `bright_cyan`, `bright_white`
 
-### Borders
+#### Borders
 
 ```rust
 node! {
@@ -859,12 +711,13 @@ node! {
 ```
 
 Border styles:
+
 - `Single` - Normal lines
 - `Double` - Double lines
 - `Rounded` - Rounded corners
 - `Thick` - Thick lines
 
-### Spacing
+#### Spacing
 
 ```rust
 node! {
@@ -884,7 +737,7 @@ node! {
 }
 ```
 
-### Focus Styles
+#### Focus Styles
 
 ```rust
 node! {
@@ -902,9 +755,11 @@ node! {
 }
 ```
 
+<div align='center'>• • •</div>
+
 ## Event Handling
 
-### Focus-Based Events
+#### Focus-Based Events
 
 Most events require the element to be focused:
 
@@ -912,12 +767,15 @@ Most events require the element to be focused:
 node! {
     div(
         focusable,
+
         // Mouse
         @click: ctx.handler(Msg::Clicked),
+
         // Keyboard
         @char('a'): ctx.handler(Msg::PressedA),
         @key(enter): ctx.handler(Msg::Confirmed),
         @key(backspace): ctx.handler(Msg::Delete),
+
         // Focus
         @focus: ctx.handler(Msg::GainedFocus),
         @blur: ctx.handler(Msg::LostFocus)
@@ -927,29 +785,33 @@ node! {
 }
 ```
 
-### Global Events
+#### Global Events
 
 Global events work regardless of focus:
 
 ```rust
 node! {
-    div [
+    div(
         // Application-wide shortcuts
         @char_global('q'): ctx.handler(Msg::Quit),
         @key_global(esc): ctx.handler(Msg::Cancel),
         @char_global('/'): ctx.handler(Msg::Search)
+    ) [
+        // Children here
     ]
 }
 ```
 
-### Focus Navigation
+#### Focus Navigation
 
 - **Tab**: Move to next focusable element
 - **Shift+Tab**: Move to previous focusable element
 
+<div align='center'>• • •</div>
+
 ## Built-in Components
 
-### TextInput
+#### TextInput
 
 A full-featured text input component:
 
@@ -984,6 +846,7 @@ node! {
 ```
 
 TextInput features:
+
 - Full text editing (insert, delete, backspace)
 - Cursor movement (arrows, Home/End)
 - Word navigation (Alt+B/F or Ctrl+arrows)
@@ -993,11 +856,13 @@ TextInput features:
 - Placeholder text
 - Customizable styling
 
+<div align='center'>• • •</div>
+
 ## Effects (Async)
 
 Effects enable async operations like timers, network requests, and file monitoring.
 
-### Basic Effect
+#### Basic Effect
 
 ```rust
 use rxtui::prelude::*;
@@ -1037,7 +902,7 @@ impl Timer {
 }
 ```
 
-### Multiple Effects
+#### Multiple Effects
 
 ```rust
 #[component]
@@ -1057,7 +922,7 @@ impl MyComponent {
 }
 ```
 
-### Manual Effects
+#### Manual Effects
 
 ```rust
 impl Component for MyComponent {
@@ -1071,148 +936,18 @@ impl Component for MyComponent {
 }
 ```
 
-## Examples
-
-### Complete Counter App
-
-```rust
-use rxtui::prelude::*;
-
-#[derive(Debug, Clone)]
-enum Msg {
-    Increment,
-    Decrement,
-    Reset,
-    Exit,
-}
-
-#[derive(Debug, Clone, Default)]
-struct State {
-    count: i32,
-}
-
-#[derive(Component)]
-struct CounterApp;
-
-impl CounterApp {
-    #[update]
-    fn update(&self, _ctx: &Context, msg: Msg, mut state: State) -> Action {
-        match msg {
-            Msg::Increment => {
-                state.count += 1;
-                Action::update(state)
-            }
-            Msg::Decrement => {
-                state.count -= 1;
-                Action::update(state)
-            }
-            Msg::Reset => Action::update(State::default()),
-            Msg::Exit => Action::exit(),
-        }
-    }
-
-    #[view]
-    fn view(&self, ctx: &Context, state: State) -> Node {
-        node! {
-            div(bg: black, pad: 2, @char_global('q'): ctx.handler(Msg::Exit), @key_global(esc): ctx.handler(Msg::Exit)) [
-                text(format!("Count: {}", state.count), color: white, bold),
-
-                hstack(gap: 2) [
-                    div(border: white, pad: 1, focusable, @click: ctx.handler(Msg::Decrement), @key(Char('-')): ctx.handler(Msg::Decrement)) [
-                        text("-")
-                    ],
-                    div(border: white, pad: 1, focusable, @click: ctx.handler(Msg::Increment), @key(Char('+')): ctx.handler(Msg::Increment)) [
-                        text("+")
-                    ],
-                    div(border: white, pad: 1, focusable, @click: ctx.handler(Msg::Reset), @key(Char('r')): ctx.handler(Msg::Reset)) [
-                        text("Reset")
-                    ]
-                ],
-
-                text("Press +/- to change, r to reset, q to quit", color: gray)
-            ]
-        }
-    }
-}
-
-fn main() -> std::io::Result<()> {
-    App::new()?.run(CounterApp)
-}
-```
-
-### Running the Examples
-
-The repository includes several examples:
-
-```bash
-# Simple interactive color demo
-cargo run --example simple
-
-# Multi-page feature showcase
-cargo run --example demo
-
-# Topic-based component communication
-cargo run --example components
-
-# Timer with async effects
-cargo run --example timer --features effects
-```
+<div align='center'>• • •</div>
 
 ## Advanced Topics
 
-### Custom Components
-
-Create reusable component libraries:
-
-```rust
-pub struct Button {
-    label: String,
-    on_click: Box<dyn Fn() -> Box<dyn Message>>,
-}
-
-impl Button {
-    pub fn new(label: impl Into<String>) -> Self {
-        Self {
-            label: label.into(),
-            on_click: Box::new(|| Box::new(())),
-        }
-    }
-
-    pub fn on_click<F, M>(mut self, f: F) -> Self
-    where
-        F: Fn() -> M + 'static,
-        M: Message,
-    {
-        self.on_click = Box::new(move || Box::new(f()));
-        self
-    }
-}
-
-impl Component for Button {
-    fn view(&self, ctx: &Context) -> Node {
-        node! {
-            div(
-                border: white,
-                pad: 1,
-                focusable,
-                focus_style: (Style::default().background(Color::Blue))
-            ) [
-                text(&self.label),
-                @click: (self.on_click)()
-            ]
-        }
-    }
-}
-```
-
-### Performance Tips
+#### Performance Tips
 
 1. **Use keys for lists**: Helps with efficient diffing (not yet implemented)
 2. **Minimize state updates**: Only update when necessary
 3. **Use topics wisely**: Don't overuse for simple parent-child communication
 4. **Profile rendering**: Use `RenderConfig` for debugging
 
-### Debugging
+#### Debugging
 
 ```rust
 let mut app = App::new()?
@@ -1223,15 +958,3 @@ let mut app = App::new()?
     });
 app.run(MyComponent)?;
 ```
-
-## Architecture Overview
-
-RxTUI uses a multi-layered architecture:
-
-1. **Component Layer**: Your components with state and logic
-2. **Virtual DOM**: Efficient tree diffing and patching
-3. **Render Tree**: Layout calculation and positioning
-4. **Terminal Buffer**: Double-buffered cell-level rendering
-5. **Terminal Output**: Optimized escape sequence generation
-
-The framework handles all the complexity, letting you focus on building your UI.
