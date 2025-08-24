@@ -1,27 +1,29 @@
 use rxtui::prelude::*;
 
 #[derive(Component)]
-struct Timer;
+struct Stopwatch;
 
 #[component]
-impl Timer {
+impl Stopwatch {
     #[update]
     fn update(&self, _ctx: &Context, tick: bool, state: u64) -> Action {
         if !tick {
             return Action::exit();
         }
 
-        Action::update(state + 1)
+        Action::update(state + 10) // Increment by 10ms
     }
 
     #[view]
     fn view(&self, ctx: &Context, state: u64) -> Node {
+        let seconds = state / 1000;
+        let centiseconds = (state % 1000) / 10;
+
         node! {
             div(bg: black, pad: 2) [
-                richtext [
-                    text(format!("Timer: {state}"), color: cyan, bold),
-                    text(" Press Esc to exit", color: bright_black, italic)
-                ],
+                text(format!("Elapsed: {}.{:02}s", seconds, centiseconds), color: white, bold),
+                text("press esc to exit", color: bright_black),
+
                 @key(Esc): ctx.handler(false)
             ]
         }
@@ -30,12 +32,12 @@ impl Timer {
     #[effect]
     async fn tick(&self, ctx: &Context) {
         loop {
-            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
             ctx.send(true);
         }
     }
 }
 
 fn main() -> std::io::Result<()> {
-    App::new()?.run(Timer)
+    App::new()?.fast_polling().run(Stopwatch)
 }

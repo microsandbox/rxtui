@@ -54,28 +54,21 @@ tokio = { version = "1", features = ["full"] }  # For async effects
 
 ### <span>2</span>&nbsp;&nbsp;Create Your First App
 
-Complete counter app in less than 40 lines:
+Complete counter app in a few lines of code:
 
 ```rust
 use rxtui::prelude::*;
-
-#[derive(Debug, Clone)]
-enum Msg {
-    Increment,
-    Decrement,
-    Exit,
-}
 
 #[derive(Component)]
 struct Counter;
 
 impl Counter {
     #[update]
-    fn update(&self, _ctx: &Context, msg: Msg, mut count: i32) -> Action {
+    fn update(&self, _ctx: &Context, msg: &str, mut count: i32) -> Action {
         match msg {
-            Msg::Increment => Action::update(count + 1),
-            Msg::Decrement => Action::update(count - 1),
-            Msg::Exit => Action::exit(),
+            "increment" => Action::update(count + 1),
+            "decrement" => Action::update(count - 1),
+            _ => Action::exit(),
         }
     }
 
@@ -83,11 +76,12 @@ impl Counter {
     fn view(&self, ctx: &Context, count: i32) -> Node {
         node! {
             div(bg: black, pad: 2) [
-                text(format!("Count: {} [Use +/- to change, Esc to exit]", count), color: white, bold),
+                text(format!("Count: {count}"), color: white, bold),
+                text("use ↑/↓ to change, esc to exit", color: bright_black),
 
-                @char_global('+'): ctx.handler(Msg::Increment),
-                @char_global('-'): ctx.handler(Msg::Decrement),
-                @key_global(Esc): ctx.handler(Msg::Exit)
+                @key_global(Up): ctx.handler("increment"),
+                @key_global(Down): ctx.handler("decrement"),
+                @key_global(Esc): ctx.handler("exit")
             ]
         }
     }
@@ -105,85 +99,6 @@ cargo run
 ```
 
 That's it!
-
-<div align='center'>• • •</div>
-
-# <sub>FEATURES</sub>
-
-<table>
-<tr>
-<td>
-
-### Core Architecture
-
-- [x] Virtual DOM with patch-based updates
-- [x] Component lifecycle management
-- [x] Automatic state persistence
-- [x] Topic-based messaging system
-- [x] Async effects with Tokio integration
-
-</td>
-<td>
-
-### Styling & Layout
-
-- [x] Flexbox-inspired layout system
-- [x] Percentage & fixed sizing
-- [x] Content-based sizing
-- [x] Absolute & fixed positioning
-- [x] Z-index layering
-
-</td>
-</tr>
-<tr>
-<td>
-
-### Visual Features
-
-- [x] 16 colors + RGB support
-- [x] Border styles (single, double, rounded, thick)
-- [x] Custom border edges (top, bottom, sides)
-- [x] Text styling (bold, italic, underline, strikethrough)
-- [x] Configurable padding & gaps
-
-</td>
-<td>
-
-### Interaction
-
-- [x] Keyboard events with modifiers
-- [x] Global & local event handlers
-- [x] Mouse click detection
-- [x] Scroll wheel support
-- [x] Focus system with Tab navigation
-
-</td>
-</tr>
-<tr>
-<td>
-
-### Text & Content
-
-- [x] Text wrapping modes (word, character)
-- [x] Rich text with mixed styles
-- [x] Built-in TextInput component
-- [x] Password input masking
-- [x] Scrollable areas with scrollbars
-
-</td>
-<td>
-
-### Performance
-
-- [x] Differential rendering
-- [x] Double buffering support
-- [x] Cell-level diffing
-- [x] Configurable update rates
-- [x] Cross-platform terminal support
-
-</td>
-</tr>
-</table>
 
 <div align='center'>• • •</div>
 
