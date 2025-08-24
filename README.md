@@ -50,6 +50,7 @@ tokio = { version = "1", features = ["full"] }  # For async effects
 
 > [!NOTE]
 > The `effects` feature is enabled by default. To disable it for smaller binary size:
+>
 > ```toml
 > rxtui = { version = "0.1", default-features = false }
 > ```
@@ -85,8 +86,7 @@ impl Counter {
     fn view(&self, ctx: &Context, count: i32) -> Node {
         node! {
             div(bg: black, pad: 2) [
-                text(format!("Count: {}", count), color: white, bold),
-                text("Use +/- to change, Esc to exit", color: gray),
+                text(format!("Count: {} [Use +/- to change, Esc to exit]", count), color: white, bold),
 
                 @char_global('+'): ctx.handler(Msg::Increment),
                 @char_global('-'): ctx.handler(Msg::Decrement),
@@ -118,6 +118,7 @@ That's it! No manual rendering, no state management boilerplate, no event loop. 
 <td>
 
 ### Core Architecture
+
 - [x] Virtual DOM with efficient diffing
 - [x] Component-based architecture
 - [x] Reactive state management
@@ -128,6 +129,7 @@ That's it! No manual rendering, no state management boilerplate, no event loop. 
 <td>
 
 ### UI Components
+
 - [x] Flexible layout system
 - [x] Rich text styling
 - [x] Built-in TextInput widget
@@ -140,6 +142,7 @@ That's it! No manual rendering, no state management boilerplate, no event loop. 
 <td>
 
 ### Event Handling
+
 - [x] Keyboard events (local & global)
 - [x] Mouse click support
 - [x] Focus management
@@ -150,6 +153,7 @@ That's it! No manual rendering, no state management boilerplate, no event loop. 
 <td>
 
 ### Developer Experience
+
 - [x] Declarative `node!` macro
 - [x] Expression support `(expr)`
 - [x] Spread operator `...(vec)`
@@ -164,15 +168,14 @@ That's it! No manual rendering, no state management boilerplate, no event loop. 
 
 # <sub>DOCUMENTATION</sub>
 
-
-| Document | Description |
-|----------|-------------|
-| **[Examples](./examples)** | Collection of example apps |
-| **[Documentation](DOCS.md)** | Complete framework documentation |
-| **[Tutorial](TUTORIAL.md)** | Step-by-step guide from basics to advanced |
-| **[API Reference](API_REFERENCE.md)** | Detailed API documentation |
-| **[Quick Reference](QUICK_REFERENCE.md)** | Handy cheat sheet for common patterns |
-| **[Implementation](IMPLEMENTATION.md)** | Internal architecture details |
+| Document                                  | Description                                |
+| ----------------------------------------- | ------------------------------------------ |
+| **[Examples](./examples)**                | Collection of example apps                 |
+| **[Documentation](DOCS.md)**              | Complete framework documentation           |
+| **[Tutorial](TUTORIAL.md)**               | Step-by-step guide from basics to advanced |
+| **[API Reference](API_REFERENCE.md)**     | Detailed API documentation                 |
+| **[Quick Reference](QUICK_REFERENCE.md)** | Handy cheat sheet for common patterns      |
+| **[Implementation](IMPLEMENTATION.md)**   | Internal architecture details              |
 
 <div align='center'>• • •</div>
 

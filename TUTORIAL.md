@@ -511,7 +511,7 @@ struct ClockState {
 #[derive(Component)]
 struct Clock;
 
-// Enable the #[effect] macro
+// Enable the #[effect] macro by adding `#[component]` attribute
 #[component]
 impl Clock {
     #[update]
