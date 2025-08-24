@@ -4,8 +4,8 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Default)]
-pub struct Page9ElementWrapDemo {}
+#[derive(Component)]
+pub struct Page9ElementWrapDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Methods

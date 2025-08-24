@@ -31,8 +31,8 @@ struct OverflowDemoState {
     level3_color_idx: usize,
 }
 
-#[derive(Component, Default)]
-pub struct Page1OverflowDemo {}
+#[derive(Component)]
+pub struct Page1OverflowDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -137,69 +137,60 @@ impl Page1OverflowDemo {
                 // Example 1: Child smaller than parent
                 text("Example 1 - Child smaller than parent (click to change colors):", color: white),
                 spacer(1),
-                div(bg: (parent1_color), w: 20, h: 6, pad: 1) [
-                    div(bg: (child1_color), w: 10, h: 3) [
-                        text("Small", color: black),
-                        @click: ctx.handler(OverflowDemoMsg::SetChild1Color(
-                            (state.child1_color_idx + 1) % colors_len
-                        ))
-                    ],
-                    @click: ctx.handler(OverflowDemoMsg::SetParent1Color(
+                div(bg: (parent1_color), w: 20, h: 6, pad: 1, @click: ctx.handler(OverflowDemoMsg::SetParent1Color(
                         (state.parent1_color_idx + 1) % colors_len
-                    ))
+                    ))) [
+                    div(bg: (child1_color), w: 10, h: 3, @click: ctx.handler(OverflowDemoMsg::SetChild1Color(
+                            (state.child1_color_idx + 1) % colors_len
+                        ))) [
+                        text("Small", color: black)
+                    ]
                 ],
                 spacer(3),
 
                 // Example 2: Child larger than parent (overflow none)
                 text("Example 2 - Child larger than parent (overflow: none):", color: white),
                 spacer(1),
-                div(bg: (parent2_color), w: 15, h: 5, pad: 1) [
-                    div(bg: (child2_color), border: white, w: 20, h: 8) [
-                        text("Overflow", color: white),
-                        @click: ctx.handler(OverflowDemoMsg::SetChild2Color(
-                            (state.child2_color_idx + 1) % colors_len
-                        ))
-                    ],
-                    @click: ctx.handler(OverflowDemoMsg::SetParent2Color(
+                div(bg: (parent2_color), w: 15, h: 5, pad: 1, @click: ctx.handler(OverflowDemoMsg::SetParent2Color(
                         (state.parent2_color_idx + 1) % colors_len
-                    ))
+                    ))) [
+                    div(bg: (child2_color), border: white, w: 20, h: 8, @click: ctx.handler(OverflowDemoMsg::SetChild2Color(
+                            (state.child2_color_idx + 1) % colors_len
+                        ))) [
+                        text("Overflow", color: white)
+                    ]
                 ],
                 spacer(6),
 
                 // Example 3: Child larger than parent with overflow hidden
                 text("Example 3 - Child larger than parent (overflow: hidden):", color: white),
                 spacer(1),
-                div(bg: (parent3_color), overflow: hidden, pad: 1, w: 15, h: 5) [
-                    div(bg: (child3_color), border: white, w: 20, h: 8) [
-                        text("Hidden", color: black),
-                        @click: ctx.handler(OverflowDemoMsg::SetChild3Color(
-                            (state.child3_color_idx + 1) % colors_len
-                        ))
-                    ],
-                    @click: ctx.handler(OverflowDemoMsg::SetParent3Color(
+                div(bg: (parent3_color), overflow: hidden, pad: 1, w: 15, h: 5, @click: ctx.handler(OverflowDemoMsg::SetParent3Color(
                         (state.parent3_color_idx + 1) % colors_len
-                    ))
+                    ))) [
+                    div(bg: (child3_color), border: white, w: 20, h: 8, @click: ctx.handler(OverflowDemoMsg::SetChild3Color(
+                            (state.child3_color_idx + 1) % colors_len
+                        ))) [
+                        text("Hidden", color: black)
+                    ]
                 ],
                 spacer(3),
 
                 // Example 4: 3-level nesting with different overflow settings
                 text("Example 4 - 3-level nesting (hidden -> none -> hidden):", color: white),
                 spacer(1),
-                div(bg: (level1_color), overflow: hidden, pad: 1, w: 25, h: 8) [
-                    div(bg: (level2_color), pad: 1, w: 30, h: 10) [
-                        div(bg: (level3_color), overflow: hidden, pad: 1, w: 35, h: 12) [
-                            text("3-Level", color: white),
-                            @click: ctx.handler(OverflowDemoMsg::SetLevel3Color(
-                                (state.level3_color_idx + 1) % colors_len
-                            ))
-                        ],
-                        @click: ctx.handler(OverflowDemoMsg::SetLevel2Color(
-                            (state.level2_color_idx + 1) % colors_len
-                        ))
-                    ],
-                    @click: ctx.handler(OverflowDemoMsg::SetLevel1Color(
+                div(bg: (level1_color), overflow: hidden, pad: 1, w: 25, h: 8, @click: ctx.handler(OverflowDemoMsg::SetLevel1Color(
                         (state.level1_color_idx + 1) % colors_len
-                    ))
+                    ))) [
+                    div(bg: (level2_color), pad: 1, w: 30, h: 10, @click: ctx.handler(OverflowDemoMsg::SetLevel2Color(
+                            (state.level2_color_idx + 1) % colors_len
+                        ))) [
+                        div(bg: (level3_color), overflow: hidden, pad: 1, w: 35, h: 12, @click: ctx.handler(OverflowDemoMsg::SetLevel3Color(
+                                (state.level3_color_idx + 1) % colors_len
+                            ))) [
+                            text("3-Level", color: white)
+                        ]
+                    ]
                 ],
                 spacer(3),
 

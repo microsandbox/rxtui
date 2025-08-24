@@ -4,8 +4,8 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Default)]
-pub struct Page14TextInputDemo {}
+#[derive(Component)]
+pub struct Page14TextInputDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Methods

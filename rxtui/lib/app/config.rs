@@ -30,7 +30,7 @@ impl RenderConfig {
             double_buffering: false,
             terminal_optimizations: false,
             cell_diffing: false,
-            poll_duration_ms: 100,
+            poll_duration_ms: 50,
         }
     }
 }
@@ -45,7 +45,7 @@ impl Default for RenderConfig {
             double_buffering: true,
             terminal_optimizations: true,
             cell_diffing: true,
-            poll_duration_ms: 100,
+            poll_duration_ms: 50,
         }
     }
 }

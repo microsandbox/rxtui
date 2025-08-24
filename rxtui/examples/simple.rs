@@ -22,8 +22,8 @@ struct ColorDemoState {
 }
 
 /// Color demo component showing interactive color cycling
-#[derive(Component, Default)]
-struct ColorDemo {}
+#[derive(Component)]
+struct ColorDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -71,7 +71,7 @@ impl ColorDemo {
     #[view]
     fn view(&self, ctx: &Context, state: ColorDemoState) -> Node {
         node! {
-            div(bg: black, dir: vertical, pad: 1) [
+            div(bg: black, dir: vertical, pad: 1, @char_global('q'): ctx.handler(ColorDemoMsg::Exit), @key_global(esc): ctx.handler(ColorDemoMsg::Exit)) [
                 // Title bar
                 hstack(bg: "#333333", pad: 1, w: 80, h: 3) [
                     text("Radical TUI - Color Demo", color: "#00DDFF"),
@@ -82,27 +82,20 @@ impl ColorDemo {
                 // Main content area with three clickable boxes
                 hstack(bg: blue, pad: 1, w: 80, h: 10) [
                     // Left box
-                    div(bg: (state.left_color), w: 20, h: 8) [
-                        text("Click me!", color: white),
-                        @click: ctx.handler(ColorDemoMsg::ClickLeft)
+                    div(bg: (state.left_color), w: 20, h: 8, @click: ctx.handler(ColorDemoMsg::ClickLeft)) [
+                        text("Click me!", color: white)
                     ],
 
                     // Middle box
-                    div(bg: (state.middle_color), w: 20, h: 8) [
-                        text("Click me!", color: black),
-                        @click: ctx.handler(ColorDemoMsg::ClickMiddle)
+                    div(bg: (state.middle_color), w: 20, h: 8, @click: ctx.handler(ColorDemoMsg::ClickMiddle)) [
+                        text("Click me!", color: black)
                     ],
 
                     // Right box
-                    div(bg: (state.right_color), w: 20, h: 8) [
-                        text("Click me!", color: bright_blue),
-                        @click: ctx.handler(ColorDemoMsg::ClickRight)
+                    div(bg: (state.right_color), w: 20, h: 8, @click: ctx.handler(ColorDemoMsg::ClickRight)) [
+                        text("Click me!", color: bright_blue)
                     ]
-                ],
-
-                // Global event handlers
-                @char_global('q'): ctx.handler(ColorDemoMsg::Exit),
-                @key_global(Esc): ctx.handler(ColorDemoMsg::Exit)
+                ]
             ]
         }
     }
@@ -113,9 +106,7 @@ impl ColorDemo {
 //--------------------------------------------------------------------------------------------------
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    let root = ColorDemo::default();
-    app.run(root)
+    App::new()?.run(ColorDemo)
 }
 
 fn next_color(color: Color) -> Color {

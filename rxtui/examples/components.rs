@@ -44,8 +44,8 @@ struct DashboardState {
     title: String,
 }
 
-#[derive(Component, Default)]
-struct Dashboard {}
+#[derive(Component)]
+struct Dashboard;
 
 //--------------------------------------------------------------------------------------------------
 // Trait Implementations
@@ -102,26 +102,23 @@ impl Counter {
                         .background(self.color)
                         .border(self.color)
                         .padding(Spacing::all(1))
-                })
+                }),
+                @key(Char('-')): ctx.handler(CounterMsg::Decrement),
+                @key(Char('+')): ctx.handler(CounterMsg::Increment),
+                @key(down): ctx.handler(CounterMsg::Decrement),
+                @key(up): ctx.handler(CounterMsg::Increment)
             ) [
                 text(&self.label, color: white),
                 text(format!("Count: {}", state.count), color: bright_white),
 
                 hstack(gap: 2) [
-                    div(bg: black, border: white, pad_h: 1) [
-                        text("-", color: white),
-                        @click: ctx.handler(CounterMsg::Decrement)
+                    div(bg: black, border: white, pad_h: 1, @click: ctx.handler(CounterMsg::Decrement)) [
+                        text("-", color: white)
                     ],
-                    div(bg: black, border: white, pad_h: 1) [
-                        text("+", color: white),
-                        @click: ctx.handler(CounterMsg::Increment)
+                    div(bg: black, border: white, pad_h: 1, @click: ctx.handler(CounterMsg::Increment)) [
+                        text("+", color: white)
                     ]
-                ],
-
-                @key(Char('-')): ctx.handler(CounterMsg::Decrement),
-                @key(Char('+')): ctx.handler(CounterMsg::Increment),
-                @key(Down): ctx.handler(CounterMsg::Decrement),
-                @key(Up): ctx.handler(CounterMsg::Increment)
+                ]
             ]
         }
     }
@@ -185,14 +182,14 @@ impl Dashboard {
                             .border(Color::Yellow)
                             .padding(Spacing::all(1))
                     })
-                ) [
-                    text("Reset All (R)", color: white),
                     @click: ctx.handler(DashboardMsg::ResetAll),
                     @char('r'): ctx.handler(DashboardMsg::ResetAll)
+                ) [
+                    text("Reset All (R)", color: white)
                 ],
 
                 @char_global('q'): ctx.handler(DashboardMsg::Exit),
-                @key_global(Esc): ctx.handler(DashboardMsg::Exit)
+                @key_global(esc): ctx.handler(DashboardMsg::Exit)
             ]
         }
     }
@@ -203,7 +200,5 @@ impl Dashboard {
 //--------------------------------------------------------------------------------------------------
 
 fn main() -> std::io::Result<()> {
-    let mut app = App::new()?;
-    let root = Dashboard::default();
-    app.run(root)
+    App::new()?.run(Dashboard)
 }

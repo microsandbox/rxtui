@@ -4,8 +4,8 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Default)]
-pub struct Page12FocusDemo {}
+#[derive(Component)]
+pub struct Page12FocusDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Methods
@@ -133,15 +133,14 @@ impl FocusButton {
                         .border(Color::White)
                         .background(Color::Rgb(30, 30, 40))
                         .padding(Spacing::all(1))
-                })
-            ) [
-                text(label, color: (color)),
-                text(format!("Count: {}", state.count), color: white),
-
+                }),
                 @click: ctx.handler(FocusButtonMsg::Increment),
-                @key(Enter): ctx.handler(FocusButtonMsg::Increment),
+                @key(enter): ctx.handler(FocusButtonMsg::Increment),
                 @focus: ctx.handler(FocusButtonMsg::Focused),
                 @blur: ctx.handler(FocusButtonMsg::Blurred)
+            ) [
+                text(label, color: (color)),
+                text(format!("Count: {}", state.count), color: white)
             ]
         }
     }

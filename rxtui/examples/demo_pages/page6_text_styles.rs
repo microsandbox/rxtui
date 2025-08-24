@@ -4,8 +4,8 @@ use rxtui::prelude::*;
 // Types
 //--------------------------------------------------------------------------------------------------
 
-#[derive(Component, Default)]
-pub struct Page6TextStylesDemo {}
+#[derive(Component)]
+pub struct Page6TextStylesDemo;
 
 //--------------------------------------------------------------------------------------------------
 // Methods

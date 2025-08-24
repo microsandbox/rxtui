@@ -9,8 +9,16 @@ default = ["effects"]
 effects = ["rxtui/effects"]
 
 [[example]]
-name = "timer"
-path = "examples/timer.rs"
+name = "counter"
+path = "examples/counter.rs"
+
+[[example]]
+name = "form"
+path = "examples/form.rs"
+
+[[example]]
+name = "stopwatch"
+path = "examples/stopwatch.rs"
 
 [workspace]
 resolver = "2"
