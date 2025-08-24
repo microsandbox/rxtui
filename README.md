@@ -54,7 +54,7 @@ tokio = { version = "1", features = ["full"] }  # For async effects
 
 ### <span>2</span>&nbsp;&nbsp;Create Your First App
 
-Complete counter app in a few lines of code:
+Complete counter app in 30 lines of code:
 
 ```rust
 use rxtui::prelude::*;
@@ -66,8 +66,8 @@ impl Counter {
     #[update]
     fn update(&self, _ctx: &Context, msg: &str, mut count: i32) -> Action {
         match msg {
-            "increment" => Action::update(count + 1),
-            "decrement" => Action::update(count - 1),
+            "inc" => Action::update(count + 1),
+            "dec" => Action::update(count - 1),
             _ => Action::exit(),
         }
     }
@@ -75,13 +75,9 @@ impl Counter {
     #[view]
     fn view(&self, ctx: &Context, count: i32) -> Node {
         node! {
-            div(bg: black, pad: 2) [
+            div(@key_global(Up): ctx.handler("inc"), @key_global(Down): ctx.handler("dec"), @key_global(Esc): ctx.handler("exit")) [
                 text(format!("Count: {count}"), color: white, bold),
-                text("use ↑/↓ to change, esc to exit", color: bright_black),
-
-                @key_global(Up): ctx.handler("increment"),
-                @key_global(Down): ctx.handler("decrement"),
-                @key_global(Esc): ctx.handler("exit")
+                text("use ↑/↓ to change, esc to exit", color: bright_black)
             ]
         }
     }

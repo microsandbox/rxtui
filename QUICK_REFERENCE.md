@@ -173,27 +173,24 @@ text(
 ### Event Handlers
 
 ```rust
-div(focusable) [
+div(
+    focusable,
     // Mouse
     @click: handler,
-
     // Keyboard (requires focus)
     @char('a'): handler,
     @key(Enter): handler,
     @key(Backspace): handler,
     @char('-'): handler,  // For character keys, use @char
-
     // Global (no focus needed)
     @char_global('q'): handler,
     @key_global(Esc): handler,
-
     // Focus
     @focus: handler,
     @blur: handler,
-
     // Any character
-    @any_char: |ch| handler(ch),
-]
+    @any_char: |ch| handler(ch)
+) []
 ```
 
 ### Optional Properties

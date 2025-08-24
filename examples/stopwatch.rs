@@ -20,11 +20,9 @@ impl Stopwatch {
         let centiseconds = (state % 1000) / 10;
 
         node! {
-            div(bg: black, pad: 2) [
+            div(bg: black, pad: 2, @key(Esc): ctx.handler(false)) [
                 text(format!("Elapsed: {}.{:02}s", seconds, centiseconds), color: white, bold),
-                text("press esc to exit", color: bright_black),
-
-                @key(Esc): ctx.handler(false)
+                text("press esc to exit", color: bright_black)
             ]
         }
     }

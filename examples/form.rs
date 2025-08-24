@@ -54,51 +54,51 @@ impl Form {
     #[view]
     fn view(&self, ctx: &Context, state: FormState) -> Node {
         node! {
-            div(bg: black, pad: 2, w_pct: 1.0) [
+            div(bg: black, pad: 2, w_pct: 1.0, @key(Esc): ctx.handler(Msg::Exit), @char('c'): ctx.handler(Msg::Clear), @char('C'): ctx.handler(Msg::Clear)) [
                 // Title
-                richtext [
-                    text("Form Example with Callbacks", color: cyan, bold),
-                    text(" [Tab to navigate, Enter to submit, C to clear, Esc to exit]", color: bright_black, italic)
-                ],
+                text("Form Example with Callbacks", color: cyan, bold),
+                spacer(1),
+
+                text("tab to navigate | enter to submit | esc to exit", color: bright_black),
                 spacer(2),
 
                 // Form fields with callbacks
                 vstack [
                     text(" Name:", color: white, bold),
-                    node(TextInput::new()
-                        .placeholder("Enter your full name...")
-                        .border(if state.name.is_empty() { Color::White } else { Color::Green })
-                        .focusable(true)
-                        .width(40)
-                        .on_change(ctx.handler_with_value(Msg::NameChanged))
-                        .on_submit(ctx.handler(Msg::Submit))
+                    input(
+                        placeholder: "Enter your full name...",
+                        border: (if state.name.is_empty() { Color::White } else { Color::Green }),
+                        focusable,
+                        w: 40,
+                        @change: ctx.handler_with_value(Msg::NameChanged),
+                        @submit: ctx.handler(Msg::Submit)
                     )
                 ],
                 spacer(1),
 
                 vstack [
                     text(" Email:", color: white, bold),
-                    node(TextInput::new()
-                        .placeholder("your.email@example.com")
-                        .border(if state.email.is_empty() { Color::White } else { Color::Green })
-                        .focusable(true)
-                        .width(40)
-                        .on_change(ctx.handler_with_value(Msg::EmailChanged))
-                        .on_submit(ctx.handler(Msg::Submit))
+                    input(
+                        placeholder: "your.email@example.com",
+                        border: (if state.email.is_empty() { Color::White } else { Color::Green }),
+                        focusable,
+                        w: 40,
+                        @change: ctx.handler_with_value(Msg::EmailChanged),
+                        @submit: ctx.handler(Msg::Submit)
                     )
                 ],
                 spacer(1),
 
                 vstack [
                     text(" Password:", color: white, bold),
-                    node(TextInput::new()
-                        .placeholder("Enter secure password...")
-                        .password(true)
-                        .border(if state.password.is_empty() { Color::White } else { Color::Green })
-                        .focusable(true)
-                        .width(40)
-                        .on_change(ctx.handler_with_value(Msg::PasswordChanged))
-                        .on_submit(ctx.handler(Msg::Submit))
+                    input(
+                        placeholder: "Enter secure password...",
+                        password,
+                        border: (if state.password.is_empty() { Color::White } else { Color::Green }),
+                        focusable,
+                        w: 40,
+                        @change: ctx.handler_with_value(Msg::PasswordChanged),
+                        @submit: ctx.handler(Msg::Submit)
                     )
                 ],
                 spacer(1),
@@ -112,13 +112,13 @@ impl Form {
                     }),
                     w: 40,
                     border: white,
-                    focusable
+                    focusable,
+                    @click: ctx.handler(Msg::Submit)
                 ) [
                     hstack [
                         div(w_pct: 0.9, h: 1)[],
                         text("Submit", color: black, bold),
-                    ],
-                    @click: ctx.handler(Msg::Submit)
+                    ]
                 ],
 
                 spacer(2),
@@ -145,20 +145,15 @@ impl Form {
                 // Display submission status
                 (if state.submitted {
                     node! {
-                        div(border: green, pad: 2, bg: (Color::Rgb(0, 30, 0))) [
+                        div(border: green, pad: 2, bg: "#001e00", w: 40) [
                             text("✓ Form submitted successfully!", color: green, bold),
                             spacer(1),
-                            text("All fields have been validated and processed.", color: white)
+                            text("All fields have been validated and processed.", color: white, wrap: word),
                         ]
                     }
                 } else {
                     node! { spacer(0) }
-                }),
-
-                // Global key handlers
-                @key(Esc): ctx.handler(Msg::Exit),
-                @char('c'): ctx.handler(Msg::Clear),
-                @char('C'): ctx.handler(Msg::Clear)
+                })
             ]
         }
     }
