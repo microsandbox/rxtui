@@ -135,7 +135,7 @@ impl FocusButton {
                         .padding(Spacing::all(1))
                 }),
                 @click: ctx.handler(FocusButtonMsg::Increment),
-                @key(Enter): ctx.handler(FocusButtonMsg::Increment),
+                @key(enter): ctx.handler(FocusButtonMsg::Increment),
                 @focus: ctx.handler(FocusButtonMsg::Focused),
                 @blur: ctx.handler(FocusButtonMsg::Blurred)
             ) [

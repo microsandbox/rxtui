@@ -71,7 +71,7 @@ impl ColorDemo {
     #[view]
     fn view(&self, ctx: &Context, state: ColorDemoState) -> Node {
         node! {
-            div(bg: black, dir: vertical, pad: 1, @char_global('q'): ctx.handler(ColorDemoMsg::Exit), @key_global(Esc): ctx.handler(ColorDemoMsg::Exit)) [
+            div(bg: black, dir: vertical, pad: 1, @char_global('q'): ctx.handler(ColorDemoMsg::Exit), @key_global(esc): ctx.handler(ColorDemoMsg::Exit)) [
                 // Title bar
                 hstack(bg: "#333333", pad: 1, w: 80, h: 3) [
                     text("Radical TUI - Color Demo", color: "#00DDFF"),

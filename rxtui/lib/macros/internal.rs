@@ -171,3 +171,189 @@ macro_rules! position_value {
         $pos
     };
 }
+
+/// Converts key values to Key enum
+/// Supports lowercase/snake_case names for ergonomics
+#[doc(hidden)]
+#[macro_export]
+macro_rules! key_value {
+    // Special keys (lowercase)
+    (esc) => {
+        $crate::Key::Esc
+    };
+    (enter) => {
+        $crate::Key::Enter
+    };
+    (tab) => {
+        $crate::Key::Tab
+    };
+    (backtab) => {
+        $crate::Key::BackTab
+    };
+    (back_tab) => {
+        $crate::Key::BackTab
+    };
+    (backspace) => {
+        $crate::Key::Backspace
+    };
+    (delete) => {
+        $crate::Key::Delete
+    };
+
+    // Arrow keys (lowercase)
+    (up) => {
+        $crate::Key::Up
+    };
+    (down) => {
+        $crate::Key::Down
+    };
+    (left) => {
+        $crate::Key::Left
+    };
+    (right) => {
+        $crate::Key::Right
+    };
+
+    // Navigation keys (snake_case)
+    (page_up) => {
+        $crate::Key::PageUp
+    };
+    (pageup) => {
+        $crate::Key::PageUp
+    };
+    (page_down) => {
+        $crate::Key::PageDown
+    };
+    (pagedown) => {
+        $crate::Key::PageDown
+    };
+    (home) => {
+        $crate::Key::Home
+    };
+    (end) => {
+        $crate::Key::End
+    };
+
+    // Function keys (lowercase)
+    (f1) => {
+        $crate::Key::F1
+    };
+    (f2) => {
+        $crate::Key::F2
+    };
+    (f3) => {
+        $crate::Key::F3
+    };
+    (f4) => {
+        $crate::Key::F4
+    };
+    (f5) => {
+        $crate::Key::F5
+    };
+    (f6) => {
+        $crate::Key::F6
+    };
+    (f7) => {
+        $crate::Key::F7
+    };
+    (f8) => {
+        $crate::Key::F8
+    };
+    (f9) => {
+        $crate::Key::F9
+    };
+    (f10) => {
+        $crate::Key::F10
+    };
+    (f11) => {
+        $crate::Key::F11
+    };
+    (f12) => {
+        $crate::Key::F12
+    };
+
+    // Backwards compatibility - support CamelCase variants
+    (Esc) => {
+        $crate::Key::Esc
+    };
+    (Enter) => {
+        $crate::Key::Enter
+    };
+    (Tab) => {
+        $crate::Key::Tab
+    };
+    (BackTab) => {
+        $crate::Key::BackTab
+    };
+    (Backspace) => {
+        $crate::Key::Backspace
+    };
+    (Delete) => {
+        $crate::Key::Delete
+    };
+    (Up) => {
+        $crate::Key::Up
+    };
+    (Down) => {
+        $crate::Key::Down
+    };
+    (Left) => {
+        $crate::Key::Left
+    };
+    (Right) => {
+        $crate::Key::Right
+    };
+    (PageUp) => {
+        $crate::Key::PageUp
+    };
+    (PageDown) => {
+        $crate::Key::PageDown
+    };
+    (Home) => {
+        $crate::Key::Home
+    };
+    (End) => {
+        $crate::Key::End
+    };
+    (F1) => {
+        $crate::Key::F1
+    };
+    (F2) => {
+        $crate::Key::F2
+    };
+    (F3) => {
+        $crate::Key::F3
+    };
+    (F4) => {
+        $crate::Key::F4
+    };
+    (F5) => {
+        $crate::Key::F5
+    };
+    (F6) => {
+        $crate::Key::F6
+    };
+    (F7) => {
+        $crate::Key::F7
+    };
+    (F8) => {
+        $crate::Key::F8
+    };
+    (F9) => {
+        $crate::Key::F9
+    };
+    (F10) => {
+        $crate::Key::F10
+    };
+    (F11) => {
+        $crate::Key::F11
+    };
+    (F12) => {
+        $crate::Key::F12
+    };
+
+    // Any other expression - pass through
+    ($key:expr) => {
+        $key
+    };
+}

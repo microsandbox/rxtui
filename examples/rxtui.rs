@@ -7,7 +7,7 @@ impl RxTuiLogo {
     #[view]
     fn view(&self, ctx: &Context) -> Node {
         node! {
-            div(bg: black, w_pct: 1.0, h_pct: 1.0, dir: vertical, pad: 2, gap: 1, @char_global('q'): ctx.handler(()), @key_global(Esc): ctx.handler(())) [
+            div(bg: black, w_pct: 1.0, h_pct: 1.0, dir: vertical, pad: 2, gap: 1, @char_global('q'): ctx.handler(()), @key_global(esc): ctx.handler(())) [
                 vstack(bg: black) [
                     text("██████    ██    ██  ██████████  ██    ██  ██", color: "#8B4FB3"),
                     text("██████    ██    ██  ██████████  ██    ██  ██", color: "#B06FA8"),

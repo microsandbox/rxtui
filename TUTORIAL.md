@@ -26,7 +26,7 @@ impl HelloWorld {
     #[view]
     fn view(&self, ctx: &Context) -> Node {
         node! {
-            div(bg: blue, pad: 2, @key_global(Esc): ctx.handler(())) [
+            div(bg: blue, pad: 2, @key_global(esc): ctx.handler(())) [
                 text("Hello, RxTUI!", color: white, bold),
                 text("Press Esc to exit", color: white)
             ]
@@ -242,13 +242,13 @@ fn view(&self, ctx: &Context, state: AppState) -> Node {
                             .border(Color::Yellow)
                     }),
                     @click: ctx.handler(AppMsg::ButtonClicked("One".into())),
-                    @key(Enter): ctx.handler(AppMsg::ButtonClicked("One".into()))
+                    @key(enter): ctx.handler(AppMsg::ButtonClicked("One".into()))
                 ) [
                     text("Button 1")
                 ],
 
                 // Another button
-                div(border: white, pad: 1, focusable, @click: ctx.handler(AppMsg::ButtonClicked("Two".into())), @key(Enter): ctx.handler(AppMsg::ButtonClicked("Two".into()))) [
+                div(border: white, pad: 1, focusable, @click: ctx.handler(AppMsg::ButtonClicked("Two".into())), @key(enter): ctx.handler(AppMsg::ButtonClicked("Two".into()))) [
                     text("Button 2")
                 ]
             ],
@@ -305,7 +305,7 @@ impl Form {
     #[view]
     fn view(&self, ctx: &Context, state: FormState) -> Node {
         node! {
-            div(pad: 2, @key_global(Esc): ctx.handler(FormMsg::Exit)) [
+            div(pad: 2, @key_global(esc): ctx.handler(FormMsg::Exit)) [
                 text("User Form", bold, color: cyan),
 
                 // Text inputs
@@ -336,7 +336,7 @@ impl Form {
                 spacer(2),
 
                 // Submit button
-                div(border: green, pad: 1, focusable, @click: ctx.handler(FormMsg::Submit), @key(Enter): ctx.handler(FormMsg::Submit)) [
+                div(border: green, pad: 1, focusable, @click: ctx.handler(FormMsg::Submit), @key(enter): ctx.handler(FormMsg::Submit)) [
                     text("Submit")
                 ],
 
@@ -635,7 +635,7 @@ impl TodoApp {
         let active_count = state.todos.iter().filter(|t| !t.completed).count();
 
         node! {
-            div(bg: black, pad: 2, @key_global(Esc): ctx.handler(TodoMsg::Exit)) [
+            div(bg: black, pad: 2, @key_global(esc): ctx.handler(TodoMsg::Exit)) [
                 // Header
                 div(bg: blue, pad: 1, w_pct: 1.0) [
                     text("TODO LIST", color: white, bold)

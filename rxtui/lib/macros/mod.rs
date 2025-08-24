@@ -61,9 +61,9 @@
 //! Events use the `@` prefix:
 //! - `@click: handler` - Mouse click
 //! - `@char('q'): handler` - Character key
-//! - `@key(Enter): handler` - Special key
+//! - `@key(enter): handler` - Special key
 //! - `@char_global('q'): handler` - Global character
-//! - `@key_global(Esc): handler` - Global key
+//! - `@key_global(esc): handler` - Global key
 //! - `@focus: handler` - Focus gained
 //! - `@blur: handler` - Focus lost
 

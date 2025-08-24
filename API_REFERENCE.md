@@ -791,10 +791,10 @@ color: (optional_color)!
 |--------|-------------|
 | `@click: handler` | Mouse click |
 | `@char('x'): handler` | Character key |
-| `@key(Enter): handler` | Special key |
+| `@key(enter): handler` | Special key |
 | `@key(Char('-')): handler` | Character via Key enum |
 | `@char_global('q'): handler` | Global character |
-| `@key_global(Esc): handler` | Global special key |
+| `@key_global(esc): handler` | Global special key |
 | `@focus: handler` | Gained focus |
 | `@blur: handler` | Lost focus |
 | `@any_char: \|ch\| handler` | Any character |

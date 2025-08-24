@@ -228,14 +228,14 @@
 /// ## Event Handlers
 /// ```ignore
 /// node! {
-///     div(bg: black, @char_global('q'): ctx.handler(Msg::Quit), @key_global(Esc): ctx.handler(Msg::Exit)) [
+///     div(bg: black, @char_global('q'): ctx.handler(Msg::Quit), @key_global(esc): ctx.handler(Msg::Exit)) [
 ///         // Click handler
 ///         container(bg: blue, focusable, @click: ctx.handler(Msg::Clicked)) [
 ///             text("Click me", color: white)
 ///         ],
 ///
 ///         // Keyboard handlers
-///         container(focusable, @char('a'): ctx.handler(Msg::KeyA), @key(Enter): ctx.handler(Msg::Enter), @key(Backspace): ctx.handler(Msg::Back)) [
+///         container(focusable, @char('a'): ctx.handler(Msg::KeyA), @key(enter): ctx.handler(Msg::Enter), @key(backspace): ctx.handler(Msg::Back)) [
 ///             text("Press keys here")
 ///         ],
 ///
@@ -370,10 +370,10 @@
 /// |---------|-------------|---------|
 /// | `@click` | Mouse click | `@click: handler` |
 /// | `@char(c)` | Character key press | `@char('a'): handler` |
-/// | `@key(k)` | Special key press | `@key(Enter): handler` |
+/// | `@key(k)` | Special key press | `@key(enter): handler` |
 /// | `@key(Char(c))` | Character in key enum | `@key(Char('-')): handler` |
 /// | `@char_global(c)` | Global character key | `@char_global('q'): handler` |
-/// | `@key_global(k)` | Global special key | `@key_global(Esc): handler` |
+/// | `@key_global(k)` | Global special key | `@key_global(esc): handler` |
 /// | `@focus` | Gained focus | `@focus: handler` |
 /// | `@blur` | Lost focus | `@blur: handler` |
 /// | `@any_char` | Any character typed | `@any_char: \|c\| handler(c)` |
@@ -1217,21 +1217,21 @@ macro_rules! tui_apply_props {
     }};
 
     // @key handler
-    ($container:expr, @key($key:ident): $handler:expr, $($rest:tt)*) => {{
-        let c = $container.on_key($crate::Key::$key, $handler);
+    ($container:expr, @key($key:tt): $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_key($crate::key_value!($key), $handler);
         $crate::tui_apply_props!(c, $($rest)*)
     }};
-    ($container:expr, @key($key:ident): $handler:expr) => {{
-        $container.on_key($crate::Key::$key, $handler)
+    ($container:expr, @key($key:tt): $handler:expr) => {{
+        $container.on_key($crate::key_value!($key), $handler)
     }};
 
     // @key_global handler
-    ($container:expr, @key_global($key:ident): $handler:expr, $($rest:tt)*) => {{
-        let c = $container.on_key_global($crate::Key::$key, $handler);
+    ($container:expr, @key_global($key:tt): $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_key_global($crate::key_value!($key), $handler);
         $crate::tui_apply_props!(c, $($rest)*)
     }};
-    ($container:expr, @key_global($key:ident): $handler:expr) => {{
-        $container.on_key_global($crate::Key::$key, $handler)
+    ($container:expr, @key_global($key:tt): $handler:expr) => {{
+        $container.on_key_global($crate::key_value!($key), $handler)
     }};
 
     // @focus handler

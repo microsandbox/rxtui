@@ -105,8 +105,8 @@ impl Counter {
                 }),
                 @key(Char('-')): ctx.handler(CounterMsg::Decrement),
                 @key(Char('+')): ctx.handler(CounterMsg::Increment),
-                @key(Down): ctx.handler(CounterMsg::Decrement),
-                @key(Up): ctx.handler(CounterMsg::Increment)
+                @key(down): ctx.handler(CounterMsg::Decrement),
+                @key(up): ctx.handler(CounterMsg::Increment)
             ) [
                 text(&self.label, color: white),
                 text(format!("Count: {}", state.count), color: bright_white),
@@ -189,7 +189,7 @@ impl Dashboard {
                 ],
 
                 @char_global('q'): ctx.handler(DashboardMsg::Exit),
-                @key_global(Esc): ctx.handler(DashboardMsg::Exit)
+                @key_global(esc): ctx.handler(DashboardMsg::Exit)
             ]
         }
     }

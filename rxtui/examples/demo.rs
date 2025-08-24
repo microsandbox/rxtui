@@ -89,7 +89,7 @@ impl Demo {
             div(
                 bg: black, dir: vertical, pad: 1, w_pct: 1.0, h_pct: 1.0,
                 @char_global('q'): ctx.handler(DemoMessage::Exit),
-                @key_global(Esc): ctx.handler(DemoMessage::Exit),
+                @key_global(esc): ctx.handler(DemoMessage::Exit),
                 @char('1'): ctx.handler(DemoMessage::SetPage(1)),
                 @char('2'): ctx.handler(DemoMessage::SetPage(2)),
                 @char('3'): ctx.handler(DemoMessage::SetPage(3)),
@@ -105,8 +105,8 @@ impl Demo {
                 @char('['): ctx.handler(DemoMessage::SetPage(13)),
                 @char(']'): ctx.handler(DemoMessage::SetPage(14)),
                 @char('\\'): ctx.handler(DemoMessage::SetPage(15)),
-                @key(Right): ctx.handler(DemoMessage::NextPage),
-                @key(Left): ctx.handler(DemoMessage::PrevPage)
+                @key(right): ctx.handler(DemoMessage::NextPage),
+                @key(left): ctx.handler(DemoMessage::PrevPage)
             ) [
                 // Header
                 div(bg: bright_black, dir: horizontal, pad: 1, w_pct: 1.0, h: 3) [

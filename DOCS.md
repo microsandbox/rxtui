@@ -50,7 +50,7 @@ impl HelloWorld {
             div(bg: blue, pad: 2) [
                 text("Hello, Terminal!", color: white, bold),
                 text("Press Esc to exit", color: white),
-                @key_global(Esc): ctx.handler(())
+                @key_global(esc): ctx.handler(())
             ]
         }
     }
@@ -96,7 +96,7 @@ The `node!` macro is how you actually build your UI. It gives you a clean, decla
 #[view]
 fn view(&self, ctx: &Context, state: AppState) -> Node {
     node! {
-        div(bg: blue, pad: 2, border: white, @key_global(Esc): ctx.handler(Msg::Exit)) [
+        div(bg: blue, pad: 2, border: white, @key_global(esc): ctx.handler(Msg::Exit)) [
             text(format!("Count: {}", state.count), color: yellow),
 
             hstack(gap: 2, @click: ctx.handler(Msg::Increment)) [
@@ -277,7 +277,7 @@ The `node!` macro provides a declarative syntax for building UI trees, inspired 
 ```rust
 node! {
     // Root element (usually div)
-    div(properties, @click: handler, @key(Enter): handler) [
+    div(properties, @click: handler, @key(enter): handler) [
         // Children
         text("content", properties),
         div(properties) [
@@ -492,14 +492,14 @@ node! {
         @click: ctx.handler(Msg::Clicked),
         // Keyboard events (requires focus)
         @char('a'): ctx.handler(Msg::KeyA),
-        @key(Enter): ctx.handler(Msg::Enter),
+        @key(enter): ctx.handler(Msg::Enter),
         @key(Char('-')): ctx.handler(Msg::Minus),
         // Focus events
         @focus: ctx.handler(Msg::Focused),
         @blur: ctx.handler(Msg::Blurred),
         // Global events (work without focus)
         @char_global('q'): ctx.handler(Msg::Quit),
-        @key_global(Esc): ctx.handler(Msg::Exit),
+        @key_global(esc): ctx.handler(Msg::Exit),
         // Any character handler
         @any_char: |ch| ctx.handler(Msg::Typed(ch))
     ) [
@@ -916,8 +916,8 @@ node! {
         @click: ctx.handler(Msg::Clicked),
         // Keyboard
         @char('a'): ctx.handler(Msg::PressedA),
-        @key(Enter): ctx.handler(Msg::Confirmed),
-        @key(Backspace): ctx.handler(Msg::Delete),
+        @key(enter): ctx.handler(Msg::Confirmed),
+        @key(backspace): ctx.handler(Msg::Delete),
         // Focus
         @focus: ctx.handler(Msg::GainedFocus),
         @blur: ctx.handler(Msg::LostFocus)
@@ -936,7 +936,7 @@ node! {
     div [
         // Application-wide shortcuts
         @char_global('q'): ctx.handler(Msg::Quit),
-        @key_global(Esc): ctx.handler(Msg::Cancel),
+        @key_global(esc): ctx.handler(Msg::Cancel),
         @char_global('/'): ctx.handler(Msg::Search)
     ]
 }
@@ -1114,7 +1114,7 @@ impl CounterApp {
     #[view]
     fn view(&self, ctx: &Context, state: State) -> Node {
         node! {
-            div(bg: black, pad: 2, @char_global('q'): ctx.handler(Msg::Exit), @key_global(Esc): ctx.handler(Msg::Exit)) [
+            div(bg: black, pad: 2, @char_global('q'): ctx.handler(Msg::Exit), @key_global(esc): ctx.handler(Msg::Exit)) [
                 text(format!("Count: {}", state.count), color: white, bold),
 
                 hstack(gap: 2) [

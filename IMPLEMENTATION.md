@@ -703,7 +703,7 @@ Provides ergonomic APIs for building UIs:
 Declarative syntax for building UI trees:
 ```rust
 node! {
-    div(bg: blue, pad: 2, @click: ctx.handler(Msg::Click), @key(Enter): ctx.handler(Msg::Enter)) [
+    div(bg: blue, pad: 2, @click: ctx.handler(Msg::Click), @key(enter): ctx.handler(Msg::Enter)) [
         text("Hello", color: white),
         div(border: white) [
             text("Nested")
