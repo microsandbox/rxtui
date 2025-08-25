@@ -16,19 +16,6 @@ A minimal counter demonstrating:
 
 <br />
 
-### [components.rs](./components.rs)
-```bash
-cargo run --example components
-```
-Shows how to build complex UIs from reusable components:
-- Multiple independent counter components with different colors
-- Inter-component communication via topics
-- Dynamic topic names in `#[update]` macro
-- Nested component structure (Dashboard → Counter components)
-- Both stateful (Counter) and stateless (Dashboard) components
-
-<br />
-
 ### [form.rs](./form.rs)
 ```bash
 cargo run --example form
@@ -53,6 +40,17 @@ Time-based UI updates:
 - Combining user actions with background updates
 
 <br />
+
+### [components.rs](./components.rs)
+```bash
+cargo run --example components
+```
+Shows how to build complex UIs from reusable components:
+- Multiple independent counter components with different colors
+- Inter-component communication via topics
+- Dynamic topic names in `#[update]` macro
+- Nested component structure (Dashboard → Counter components)
+- Both stateful (Counter) and stateless (Dashboard) components
 
 ## Feature Showcase
 

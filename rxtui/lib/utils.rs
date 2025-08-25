@@ -321,8 +321,18 @@ fn wrap_word(text: &str, width: u16) -> Vec<String> {
                     // But only if we have content on the current line
                     if current_width > 0 {
                         lines.push(current_line.clone());
-                        current_line = pending_spaces.clone();
-                        current_width = pending_spaces_width;
+                        // Trim first leading space when starting new line with spaces
+                        let mut new_line = pending_spaces.clone();
+                        let mut new_width = pending_spaces_width;
+                        if let Some(first_char) = new_line.chars().next()
+                            && first_char == ' '
+                        {
+                            // Remove first space only
+                            new_line = new_line.chars().skip(1).collect();
+                            new_width = new_width.saturating_sub(char_width(' '));
+                        }
+                        current_line = new_line;
+                        current_width = new_width;
                     } else {
                         // Line is empty, add the spaces anyway
                         current_line.push_str(&pending_spaces);
@@ -356,7 +366,15 @@ fn wrap_word(text: &str, width: u16) -> Vec<String> {
             current_line.push_str(&pending_spaces);
         } else if current_width > 0 {
             lines.push(current_line.clone());
-            current_line = pending_spaces;
+            // Trim first leading space when starting new line with spaces
+            let mut new_line = pending_spaces;
+            if let Some(first_char) = new_line.chars().next()
+                && first_char == ' '
+            {
+                // Remove first space only
+                new_line = new_line.chars().skip(1).collect();
+            }
+            current_line = new_line;
         } else {
             current_line.push_str(&pending_spaces);
         }
@@ -449,9 +467,15 @@ fn wrap_word_break(text: &str, width: u16) -> Vec<String> {
                 // Whitespace would exceed width, start new line
                 lines.push(current_line.clone());
                 current_line.clear();
-                // Always preserve the whitespace character, even at line start
-                current_line.push(ch);
-                current_width = ch_width;
+                // Skip first space when starting new line, preserve other whitespace
+                if ch == ' ' {
+                    // Skip the first space that would lead the new line
+                    current_width = 0;
+                } else {
+                    // Preserve tabs and other whitespace
+                    current_line.push(ch);
+                    current_width = ch_width;
+                }
             } else {
                 // Add the whitespace character
                 current_line.push(ch);
@@ -656,6 +680,7 @@ mod tests {
     fn test_wrap_word() {
         let text = "The quick brown fox jumps";
         let wrapped = wrap_text(text, 10, TextWrap::Word);
+        // Trailing spaces are preserved, only first leading space is trimmed
         assert_eq!(wrapped, vec!["The quick ", "brown fox ", "jumps"]);
     }
 
@@ -663,10 +688,10 @@ mod tests {
     fn test_wrap_word_long_word() {
         let text = "A verylongword that exceeds width";
         let wrapped = wrap_text(text, 10, TextWrap::Word);
-        // Long word overflows in Word mode, spaces are preserved
+        // Long word overflows in Word mode, first leading space trimmed
         assert_eq!(
             wrapped,
-            vec!["A ", "verylongword", " that ", "exceeds ", "width"]
+            vec!["A ", "verylongword", "that ", "exceeds ", "width"]
         );
     }
 
@@ -674,6 +699,7 @@ mod tests {
     fn test_wrap_word_break() {
         let text = "A verylongword that exceeds";
         let wrapped = wrap_text(text, 10, TextWrap::WordBreak);
+        // Trailing spaces preserved, first leading space trimmed
         assert_eq!(wrapped, vec!["A ", "verylongwo", "rd that ", "exceeds"]);
     }
 
@@ -714,7 +740,7 @@ mod tests {
         // Test word wrapping with Unicode
         let text = "Hello 世界 World";
         let wrapped = wrap_text(text, 10, TextWrap::Word);
-        assert_eq!(wrapped, vec!["Hello 世界", " World"]); // "Hello " = 6, "世界" = 4, space goes to next line
+        assert_eq!(wrapped, vec!["Hello 世界", "World"]); // "Hello " = 6, "世界" = 4, first space trimmed on next line
     }
 
     #[test]
@@ -725,14 +751,14 @@ mod tests {
         assert_eq!(wrapped, vec!["Test 😀 ", "emoji"]); // "Test " = 5, "😀" = 2, " " = 1
 
         let wrapped = wrap_text(text, 7, TextWrap::Word);
-        assert_eq!(wrapped, vec!["Test 😀", " emoji"]); // "Test " = 5, "😀" = 2, space goes to next line
+        assert_eq!(wrapped, vec!["Test 😀", "emoji"]); // "Test " = 5, "😀" = 2, first space trimmed on next line
     }
 
     #[test]
     fn test_wrap_word_multiple_spaces() {
         let text = "Hello     World   Test";
         let wrapped = wrap_text(text, 10, TextWrap::Word);
-        // Spaces should be preserved
+        // First space is trimmed, rest are preserved, trailing spaces kept
         assert_eq!(wrapped, vec!["Hello     ", "World   ", "Test"]);
     }
 

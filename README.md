@@ -120,7 +120,7 @@ Want to contribute? We'd love to have you!
 
 - **[Development Guide](DEVELOPMENT.md)** - Set up your dev environment
 - **[Contributing](CONTRIBUTING.md)** - Contribution guidelines
-- **[GitHub Issues](https://github.com/yourusername/rxtui/issues)** - Report bugs or request features
+- **[GitHub Issues](https://github.com/microsandbox/rxtui/issues)** - Report bugs or request features
 
 <div align='center'>• • •</div>
 
