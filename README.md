@@ -42,7 +42,7 @@ We bring the retained-mode, component-based architecture that revolutionized web
 
 
 <div align='center'>
-  <img width="80%" alt="align demo" src="https://github.com/user-attachments/assets/c3a05029-a4fd-4ed4-a8a6-a41c76114956" />
+  <img width="100%" alt="align demo" src="https://github.com/user-attachments/assets/c3a05029-a4fd-4ed4-a8a6-a41c76114956" />
 </div>
 
 
