@@ -8,6 +8,14 @@ This directory contains example applications demonstrating various features and 
 ```bash
 cargo run --example counter
 ```
+
+<img width="500" alt="rxtui logo" src="https://github.com/user-attachments/assets/c2038f9f-5633-4617-bbfb-569a5a89697c" />
+<img width="100%" alt="stopwatch demo" src="https://github.com/user-attachments/assets/8c627f96-b188-40ce-a022-384a6a1b7e66" />
+<img width="100%" alt="progressbar demo" src="https://github.com/user-attachments/assets/df860dde-98f7-4ccd-ba32-c0187e0f214b" />
+<img width="100%" alt="form demo" src="https://github.com/user-attachments/assets/c0c85d9f-9231-45b7-bcf5-081fab998e79" />
+<img width="100%" alt="counter demo" src="https://github.com/user-attachments/assets/904cce59-48c4-4813-9a68-d1c0b8176c4b" />
+<img width="100%" alt="align demo" src="https://github.com/user-attachments/assets/c3a05029-a4fd-4ed4-a8a6-a41c76114956" />
+
 A minimal counter demonstrating:
 - Basic component structure with `#[update]` and `#[view]` macros
 - State management and message handling
