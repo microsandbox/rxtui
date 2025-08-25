@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="450" alt="rxtui logo" src="https://github.com/user-attachments/assets/c2038f9f-5633-4617-bbfb-569a5a89697c" />
+  <img width="500" alt="rxtui logo" src="https://github.com/user-attachments/assets/ddd9e32e-e654-4acb-97e7-43b65a420eb0" />
 
   <br />
   <br />
