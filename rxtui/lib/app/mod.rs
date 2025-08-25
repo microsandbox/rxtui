@@ -23,7 +23,7 @@ mod tests {
     use crate::{
         buffer::ScreenBuffer,
         render_tree::RenderNode,
-        style::{Color, Style},
+        style::{AlignItems, AlignSelf, Color, JustifyContent, Style},
     };
     use std::cell::RefCell;
     use std::rc::Rc;
@@ -477,5 +477,447 @@ mod tests {
         assert_eq!(cell_e.char, 'E');
         assert_eq!(cell_n.char, 'n');
         assert_eq!(cell_d.char, 'd');
+    }
+
+    #[test]
+    fn test_justify_content_start() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(20)
+            .height(3)
+            .direction(Direction::Horizontal)
+            .justify_content(JustifyContent::Start)
+            .children(vec![
+                Div::new().width(3).height(1).into(),
+                Div::new().width(3).height(1).into(),
+                Div::new().width(3).height(1).into(),
+            ])
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(20, 3);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            let root_ref = root.borrow();
+            assert_eq!(root_ref.children.len(), 3);
+
+            // Check that children are positioned at start (left)
+            let child0 = root_ref.children[0].borrow();
+            let child1 = root_ref.children[1].borrow();
+            let child2 = root_ref.children[2].borrow();
+
+            assert_eq!(child0.x, 0);
+            assert_eq!(child1.x, 3);
+            assert_eq!(child2.x, 6);
+        }
+    }
+
+    #[test]
+    fn test_justify_content_center() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(20)
+            .height(3)
+            .direction(Direction::Horizontal)
+            .justify_content(JustifyContent::Center)
+            .children(vec![
+                Div::new().width(3).height(1).into(),
+                Div::new().width(3).height(1).into(),
+                Div::new().width(3).height(1).into(),
+            ])
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(20, 3);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            let root_ref = root.borrow();
+            assert_eq!(root_ref.children.len(), 3);
+
+            // Total width of children = 9, container = 20, so space = 11
+            // Center should start at 11/2 = 5.5, rounded down to 5
+            let child0 = root_ref.children[0].borrow();
+            let child1 = root_ref.children[1].borrow();
+            let child2 = root_ref.children[2].borrow();
+
+            assert_eq!(child0.x, 5);
+            assert_eq!(child1.x, 8);
+            assert_eq!(child2.x, 11);
+        }
+    }
+
+    #[test]
+    fn test_justify_content_end() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(20)
+            .height(3)
+            .direction(Direction::Horizontal)
+            .justify_content(JustifyContent::End)
+            .children(vec![
+                Div::new().width(3).height(1).into(),
+                Div::new().width(3).height(1).into(),
+                Div::new().width(3).height(1).into(),
+            ])
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(20, 3);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            let root_ref = root.borrow();
+            assert_eq!(root_ref.children.len(), 3);
+
+            // Total width of children = 9, container = 20, so space = 11
+            // End should start at 11
+            let child0 = root_ref.children[0].borrow();
+            let child1 = root_ref.children[1].borrow();
+            let child2 = root_ref.children[2].borrow();
+
+            assert_eq!(child0.x, 11);
+            assert_eq!(child1.x, 14);
+            assert_eq!(child2.x, 17);
+        }
+    }
+
+    #[test]
+    fn test_justify_content_space_between() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(20)
+            .height(3)
+            .direction(Direction::Horizontal)
+            .justify_content(JustifyContent::SpaceBetween)
+            .children(vec![
+                Div::new().width(3).height(1).into(),
+                Div::new().width(3).height(1).into(),
+                Div::new().width(3).height(1).into(),
+            ])
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(20, 3);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            let root_ref = root.borrow();
+            assert_eq!(root_ref.children.len(), 3);
+
+            // Total width of children = 9, container = 20, so space = 11
+            // Space between 3 items = 11 / (3-1) = 11/2 = 5.5, rounded down to 5
+            let child0 = root_ref.children[0].borrow();
+            let child1 = root_ref.children[1].borrow();
+            let child2 = root_ref.children[2].borrow();
+
+            // Total children width = 9, container = 20, available space = 11
+            // SpaceBetween distributes the 11 pixels as spacing between items
+            // With 3 items, there are 2 gaps, so each gap = 11/2 = 5 (truncated)
+            assert_eq!(child0.x, 0); // First at start
+            assert_eq!(child1.x, 8); // width + spacing
+            assert_eq!(child2.x, 16); // Expected based on space between logic
+        }
+    }
+
+    #[test]
+    fn test_align_items_center() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(10)
+            .height(10)
+            .direction(Direction::Horizontal)
+            .align_items(AlignItems::Center)
+            .children(vec![
+                Div::new().width(3).height(2).into(),
+                Div::new().width(3).height(4).into(),
+                Div::new().width(3).height(6).into(),
+            ])
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(10, 10);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            let root_ref = root.borrow();
+            assert_eq!(root_ref.children.len(), 3);
+
+            // Check vertical centering
+            let child0 = root_ref.children[0].borrow();
+            let child1 = root_ref.children[1].borrow();
+            let child2 = root_ref.children[2].borrow();
+
+            // Child 0: height 2, container 10, centered at (10-2)/2 = 4
+            assert_eq!(child0.y, 4);
+            // Child 1: height 4, container 10, centered at (10-4)/2 = 3
+            assert_eq!(child1.y, 3);
+            // Child 2: height 6, container 10, centered at (10-6)/2 = 2
+            assert_eq!(child2.y, 2);
+        }
+    }
+
+    #[test]
+    fn test_align_items_end() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(10)
+            .height(10)
+            .direction(Direction::Horizontal)
+            .align_items(AlignItems::End)
+            .children(vec![
+                Div::new().width(3).height(2).into(),
+                Div::new().width(3).height(4).into(),
+                Div::new().width(3).height(6).into(),
+            ])
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(10, 10);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            let root_ref = root.borrow();
+            assert_eq!(root_ref.children.len(), 3);
+
+            // Check vertical end alignment
+            let child0 = root_ref.children[0].borrow();
+            let child1 = root_ref.children[1].borrow();
+            let child2 = root_ref.children[2].borrow();
+
+            // Child 0: height 2, container 10, at end: 10-2 = 8
+            assert_eq!(child0.y, 8);
+            // Child 1: height 4, container 10, at end: 10-4 = 6
+            assert_eq!(child1.y, 6);
+            // Child 2: height 6, container 10, at end: 10-6 = 4
+            assert_eq!(child2.y, 4);
+        }
+    }
+
+    #[test]
+    fn test_align_self_override() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(10)
+            .height(10)
+            .direction(Direction::Horizontal)
+            .align_items(AlignItems::Start) // Parent alignment
+            .children(vec![
+                Div::new().width(3).height(2).into(),
+                Div::new()
+                    .width(3)
+                    .height(4)
+                    .align_self(AlignSelf::Center)
+                    .into(), // Override
+                Div::new()
+                    .width(3)
+                    .height(6)
+                    .align_self(AlignSelf::End)
+                    .into(), // Override
+            ])
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(10, 10);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            let root_ref = root.borrow();
+            assert_eq!(root_ref.children.len(), 3);
+
+            let child0 = root_ref.children[0].borrow();
+            let child1 = root_ref.children[1].borrow();
+            let child2 = root_ref.children[2].borrow();
+
+            // Child 0: follows parent alignment (start), so y = 0
+            assert_eq!(child0.y, 0);
+            // Child 1: overrides with center, height 4, centered at (10-4)/2 = 3
+            assert_eq!(child1.y, 3);
+            // Child 2: overrides with end, height 6, at end: 10-6 = 4
+            assert_eq!(child2.y, 4);
+        }
+    }
+
+    #[test]
+    fn test_wrap_with_justify_content() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::style::WrapMode;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(25)
+            .height(10)
+            .direction(Direction::Horizontal)
+            .wrap(WrapMode::Wrap)
+            .justify_content(JustifyContent::Center)
+            .children(vec![
+                Div::new().width(8).height(2).into(),
+                Div::new().width(8).height(2).into(),
+                Div::new().width(8).height(2).into(),
+                // These should wrap to second row
+                Div::new().width(8).height(2).into(),
+                Div::new().width(8).height(2).into(),
+            ])
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(25, 10);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            let root_ref = root.borrow();
+            assert_eq!(root_ref.children.len(), 5);
+
+            // First row: 3 items, width = 24, available = 1, centered
+            let child0 = root_ref.children[0].borrow();
+            let child1 = root_ref.children[1].borrow();
+            let child2 = root_ref.children[2].borrow();
+
+            // First row should be centered (1 pixel available / 2 = 0)
+            assert_eq!(child0.x, 0);
+            assert_eq!(child0.y, 0);
+
+            // Second row: 2 items, width = 16, available = 9, centered at 4
+            let child3 = root_ref.children[3].borrow();
+            let child4 = root_ref.children[4].borrow();
+
+            assert_eq!(child3.x, 4); // Centered: 9/2 = 4
+            assert_eq!(child3.y, 2); // Second row
+            assert_eq!(child4.x, 12); // 4 + 8
+            assert_eq!(child4.y, 2);
+        }
+    }
+
+    #[test]
+    fn test_wrap_with_align_items() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::style::WrapMode;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(25)
+            .height(10)
+            .direction(Direction::Horizontal)
+            .wrap(WrapMode::Wrap)
+            .align_items(AlignItems::Center)
+            .gap(1)
+            .children(vec![
+                Div::new().width(8).height(2).into(),
+                Div::new().width(8).height(4).into(), // Taller item
+                Div::new().width(8).height(2).into(),
+                // These wrap to second row
+                Div::new().width(8).height(3).into(),
+                Div::new().width(8).height(1).into(), // Shorter item
+            ])
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(25, 10);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            let root_ref = root.borrow();
+
+            // With width=25 and gap=1, only 2 items fit per row (8 + 1 + 8 = 17 < 25, but 17 + 1 + 8 = 26 > 25)
+            // Row 1: items 0,1 (max height = 4)
+            // Row 2: items 2,3 (max height = 3)
+            // Row 3: item 4 (height = 1)
+
+            let child0 = root_ref.children[0].borrow();
+            let child1 = root_ref.children[1].borrow();
+            let child2 = root_ref.children[2].borrow();
+            let child3 = root_ref.children[3].borrow();
+            let child4 = root_ref.children[4].borrow();
+
+            // Row 1: items with heights 2 and 4, row height = 4
+            // Child 0: height 2, centered in row height 4: (4-2)/2 = 1
+            assert_eq!(child0.y, 1);
+            // Child 1: height 4, centered in row height 4: (4-4)/2 = 0
+            assert_eq!(child1.y, 0);
+
+            // Row 2: items with heights 2 and 3, row height = 3
+            // Y offset = row1_height(4) + gap(1) = 5
+            // Child 2: height 2, centered in row height 3: (3-2)/2 = 0 (rounds down)
+            assert_eq!(child2.y, 5);
+            // Child 3: height 3, centered in row height 3: (3-3)/2 = 0
+            assert_eq!(child3.y, 5);
+
+            // Row 3: item with height 1
+            // Y offset = row1_height(4) + gap(1) + row2_height(3) + gap(1) = 9
+            // Child 4: height 1, no centering needed (single item in row)
+            assert_eq!(child4.y, 9);
+        }
+    }
+
+    #[test]
+    fn test_wrap_with_space_between() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::style::WrapMode;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(30)
+            .height(10)
+            .direction(Direction::Horizontal)
+            .wrap(WrapMode::Wrap)
+            .justify_content(JustifyContent::SpaceBetween)
+            .children(vec![
+                Div::new().width(8).height(2).into(),
+                Div::new().width(8).height(2).into(),
+                Div::new().width(8).height(2).into(),
+                // Wrap to next row
+                Div::new().width(10).height(2).into(),
+                Div::new().width(10).height(2).into(),
+            ])
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(30, 10);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            let root_ref = root.borrow();
+
+            // First row: 3 items of width 8 each, total = 24, available = 6
+            // SpaceBetween: first at 0, last at end, middle distributed
+            let child0 = root_ref.children[0].borrow();
+            let child1 = root_ref.children[1].borrow();
+            let child2 = root_ref.children[2].borrow();
+
+            assert_eq!(child0.x, 0); // First item at start
+            assert_eq!(child2.x, 22); // Last item at end (30 - 8 = 22)
+
+            // Second row: 2 items of width 10 each, total = 20, available = 10
+            let child3 = root_ref.children[3].borrow();
+            let child4 = root_ref.children[4].borrow();
+
+            assert_eq!(child3.x, 0); // First item at start
+            assert_eq!(child4.x, 20); // Last item at end (30 - 10 = 20)
+        }
     }
 }

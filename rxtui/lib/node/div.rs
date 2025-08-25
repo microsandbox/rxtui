@@ -1,7 +1,7 @@
 use crate::key::{Key, KeyWithModifiers};
 use crate::style::{
-    Border, BorderEdges, BorderStyle, Color, Dimension, Direction, Overflow, Position, Spacing,
-    Style, WrapMode,
+    AlignItems, AlignSelf, Border, BorderEdges, BorderStyle, Color, Dimension, Direction,
+    JustifyContent, Overflow, Position, Spacing, Style, WrapMode,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -361,6 +361,27 @@ impl<T> Div<T> {
     /// Sets the z-index
     pub fn z_index(mut self, z: i32) -> Self {
         self.styles.base.get_or_insert(Style::default()).z_index = Some(z);
+        self
+    }
+
+    /// Sets how content is distributed along the main axis
+    pub fn justify_content(mut self, justify: JustifyContent) -> Self {
+        self.styles
+            .base
+            .get_or_insert(Style::default())
+            .justify_content = Some(justify);
+        self
+    }
+
+    /// Sets how items are aligned on the cross axis
+    pub fn align_items(mut self, align: AlignItems) -> Self {
+        self.styles.base.get_or_insert(Style::default()).align_items = Some(align);
+        self
+    }
+
+    /// Sets this element's alignment, overriding parent's align_items
+    pub fn align_self(mut self, align: AlignSelf) -> Self {
+        self.styles.base.get_or_insert(Style::default()).align_self = Some(align);
         self
     }
 

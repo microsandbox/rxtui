@@ -190,6 +190,78 @@ macro_rules! position_value {
     };
 }
 
+/// Converts justify content values to JustifyContent enum
+#[doc(hidden)]
+#[macro_export]
+macro_rules! justify_content_value {
+    (start) => {
+        $crate::style::JustifyContent::Start
+    };
+    (center) => {
+        $crate::style::JustifyContent::Center
+    };
+    (end) => {
+        $crate::style::JustifyContent::End
+    };
+    (space_between) => {
+        $crate::style::JustifyContent::SpaceBetween
+    };
+    (space_around) => {
+        $crate::style::JustifyContent::SpaceAround
+    };
+    (space_evenly) => {
+        $crate::style::JustifyContent::SpaceEvenly
+    };
+    ($justify:expr) => {
+        $justify
+    };
+}
+
+/// Converts align items values to AlignItems enum
+#[doc(hidden)]
+#[macro_export]
+macro_rules! align_items_value {
+    (start) => {
+        $crate::style::AlignItems::Start
+    };
+    (center) => {
+        $crate::style::AlignItems::Center
+    };
+    (end) => {
+        $crate::style::AlignItems::End
+    };
+    (stretch) => {
+        $crate::style::AlignItems::Stretch
+    };
+    ($align:expr) => {
+        $align
+    };
+}
+
+/// Converts align self values to AlignSelf enum
+#[doc(hidden)]
+#[macro_export]
+macro_rules! align_self_value {
+    (auto) => {
+        $crate::style::AlignSelf::Auto
+    };
+    (start) => {
+        $crate::style::AlignSelf::Start
+    };
+    (center) => {
+        $crate::style::AlignSelf::Center
+    };
+    (end) => {
+        $crate::style::AlignSelf::End
+    };
+    (stretch) => {
+        $crate::style::AlignSelf::Stretch
+    };
+    ($align:expr) => {
+        $align
+    };
+}
+
 /// Converts key values to Key enum
 /// Supports lowercase/snake_case names for ergonomics
 #[doc(hidden)]

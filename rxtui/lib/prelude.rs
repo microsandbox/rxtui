@@ -34,10 +34,7 @@ pub use crate::node::{Div, Node, RichText, Text};
 pub use crate::components::TextInput;
 
 // Style types
-pub use crate::style::{
-    Border, BorderEdges, BorderStyle, Color, Dimension, Direction, Overflow, Position, Spacing,
-    Style, TextAlign, TextStyle, TextWrap, WrapMode,
-};
+pub use crate::style::*;
 
 // Key handling
 pub use crate::key::Key;
