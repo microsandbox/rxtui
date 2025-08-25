@@ -230,9 +230,6 @@ macro_rules! align_items_value {
     (end) => {
         $crate::style::AlignItems::End
     };
-    (stretch) => {
-        $crate::style::AlignItems::Stretch
-    };
     ($align:expr) => {
         $align
     };
@@ -253,9 +250,6 @@ macro_rules! align_self_value {
     };
     (end) => {
         $crate::style::AlignSelf::End
-    };
-    (stretch) => {
-        $crate::style::AlignSelf::Stretch
     };
     ($align:expr) => {
         $align

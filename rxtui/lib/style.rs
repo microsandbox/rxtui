@@ -321,9 +321,6 @@ pub enum AlignItems {
 
     /// Align items at the end of the cross axis
     End,
-
-    /// Stretch items to fill the cross axis
-    Stretch,
 }
 
 /// Allows an item to override its parent's AlignItems setting.
@@ -344,9 +341,6 @@ pub enum AlignSelf {
 
     /// Align at the end of the cross axis
     End,
-
-    /// Stretch to fill the cross axis
-    Stretch,
 }
 
 bitflags! {

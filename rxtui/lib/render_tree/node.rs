@@ -1197,7 +1197,6 @@ impl RenderNode {
                             AlignSelf::Start => AlignItems::Start,
                             AlignSelf::Center => AlignItems::Center,
                             AlignSelf::End => AlignItems::End,
-                            AlignSelf::Stretch => AlignItems::Stretch,
                         };
 
                         let y_position = match effective_align {
@@ -1209,18 +1208,6 @@ impl RenderNode {
                             AlignItems::End => {
                                 let child_space = row.height.saturating_sub(child_ref.height);
                                 current_y + child_space
-                            }
-                            AlignItems::Stretch => {
-                                // Stretch to row height if no fixed height
-                                if child_ref.style.as_ref().and_then(|s| s.height).is_none()
-                                    || matches!(
-                                        child_ref.style.as_ref().and_then(|s| s.height),
-                                        Some(Dimension::Auto)
-                                    )
-                                {
-                                    child_ref.height = row.height;
-                                }
-                                current_y
                             }
                         };
 
@@ -1370,7 +1357,6 @@ impl RenderNode {
                             AlignSelf::Start => AlignItems::Start,
                             AlignSelf::Center => AlignItems::Center,
                             AlignSelf::End => AlignItems::End,
-                            AlignSelf::Stretch => AlignItems::Stretch,
                         };
 
                         let x_position = match effective_align {
@@ -1382,18 +1368,6 @@ impl RenderNode {
                             AlignItems::End => {
                                 let child_space = col.width.saturating_sub(child_ref.width);
                                 current_x + child_space
-                            }
-                            AlignItems::Stretch => {
-                                // Stretch to column width if no fixed width
-                                if child_ref.style.as_ref().and_then(|s| s.width).is_none()
-                                    || matches!(
-                                        child_ref.style.as_ref().and_then(|s| s.width),
-                                        Some(Dimension::Auto)
-                                    )
-                                {
-                                    child_ref.width = col.width;
-                                }
-                                current_x
                             }
                         };
 
@@ -1858,7 +1832,6 @@ impl RenderNode {
                         AlignSelf::Start => AlignItems::Start,
                         AlignSelf::Center => AlignItems::Center,
                         AlignSelf::End => AlignItems::End,
-                        AlignSelf::Stretch => AlignItems::Stretch,
                     };
 
                     let x_position = match effective_align {
@@ -1870,18 +1843,6 @@ impl RenderNode {
                         AlignItems::End => {
                             let child_space = content_width.saturating_sub(child_ref.width);
                             self.x + padding.left + border_offset + child_space
-                        }
-                        AlignItems::Stretch => {
-                            // Stretch the child to fill available width (unless it has fixed width)
-                            if child_ref.style.as_ref().and_then(|s| s.width).is_none()
-                                || matches!(
-                                    child_ref.style.as_ref().and_then(|s| s.width),
-                                    Some(Dimension::Auto)
-                                )
-                            {
-                                child_ref.width = content_width;
-                            }
-                            self.x + padding.left + border_offset
                         }
                     };
 
@@ -1975,7 +1936,6 @@ impl RenderNode {
                         AlignSelf::Start => AlignItems::Start,
                         AlignSelf::Center => AlignItems::Center,
                         AlignSelf::End => AlignItems::End,
-                        AlignSelf::Stretch => AlignItems::Stretch,
                     };
 
                     let y_position = match effective_align {
@@ -1987,18 +1947,6 @@ impl RenderNode {
                         AlignItems::End => {
                             let child_space = content_height.saturating_sub(child_ref.height);
                             self.y + padding.top + border_offset + child_space
-                        }
-                        AlignItems::Stretch => {
-                            // Stretch the child to fill available height (unless it has fixed height)
-                            if child_ref.style.as_ref().and_then(|s| s.height).is_none()
-                                || matches!(
-                                    child_ref.style.as_ref().and_then(|s| s.height),
-                                    Some(Dimension::Auto)
-                                )
-                            {
-                                child_ref.height = content_height;
-                            }
-                            self.y + padding.top + border_offset
                         }
                     };
 
