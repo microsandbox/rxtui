@@ -61,7 +61,7 @@ node! {
 
     // Text
     text("content", ...),
-    richtext(...) [
+    richtext(align: center) [    // supports align property
         text("span1"),
         text("span2", color: red)
     ],
@@ -165,6 +165,9 @@ text(
 
     // Wrapping
     wrap: word,         // none, character, word, word_break
+
+    // Alignment
+    align: center,      // left, center, right
 )
 ```
 

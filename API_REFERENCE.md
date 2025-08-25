@@ -207,6 +207,9 @@ impl Text {
 
     // Wrapping
     pub fn wrap(self, mode: TextWrap) -> Self;
+
+    // Alignment
+    pub fn align(self, align: TextAlign) -> Self;
 }
 ```
 
@@ -231,6 +234,9 @@ impl RichText {
 
     // Wrapping
     pub fn wrap(self, mode: TextWrap) -> Self;
+
+    // Alignment
+    pub fn align(self, align: TextAlign) -> Self;
 
     // Cursor support
     pub fn with_cursor(content: &str, position: usize, style: TextStyle) -> Self;
@@ -326,6 +332,16 @@ impl KeyWithModifiers {
 }
 ```
 
+### TextAlign
+
+```rust
+pub enum TextAlign {
+    Left,    // Align text to the left edge (default)
+    Center,  // Center text horizontally
+    Right,   // Align text to the right edge
+}
+```
+
 ### TextStyle
 
 ```rust
@@ -337,6 +353,7 @@ pub struct TextStyle {
     pub underline: Option<bool>,
     pub strikethrough: Option<bool>,
     pub wrap: Option<TextWrap>,
+    pub align: Option<TextAlign>,
 }
 
 impl TextStyle {

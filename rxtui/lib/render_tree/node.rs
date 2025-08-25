@@ -852,7 +852,14 @@ impl RenderNode {
                 }
                 None => {
                     // If no width specified, use intrinsic size (content-based)
-                    self.width = intrinsic_width.min(parent_width);
+                    // UNLESS this is a text node with alignment that was already given width by parent
+                    let has_alignment = self.text_style.as_ref().and_then(|ts| ts.align).is_some();
+
+                    if has_alignment && self.width >= intrinsic_width {
+                        // Text with alignment already has width from parent, don't override
+                    } else {
+                        self.width = intrinsic_width.min(parent_width);
+                    }
                 }
             }
 
@@ -882,7 +889,14 @@ impl RenderNode {
             }
         } else {
             // No style - use intrinsic (content) size
-            self.width = intrinsic_width.min(parent_width);
+            // UNLESS this is a text node with alignment that was already given width by parent
+            let has_alignment = self.text_style.as_ref().and_then(|ts| ts.align).is_some();
+
+            if has_alignment && self.width >= intrinsic_width {
+                // Text with alignment already has width from parent, don't override
+            } else {
+                self.width = intrinsic_width.min(parent_width);
+            }
             self.height = intrinsic_height.min(parent_height);
         }
 
@@ -1368,32 +1382,71 @@ impl RenderNode {
                                 // Auto in perpendicular direction means fill available space
                                 match &child_ref.node_type {
                                     RenderNodeType::Text(text) => {
-                                        child_ref.width = display_width(text) as u16;
+                                        // If text has alignment, fill parent width for alignment to work
+                                        if child_ref
+                                            .text_style
+                                            .as_ref()
+                                            .and_then(|ts| ts.align)
+                                            .is_some()
+                                        {
+                                            child_ref.width = content_width;
+                                        } else {
+                                            child_ref.width = display_width(text) as u16;
+                                        }
                                     }
                                     RenderNodeType::RichText(spans) => {
-                                        child_ref.width = spans
-                                            .iter()
-                                            .map(|span| display_width(&span.content) as u16)
-                                            .sum();
+                                        // If RichText has alignment, fill parent width for alignment to work
+                                        let has_alignment =
+                                            child_ref.text_style.as_ref().and_then(|ts| ts.align);
+                                        if has_alignment.is_some() {
+                                            child_ref.width = content_width;
+                                        } else {
+                                            child_ref.width = spans
+                                                .iter()
+                                                .map(|span| display_width(&span.content) as u16)
+                                                .sum();
+                                        }
                                     }
                                     RenderNodeType::TextWrapped(lines) => {
-                                        child_ref.width = lines
-                                            .iter()
-                                            .map(|l| display_width(l))
-                                            .max()
-                                            .unwrap_or(0)
-                                            as u16;
+                                        // If wrapped text has alignment, fill parent width for alignment to work
+                                        if child_ref
+                                            .text_style
+                                            .as_ref()
+                                            .and_then(|ts| ts.align)
+                                            .is_some()
+                                        {
+                                            child_ref.width = content_width;
+                                        } else {
+                                            child_ref.width = lines
+                                                .iter()
+                                                .map(|l| display_width(l))
+                                                .max()
+                                                .unwrap_or(0)
+                                                as u16;
+                                        }
                                     }
                                     RenderNodeType::RichTextWrapped(lines) => {
-                                        child_ref.width = lines
-                                            .iter()
-                                            .map(|line| {
-                                                line.iter()
-                                                    .map(|span| display_width(&span.content) as u16)
-                                                    .sum::<u16>()
-                                            })
-                                            .max()
-                                            .unwrap_or(0);
+                                        // If wrapped RichText has alignment, fill parent width for alignment to work
+                                        if child_ref
+                                            .text_style
+                                            .as_ref()
+                                            .and_then(|ts| ts.align)
+                                            .is_some()
+                                        {
+                                            child_ref.width = content_width;
+                                        } else {
+                                            child_ref.width = lines
+                                                .iter()
+                                                .map(|line| {
+                                                    line.iter()
+                                                        .map(|span| {
+                                                            display_width(&span.content) as u16
+                                                        })
+                                                        .sum::<u16>()
+                                                })
+                                                .max()
+                                                .unwrap_or(0);
+                                        }
                                     }
                                     _ => {
                                         child_ref.width = content_width;
@@ -1402,14 +1455,31 @@ impl RenderNode {
                             }
                             None => {
                                 // None means use content-based sizing
-                                let (intrinsic_w, _) = child_ref.calculate_intrinsic_size();
-                                child_ref.width = intrinsic_w.min(content_width);
+                                // UNLESS this is a text node with alignment, then use full available width
+                                let has_alignment =
+                                    child_ref.text_style.as_ref().and_then(|ts| ts.align);
+
+                                if has_alignment.is_some() {
+                                    // Text with alignment needs full width to align within
+                                    child_ref.width = content_width;
+                                } else {
+                                    let (intrinsic_w, _) = child_ref.calculate_intrinsic_size();
+                                    child_ref.width = intrinsic_w.min(content_width);
+                                }
                             }
                         }
                     } else {
                         // No style - use intrinsic width
-                        let (intrinsic_w, _) = child_ref.calculate_intrinsic_size();
-                        child_ref.width = intrinsic_w.min(content_width);
+                        // UNLESS this is a text node with alignment, then use full available width
+                        let has_alignment = child_ref.text_style.as_ref().and_then(|ts| ts.align);
+
+                        if has_alignment.is_some() {
+                            // Text with alignment needs full width to align within
+                            child_ref.width = content_width;
+                        } else {
+                            let (intrinsic_w, _) = child_ref.calculate_intrinsic_size();
+                            child_ref.width = intrinsic_w.min(content_width);
+                        }
                     }
 
                     child_ref.set_position(

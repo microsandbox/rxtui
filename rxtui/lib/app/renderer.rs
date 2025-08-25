@@ -468,18 +468,51 @@ fn render_node_with_offset(
         RenderNodeType::Text(text) => {
             // Only render text that's within the clip rect
             let text_width = display_width(text) as u16;
-            let text_bounds = crate::bounds::Rect::new(rendered_x, rendered_y, text_width, 1);
+
+            // For alignment, we need to use the parent's content width if available
+            // Text nodes typically have width equal to their content, so we check parent
+            let available_width = if node.width > text_width {
+                // If the node has extra width (e.g., from parent layout), use it
+                node.width
+            } else {
+                // Otherwise just use the text width (no alignment possible)
+                text_width
+            };
+
+            // Calculate alignment offset
+            let align_offset = if let Some(text_style) = &node.text_style
+                && let Some(align) = text_style.align
+                && available_width > text_width
+            {
+                match align {
+                    crate::style::TextAlign::Left => 0,
+                    crate::style::TextAlign::Center => {
+                        // Center text within the available width
+                        available_width.saturating_sub(text_width) / 2
+                    }
+                    crate::style::TextAlign::Right => {
+                        // Right align text within the available width
+                        available_width.saturating_sub(text_width)
+                    }
+                }
+            } else {
+                0 // Default to left alignment or no space for alignment
+            };
+
+            // Apply alignment offset to the rendered position
+            let aligned_x = rendered_x + align_offset;
+            let text_bounds = crate::bounds::Rect::new(aligned_x, rendered_y, text_width, 1);
 
             if text_bounds.intersects(clip_rect) {
                 // Calculate visible portion of text in display columns
-                let visible_start_col = if rendered_x < clip_rect.x {
-                    (clip_rect.x - rendered_x) as usize
+                let visible_start_col = if aligned_x < clip_rect.x {
+                    (clip_rect.x - aligned_x) as usize
                 } else {
                     0
                 };
 
-                let visible_end_col = if rendered_x + text_width > clip_rect.right() {
-                    (clip_rect.right() - rendered_x) as usize
+                let visible_end_col = if aligned_x + text_width > clip_rect.right() {
+                    (clip_rect.right() - aligned_x) as usize
                 } else {
                     display_width(text)
                 };
@@ -488,7 +521,7 @@ fn render_node_with_offset(
                     // Use substring_by_columns to extract the visible portion safely
                     let visible_text =
                         substring_by_columns(text, visible_start_col, visible_end_col);
-                    let render_x = rendered_x.max(clip_rect.x);
+                    let render_x = aligned_x.max(clip_rect.x);
 
                     // Use the full text style if available, otherwise fall back to individual color fields
                     if let Some(text_style) = &node.text_style {
@@ -526,18 +559,40 @@ fn render_node_with_offset(
                 // Check if this line is within the clip rect
                 if line_y >= clip_rect.y && line_y < clip_rect.bottom() {
                     let line_width = display_width(line) as u16;
-                    let text_bounds = crate::bounds::Rect::new(rendered_x, line_y, line_width, 1);
+
+                    // Calculate alignment offset for this line
+                    let align_offset = if let Some(text_style) = &node.text_style
+                        && let Some(align) = text_style.align
+                    {
+                        match align {
+                            crate::style::TextAlign::Left => 0,
+                            crate::style::TextAlign::Center => {
+                                // Center each line independently within the node's width
+                                node.width.saturating_sub(line_width) / 2
+                            }
+                            crate::style::TextAlign::Right => {
+                                // Right align each line independently within the node's width
+                                node.width.saturating_sub(line_width)
+                            }
+                        }
+                    } else {
+                        0 // Default to left alignment
+                    };
+
+                    // Apply alignment offset to the rendered position
+                    let aligned_x = rendered_x + align_offset;
+                    let text_bounds = crate::bounds::Rect::new(aligned_x, line_y, line_width, 1);
 
                     if text_bounds.intersects(clip_rect) {
                         // Calculate visible portion of this line in display columns
-                        let visible_start_col = if rendered_x < clip_rect.x {
-                            (clip_rect.x - rendered_x) as usize
+                        let visible_start_col = if aligned_x < clip_rect.x {
+                            (clip_rect.x - aligned_x) as usize
                         } else {
                             0
                         };
 
-                        let visible_end_col = if rendered_x + line_width > clip_rect.right() {
-                            (clip_rect.right() - rendered_x) as usize
+                        let visible_end_col = if aligned_x + line_width > clip_rect.right() {
+                            (clip_rect.right() - aligned_x) as usize
                         } else {
                             display_width(line)
                         };
@@ -546,7 +601,7 @@ fn render_node_with_offset(
                             // Use substring_by_columns to extract the visible portion safely
                             let visible_text =
                                 substring_by_columns(line, visible_start_col, visible_end_col);
-                            let render_x = rendered_x.max(clip_rect.x);
+                            let render_x = aligned_x.max(clip_rect.x);
 
                             // Use the full text style if available
                             if let Some(text_style) = &node.text_style {
@@ -580,12 +635,37 @@ fn render_node_with_offset(
         }
 
         RenderNodeType::RichText(spans) => {
-            // Only render styled text that's within the clip rect
-            let text_width = node.width;
-            let text_bounds = crate::bounds::Rect::new(rendered_x, rendered_y, text_width, 1);
+            // Calculate total width of all spans for alignment
+            let total_width: u16 = spans
+                .iter()
+                .map(|span| display_width(&span.content) as u16)
+                .sum();
+
+            // Calculate alignment offset
+            let align_offset = if let Some(text_style) = &node.text_style
+                && let Some(align) = text_style.align
+            {
+                match align {
+                    crate::style::TextAlign::Left => 0,
+                    crate::style::TextAlign::Center => {
+                        // Center the entire rich text line within the node's width
+                        node.width.saturating_sub(total_width) / 2
+                    }
+                    crate::style::TextAlign::Right => {
+                        // Right align the entire rich text line within the node's width
+                        node.width.saturating_sub(total_width)
+                    }
+                }
+            } else {
+                0 // Default to left alignment
+            };
+
+            // Apply alignment offset to the starting position
+            let aligned_x = rendered_x + align_offset;
+            let text_bounds = crate::bounds::Rect::new(aligned_x, rendered_y, total_width, 1);
 
             if text_bounds.intersects(clip_rect) {
-                let mut current_x = rendered_x;
+                let mut current_x = aligned_x;
 
                 // Render each span with its own style
                 for span in spans {
@@ -656,10 +736,32 @@ fn render_node_with_offset(
                         .iter()
                         .map(|span| display_width(&span.content) as u16)
                         .sum();
-                    let text_bounds = crate::bounds::Rect::new(rendered_x, line_y, line_width, 1);
+
+                    // Calculate alignment offset for this line
+                    let align_offset = if let Some(text_style) = &node.text_style
+                        && let Some(align) = text_style.align
+                    {
+                        match align {
+                            crate::style::TextAlign::Left => 0,
+                            crate::style::TextAlign::Center => {
+                                // Center each line independently within the node's width
+                                node.width.saturating_sub(line_width) / 2
+                            }
+                            crate::style::TextAlign::Right => {
+                                // Right align each line independently within the node's width
+                                node.width.saturating_sub(line_width)
+                            }
+                        }
+                    } else {
+                        0 // Default to left alignment
+                    };
+
+                    // Apply alignment offset to the starting position
+                    let aligned_x = rendered_x + align_offset;
+                    let text_bounds = crate::bounds::Rect::new(aligned_x, line_y, line_width, 1);
 
                     if text_bounds.intersects(clip_rect) {
-                        let mut current_x = rendered_x;
+                        let mut current_x = aligned_x;
 
                         // Render each span in this line with its own style
                         for span in line_spans {

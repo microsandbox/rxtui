@@ -154,6 +154,24 @@ macro_rules! text_wrap_value {
     };
 }
 
+/// Converts text align values to TextAlign enum
+#[doc(hidden)]
+#[macro_export]
+macro_rules! text_align_value {
+    (left) => {
+        $crate::style::TextAlign::Left
+    };
+    (center) => {
+        $crate::style::TextAlign::Center
+    };
+    (right) => {
+        $crate::style::TextAlign::Right
+    };
+    ($align:expr) => {
+        $align
+    };
+}
+
 /// Converts position values to Position enum
 #[doc(hidden)]
 #[macro_export]

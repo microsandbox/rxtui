@@ -55,11 +55,11 @@ impl Demo {
                 state.current_page = page;
             }
             DemoMessage::NextPage => {
-                state.current_page = (state.current_page % 15) + 1;
+                state.current_page = (state.current_page % 16) + 1;
             }
             DemoMessage::PrevPage => {
                 state.current_page = if state.current_page == 1 {
-                    15
+                    16
                 } else {
                     state.current_page - 1
                 };
@@ -90,6 +90,7 @@ impl Demo {
             13 => node! { node(page13_rich_text::Page13) },
             14 => node! { node(page14_text_input::Page14TextInputDemo) },
             15 => node! { node(page15_scrollable::Page15ScrollableDemo) },
+            16 => node! { node(page16_text_alignment::Page16TextAlignmentDemo) },
             _ => node! { node(page1_overflow::Page1OverflowDemo) },
         };
 
@@ -114,6 +115,7 @@ impl Demo {
                 @char('['): ctx.handler(DemoMessage::SetPage(13)),
                 @char(']'): ctx.handler(DemoMessage::SetPage(14)),
                 @char('\\'): ctx.handler(DemoMessage::SetPage(15)),
+                @char(';'): ctx.handler(DemoMessage::SetPage(16)),
                 @key(right): ctx.handler(DemoMessage::NextPage),
                 @key(left): ctx.handler(DemoMessage::PrevPage)
             ) [
@@ -171,7 +173,8 @@ impl TabBar {
                 node(Tab::new(12, "[=] Focus", self.current_page)),
                 node(Tab::new(13, "[[] RichText", self.current_page)),
                 node(Tab::new(14, "[]] TextInput", self.current_page)),
-                node(Tab::new(15, "[\\] Scrollable", self.current_page))
+                node(Tab::new(15, "[\\] Scrollable", self.current_page)),
+                node(Tab::new(16, "[;] Alignment", self.current_page))
             ]
         }
     }
