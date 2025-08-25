@@ -396,7 +396,11 @@ impl VDom {
 
                 node_ref.mark_dirty();
             }
-            Patch::UpdateRichText { node, new_spans } => {
+            Patch::UpdateRichText {
+                node,
+                new_spans,
+                new_style,
+            } => {
                 let mut node_ref = node.borrow_mut();
                 // Update dimensions when spans change
                 node_ref.width = new_spans
@@ -405,6 +409,8 @@ impl VDom {
                     .sum();
                 node_ref.height = 1;
                 node_ref.node_type = RenderNodeType::RichText(new_spans);
+                // Update the text style (which includes alignment)
+                node_ref.text_style = new_style;
                 node_ref.mark_dirty();
             }
             Patch::UpdateProps { node, div } => {

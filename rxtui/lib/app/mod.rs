@@ -413,4 +413,69 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_text_center_alignment() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(10)
+            .height(1)
+            .child(Text::new("Hi").align(TextAlign::Center).into())
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(20, 10);
+
+        let mut buffer = ScreenBuffer::new(20, 10);
+        let clip_rect = crate::Rect::new(0, 0, 20, 10);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            render_node_to_buffer(&root.borrow(), &mut buffer, &clip_rect, None);
+        }
+
+        // "Hi" is 2 chars wide, container is 10 wide
+        // Should be centered at position 4 (10 - 2) / 2 = 4
+
+        let cell_h = buffer.get_cell(4, 0).unwrap();
+        let cell_i = buffer.get_cell(5, 0).unwrap();
+        assert_eq!(cell_h.char, 'H', "Expected 'H' at position 4");
+        assert_eq!(cell_i.char, 'i', "Expected 'i' at position 5");
+    }
+
+    #[test]
+    fn test_text_right_alignment() {
+        use crate::VNode;
+        use crate::prelude::*;
+        use crate::vdom::VDom;
+
+        let node: VNode = Div::new()
+            .width(10)
+            .height(1)
+            .child(Text::new("End").align(TextAlign::Right).into())
+            .into();
+
+        let mut vdom = VDom::new();
+        vdom.render(node);
+        vdom.layout(20, 10);
+
+        let mut buffer = ScreenBuffer::new(20, 10);
+        let clip_rect = crate::Rect::new(0, 0, 20, 10);
+
+        if let Some(root) = &vdom.get_render_tree().root {
+            render_node_to_buffer(&root.borrow(), &mut buffer, &clip_rect, None);
+        }
+
+        // "End" is 3 chars wide, container is 10 wide
+        // Should be right-aligned at position 7 (10 - 3 = 7)
+        let cell_e = buffer.get_cell(7, 0).unwrap();
+        let cell_n = buffer.get_cell(8, 0).unwrap();
+        let cell_d = buffer.get_cell(9, 0).unwrap();
+        assert_eq!(cell_e.char, 'E');
+        assert_eq!(cell_n.char, 'n');
+        assert_eq!(cell_d.char, 'd');
+    }
 }

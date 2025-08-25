@@ -4,6 +4,7 @@ pub mod page12_focus;
 pub mod page13_rich_text;
 pub mod page14_text_input;
 pub mod page15_scrollable;
+pub mod page16_text_alignment;
 pub mod page1_overflow;
 pub mod page2_direction;
 pub mod page3_percentages;

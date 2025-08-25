@@ -208,6 +208,22 @@ pub enum Overflow {
     Auto,
 }
 
+/// Text alignment modes for controlling horizontal text positioning.
+///
+/// Determines how text content is aligned within its container.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum TextAlign {
+    /// Align text to the left edge (default)
+    #[default]
+    Left,
+
+    /// Center text horizontally
+    Center,
+
+    /// Align text to the right edge
+    Right,
+}
+
 /// Text wrapping modes for controlling how text breaks across lines.
 ///
 /// Determines how text content wraps when it exceeds its container width.
@@ -445,6 +461,9 @@ pub struct TextStyle {
 
     /// Text wrapping mode
     pub wrap: Option<TextWrap>,
+
+    /// Text alignment within container
+    pub align: Option<TextAlign>,
 }
 
 /// Builder for creating styles with a fluent API.
@@ -841,6 +860,9 @@ impl TextStyle {
                 if overlay.wrap.is_some() {
                     base.wrap = overlay.wrap;
                 }
+                if overlay.align.is_some() {
+                    base.align = overlay.align;
+                }
                 Some(base)
             }
         }
@@ -858,6 +880,7 @@ impl TextStyle {
                 underline: None,
                 strikethrough: None,
                 wrap: None,
+                align: None,
             },
         }
     }
@@ -901,6 +924,12 @@ impl TextStyle {
     /// Sets the text wrapping mode.
     pub fn wrap(mut self, wrap: TextWrap) -> Self {
         self.wrap = Some(wrap);
+        self
+    }
+
+    /// Sets the text alignment.
+    pub fn align(mut self, align: TextAlign) -> Self {
+        self.align = Some(align);
         self
     }
 }
@@ -955,6 +984,12 @@ impl TextStyleBuilder {
     /// Sets the text wrapping mode.
     pub fn wrap(mut self, wrap: TextWrap) -> Self {
         self.style.wrap = Some(wrap);
+        self
+    }
+
+    /// Sets the text alignment.
+    pub fn align(mut self, align: TextAlign) -> Self {
+        self.style.align = Some(align);
         self
     }
 
@@ -1174,6 +1209,7 @@ impl Default for TextStyle {
             underline: None,
             strikethrough: None,
             wrap: None,
+            align: None,
         }
     }
 }

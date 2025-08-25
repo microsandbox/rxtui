@@ -314,6 +314,7 @@ impl TextInput {
             underline: None,
             strikethrough: None,
             wrap: None,
+            align: None,
         }
     }
 
@@ -327,6 +328,7 @@ impl TextInput {
             underline: None,
             strikethrough: None,
             wrap: None,
+            align: None,
         }
     }
 
@@ -340,6 +342,7 @@ impl TextInput {
             underline: None,
             strikethrough: None,
             wrap: None,
+            align: None,
         }
     }
 
@@ -353,6 +356,7 @@ impl TextInput {
             underline: None,
             strikethrough: None,
             wrap: None,
+            align: None,
         }
     }
 

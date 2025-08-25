@@ -36,7 +36,7 @@ pub use crate::components::TextInput;
 // Style types
 pub use crate::style::{
     Border, BorderEdges, BorderStyle, Color, Dimension, Direction, Overflow, Position, Spacing,
-    Style, TextStyle, TextWrap, WrapMode,
+    Style, TextAlign, TextStyle, TextWrap, WrapMode,
 };
 
 // Key handling

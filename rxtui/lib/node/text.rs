@@ -1,4 +1,4 @@
-use crate::style::TextStyle;
+use crate::style::{TextAlign, TextStyle};
 use crate::{Color, TextWrap};
 
 //--------------------------------------------------------------------------------------------------
@@ -64,6 +64,12 @@ impl Text {
     /// Sets the text wrapping mode
     pub fn wrap(mut self, wrap: TextWrap) -> Self {
         self.style.get_or_insert(TextStyle::default()).wrap = Some(wrap);
+        self
+    }
+
+    /// Sets the text alignment
+    pub fn align(mut self, align: TextAlign) -> Self {
+        self.style.get_or_insert(TextStyle::default()).align = Some(align);
         self
     }
 }

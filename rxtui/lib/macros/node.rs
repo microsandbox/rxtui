@@ -128,7 +128,12 @@
 ///         text("Important!", color: yellow, bg: red, bold, underline),
 ///
 ///         // Text wrapping
-///         text("Long text that wraps", wrap: word)
+///         text("Long text that wraps", wrap: word),
+///
+///         // Text alignment
+///         text("Centered text", align: center),
+///         text("Right aligned", align: right),
+///         text("Left aligned", align: left)
 ///     ]
 /// }
 /// ```
@@ -220,6 +225,17 @@
 ///             text(" while preserving all the "),
 ///             colored("inline styles", blue),
 ///             text(" across line boundaries.")
+///         ],
+///
+///         // With alignment
+///         richtext(align: center) [
+///             text("This "),
+///             bold("rich text"),
+///             text(" is centered")
+///         ],
+///         richtext(align: right) [
+///             text("Right aligned "),
+///             colored("rich text", cyan)
 ///         ]
 ///     ]
 /// }
@@ -1389,6 +1405,15 @@ macro_rules! tui_apply_text_props {
     ($text:expr, wrap: $mode:tt) => {{
         $text.wrap($crate::text_wrap_value!($mode))
     }};
+
+    // Alignment
+    ($text:expr, align: $align:tt, $($rest:tt)*) => {{
+        let t = $text.align($crate::text_align_value!($align));
+        $crate::tui_apply_text_props!(t, $($rest)*)
+    }};
+    ($text:expr, align: $align:tt) => {{
+        $text.align($crate::text_align_value!($align))
+    }};
 }
 
 /// Build RichText elements (internal)
@@ -1558,6 +1583,12 @@ macro_rules! tui_apply_richtext_props {
         $crate::tui_apply_richtext_props!(rt, $($rest)*)
     }};
 
+    // Alignment
+    ($rt:expr, align: $align:tt, $($rest:tt)*) => {{
+        let rt = $rt.align($crate::text_align_value!($align));
+        $crate::tui_apply_richtext_props!(rt, $($rest)*)
+    }};
+
     // Single property cases (no trailing comma)
     ($rt:expr, wrap: $wrap:tt) => {{
         $rt.wrap($crate::text_wrap_value!($wrap))
@@ -1573,6 +1604,10 @@ macro_rules! tui_apply_richtext_props {
 
     ($rt:expr, bold_all) => {{
         $rt.bold_all()
+    }};
+
+    ($rt:expr, align: $align:tt) => {{
+        $rt.align($crate::text_align_value!($align))
     }};
 
     ($rt:expr, italic_all) => {{

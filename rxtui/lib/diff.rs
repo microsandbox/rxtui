@@ -58,10 +58,11 @@ pub enum Patch {
         new_style: Option<crate::style::TextStyle>,
     },
 
-    /// Update the spans of a styled text node.
+    /// Update the spans and style of a styled text node.
     UpdateRichText {
         node: Rc<RefCell<RenderNode>>,
         new_spans: Vec<crate::node::TextSpan>,
+        new_style: Option<crate::style::TextStyle>,
     },
 
     /// Update the properties (style, dimensions) of a div.
@@ -163,11 +164,13 @@ fn diff_node(context: &mut DiffContext, old: &Rc<RefCell<RenderNode>>, new: &VNo
             }
         }
         (RenderNodeType::RichText(old_spans), VNode::RichText(new_rich)) => {
-            // Check if spans have changed
-            if old_spans != &new_rich.spans {
+            // Check if spans or style have changed
+            let style_changed = old_ref.text_style != new_rich.style;
+            if old_spans != &new_rich.spans || style_changed {
                 context.patches.push(Patch::UpdateRichText {
                     node: old.clone(),
                     new_spans: new_rich.spans.clone(),
+                    new_style: new_rich.style.clone(),
                 });
             }
         }
