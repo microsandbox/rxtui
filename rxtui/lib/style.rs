@@ -278,6 +278,71 @@ pub enum Position {
     Fixed,
 }
 
+/// Controls how content is distributed along the main axis.
+///
+/// The main axis is determined by the Direction:
+/// - Horizontal: main axis is horizontal (left to right)
+/// - Vertical: main axis is vertical (top to bottom)
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum JustifyContent {
+    /// Pack items at the start of the main axis (default)
+    #[default]
+    Start,
+
+    /// Center items along the main axis
+    Center,
+
+    /// Pack items at the end of the main axis
+    End,
+
+    /// Distribute items evenly, first at start, last at end
+    SpaceBetween,
+
+    /// Distribute items evenly with equal space around each item
+    SpaceAround,
+
+    /// Distribute items evenly with equal space between and around items
+    SpaceEvenly,
+}
+
+/// Controls how items are aligned on the cross axis.
+///
+/// The cross axis is perpendicular to the main axis:
+/// - Horizontal layout: cross axis is vertical
+/// - Vertical layout: cross axis is horizontal
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum AlignItems {
+    /// Align items at the start of the cross axis (default)
+    #[default]
+    Start,
+
+    /// Center items along the cross axis
+    Center,
+
+    /// Align items at the end of the cross axis
+    End,
+}
+
+/// Allows an item to override its parent's AlignItems setting.
+///
+/// Individual items can specify their own alignment on the cross axis,
+/// overriding the parent container's AlignItems value.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum AlignSelf {
+    /// Use the parent's AlignItems value (default)
+    #[default]
+    Auto,
+
+    /// Align at the start of the cross axis
+    Start,
+
+    /// Center along the cross axis
+    Center,
+
+    /// Align at the end of the cross axis
+    End,
+}
+
 bitflags! {
     /// Flags to control which border edges and corners are rendered.
     ///
@@ -433,6 +498,15 @@ pub struct Style {
 
     /// Whether to show scrollbar for scrollable content
     pub show_scrollbar: Option<bool>,
+
+    /// Controls how content is distributed along the main axis
+    pub justify_content: Option<JustifyContent>,
+
+    /// Controls how items are aligned on the cross axis
+    pub align_items: Option<AlignItems>,
+
+    /// Allows this element to override parent's align_items
+    pub align_self: Option<AlignSelf>,
 }
 
 /// Style properties specific to text elements.
@@ -677,6 +751,15 @@ impl Style {
                 }
                 if overlay.show_scrollbar.is_some() {
                     base.show_scrollbar = overlay.show_scrollbar;
+                }
+                if overlay.justify_content.is_some() {
+                    base.justify_content = overlay.justify_content;
+                }
+                if overlay.align_items.is_some() {
+                    base.align_items = overlay.align_items;
+                }
+                if overlay.align_self.is_some() {
+                    base.align_self = overlay.align_self;
                 }
                 Some(base)
             }
@@ -1194,6 +1277,9 @@ impl Default for Style {
             x: None,
             y: None,
             show_scrollbar: None,
+            justify_content: None,
+            align_items: None,
+            align_self: None,
         }
     }
 }

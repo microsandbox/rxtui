@@ -1134,6 +1134,47 @@ macro_rules! tui_apply_props {
         $container.position($crate::position_value!($pos))
     }};
 
+    // Justify Content
+    ($container:expr, justify: $justify:tt, $($rest:tt)*) => {{
+        let c = $container.justify_content($crate::justify_content_value!($justify));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, justify: $justify:tt) => {{
+        $container.justify_content($crate::justify_content_value!($justify))
+    }};
+    ($container:expr, justify_content: $justify:tt, $($rest:tt)*) => {{
+        let c = $container.justify_content($crate::justify_content_value!($justify));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, justify_content: $justify:tt) => {{
+        $container.justify_content($crate::justify_content_value!($justify))
+    }};
+
+    // Align Items
+    ($container:expr, align: $align:tt, $($rest:tt)*) => {{
+        let c = $container.align_items($crate::align_items_value!($align));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, align: $align:tt) => {{
+        $container.align_items($crate::align_items_value!($align))
+    }};
+    ($container:expr, align_items: $align:tt, $($rest:tt)*) => {{
+        let c = $container.align_items($crate::align_items_value!($align));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, align_items: $align:tt) => {{
+        $container.align_items($crate::align_items_value!($align))
+    }};
+
+    // Align Self
+    ($container:expr, align_self: $align:tt, $($rest:tt)*) => {{
+        let c = $container.align_self($crate::align_self_value!($align));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, align_self: $align:tt) => {{
+        $container.align_self($crate::align_self_value!($align))
+    }};
+
     // Absolute positioning shorthand
     ($container:expr, absolute, $($rest:tt)*) => {{
         let c = $container.position($crate::Position::Absolute);

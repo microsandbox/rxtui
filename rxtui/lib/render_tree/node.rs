@@ -2,7 +2,8 @@ use crate::bounds::Rect;
 use crate::key::Key;
 use crate::node::{DivStyles, EventCallbacks, TextSpan};
 use crate::style::{
-    Color, Dimension, Direction, Overflow, Position, Spacing, Style, TextStyle, TextWrap,
+    AlignItems, AlignSelf, Color, Dimension, Direction, JustifyContent, Overflow, Position,
+    Spacing, Style, TextStyle, TextWrap,
 };
 use crate::utils::{display_width, wrap_text};
 use std::cell::RefCell;
@@ -112,6 +113,48 @@ pub enum RenderNodeType {
 
     /// Wrapped styled text (multiple lines, each with styled segments)
     RichTextWrapped(Vec<Vec<TextSpan>>),
+}
+
+//--------------------------------------------------------------------------------------------------
+// Helper Functions
+//--------------------------------------------------------------------------------------------------
+
+/// Calculate offset and item spacing based on JustifyContent mode
+fn calculate_justify_offsets(
+    justify: JustifyContent,
+    available_space: u16,
+    item_count: usize,
+    gap: u16,
+) -> (u16, u16) {
+    match justify {
+        JustifyContent::Start => (0, gap),
+        JustifyContent::End => (available_space, gap),
+        JustifyContent::Center => (available_space / 2, gap),
+        JustifyContent::SpaceBetween => {
+            if item_count > 1 {
+                let spacing = available_space / (item_count as u16 - 1);
+                (0, spacing)
+            } else {
+                (0, gap)
+            }
+        }
+        JustifyContent::SpaceAround => {
+            if item_count > 0 {
+                let spacing = available_space / item_count as u16;
+                (spacing / 2, spacing)
+            } else {
+                (0, gap)
+            }
+        }
+        JustifyContent::SpaceEvenly => {
+            if item_count > 0 {
+                let spacing = available_space / (item_count as u16 + 1);
+                (spacing, spacing)
+            } else {
+                (0, gap)
+            }
+        }
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1007,94 +1050,338 @@ impl RenderNode {
         let start_x = self.x + padding.left + border_offset;
         let start_y = self.y + padding.top + border_offset;
 
+        // Get alignment settings
+        let justify_content = self
+            .style
+            .as_ref()
+            .and_then(|s| s.justify_content)
+            .unwrap_or(JustifyContent::Start);
+
+        let align_items = self
+            .style
+            .as_ref()
+            .and_then(|s| s.align_items)
+            .unwrap_or(AlignItems::Start);
+
         match direction {
             Direction::Horizontal => {
                 // Horizontal wrapping: items flow left to right, wrap to next row
-                let mut current_x = start_x;
-                let mut current_y = start_y;
-                let mut row_height = 0u16;
+
+                // First pass: Calculate dimensions and group into rows
+                struct RowInfo {
+                    start_index: usize,
+                    end_index: usize,
+                    width: u16, // Total width of items WITHOUT gaps
+                    height: u16,
+                }
+
+                let mut rows = Vec::new();
+                let mut current_row_width = 0u16; // Width without gaps
+                let mut current_row_width_with_gaps = 0u16; // Width including gaps for fitting check
+                let mut current_row_height = 0u16;
                 let mut row_start_index = 0;
 
-                for (i, child) in self.children.iter().enumerate() {
+                // Resolve all child dimensions first
+                for child in &self.children {
                     let mut child_ref = child.borrow_mut();
-
-                    // Resolve child dimensions
                     child_ref.layout_with_parent(content_width, content_height);
+                }
 
-                    // Check if child fits in current row
-                    // current_x already includes gap from previous item, so just add child width
-                    if current_x > start_x && current_x + child_ref.width > start_x + content_width
-                    {
-                        // Wrap to next row
-                        current_x = start_x;
-                        current_y += row_height + gap;
+                // Group children into rows
+                for (i, child) in self.children.iter().enumerate() {
+                    let child_ref = child.borrow();
+                    let child_width = child_ref.width;
+                    let child_height = child_ref.height;
 
-                        // Update heights for previous row
-                        for j in row_start_index..i {
-                            let prev_child = self.children[j].borrow_mut();
-                            if prev_child.height < row_height {
-                                // Optionally stretch items to row height
-                                // For now, keep original height
+                    // Check if child fits in current row (considering gaps)
+                    let width_if_added = if current_row_width > 0 {
+                        current_row_width_with_gaps + gap + child_width
+                    } else {
+                        child_width
+                    };
+
+                    if current_row_width > 0 && width_if_added > content_width {
+                        // Save current row and start new one
+                        rows.push(RowInfo {
+                            start_index: row_start_index,
+                            end_index: i,
+                            width: current_row_width, // Store width WITHOUT gaps
+                            height: current_row_height,
+                        });
+
+                        row_start_index = i;
+                        current_row_width = child_width;
+                        current_row_width_with_gaps = child_width;
+                        current_row_height = child_height;
+                    } else {
+                        // Add to current row
+                        current_row_width += child_width;
+                        current_row_width_with_gaps = width_if_added;
+                        current_row_height = current_row_height.max(child_height);
+                    }
+                }
+
+                // Don't forget the last row
+                if row_start_index < self.children.len() {
+                    rows.push(RowInfo {
+                        start_index: row_start_index,
+                        end_index: self.children.len(),
+                        width: current_row_width, // Store width WITHOUT gaps
+                        height: current_row_height,
+                    });
+                }
+
+                // Second pass: Position children with alignment
+                let mut current_y = start_y;
+
+                for row in &rows {
+                    // Calculate horizontal positioning for this row based on justify_content
+                    let row_item_count = row.end_index - row.start_index;
+                    // Calculate total width including gaps
+                    let total_gaps_width = if row_item_count > 1 {
+                        gap * (row_item_count as u16 - 1)
+                    } else {
+                        0
+                    };
+                    let row_width_with_gaps = row.width + total_gaps_width;
+                    let available_width = content_width.saturating_sub(row_width_with_gaps);
+
+                    // Calculate starting X and spacing for this row
+                    let (row_start_x, item_spacing) = match justify_content {
+                        JustifyContent::Start => (start_x, gap),
+                        JustifyContent::End => (start_x + available_width, gap),
+                        JustifyContent::Center => (start_x + available_width / 2, gap),
+                        JustifyContent::SpaceBetween => {
+                            if row_item_count > 1 {
+                                let total_gaps = row_item_count - 1;
+                                let spacing =
+                                    (available_width + gap * total_gaps as u16) / total_gaps as u16;
+                                (start_x, spacing)
+                            } else {
+                                (start_x, gap)
                             }
                         }
+                        JustifyContent::SpaceAround => {
+                            if row_item_count > 0 {
+                                let spacing = available_width / row_item_count as u16;
+                                (start_x + spacing / 2, gap + spacing)
+                            } else {
+                                (start_x, gap)
+                            }
+                        }
+                        JustifyContent::SpaceEvenly => {
+                            if row_item_count > 0 {
+                                let spacing = available_width / (row_item_count as u16 + 1);
+                                (start_x + spacing, gap + spacing)
+                            } else {
+                                (start_x, gap)
+                            }
+                        }
+                    };
 
-                        row_height = child_ref.height;
-                        row_start_index = i;
+                    // Position each child in this row
+                    let mut current_x = row_start_x;
+
+                    for i in row.start_index..row.end_index {
+                        let mut child_ref = self.children[i].borrow_mut();
+
+                        // Apply AlignItems for vertical positioning within the row
+                        let child_align = child_ref
+                            .style
+                            .as_ref()
+                            .and_then(|s| s.align_self)
+                            .unwrap_or(AlignSelf::Auto);
+
+                        let effective_align = match child_align {
+                            AlignSelf::Auto => align_items,
+                            AlignSelf::Start => AlignItems::Start,
+                            AlignSelf::Center => AlignItems::Center,
+                            AlignSelf::End => AlignItems::End,
+                        };
+
+                        let y_position = match effective_align {
+                            AlignItems::Start => current_y,
+                            AlignItems::Center => {
+                                let child_space = row.height.saturating_sub(child_ref.height);
+                                current_y + (child_space / 2)
+                            }
+                            AlignItems::End => {
+                                let child_space = row.height.saturating_sub(child_ref.height);
+                                current_y + child_space
+                            }
+                        };
+
+                        child_ref.set_position(current_x, y_position);
+                        current_x += child_ref.width;
+
+                        // Add spacing after each item except the last in row
+                        if i < row.end_index - 1 {
+                            current_x += item_spacing;
+                        }
                     }
 
-                    // Position the child
-                    child_ref.set_position(current_x, current_y);
-
-                    // Update row height
-                    row_height = row_height.max(child_ref.height);
-
-                    // Move x position for next child
-                    current_x += child_ref.width + gap;
+                    // Move to next row
+                    current_y += row.height + gap;
                 }
             }
             Direction::Vertical => {
                 // Vertical wrapping: items flow top to bottom, wrap to next column
-                let mut current_x = start_x;
-                let mut current_y = start_y;
-                let mut col_width = 0u16;
+
+                // First pass: Calculate dimensions and group into columns
+                struct ColInfo {
+                    start_index: usize,
+                    end_index: usize,
+                    width: u16,
+                    height: u16, // Total height of items WITHOUT gaps
+                }
+
+                let mut cols = Vec::new();
+                let mut current_col_width = 0u16;
+                let mut current_col_height = 0u16; // Height without gaps
+                let mut current_col_height_with_gaps = 0u16; // Height including gaps for fitting check
                 let mut col_start_index = 0;
 
-                for (i, child) in self.children.iter().enumerate() {
+                // Resolve all child dimensions first
+                for child in &self.children {
                     let mut child_ref = child.borrow_mut();
-
-                    // Resolve child dimensions
                     child_ref.layout_with_parent(content_width, content_height);
+                }
 
-                    // Check if child fits in current column
-                    // current_y already includes gap from previous item, so just add child height
-                    if current_y > start_y
-                        && current_y + child_ref.height > start_y + content_height
-                    {
-                        // Wrap to next column
-                        current_y = start_y;
-                        current_x += col_width + gap;
+                // Group children into columns
+                for (i, child) in self.children.iter().enumerate() {
+                    let child_ref = child.borrow();
+                    let child_width = child_ref.width;
+                    let child_height = child_ref.height;
 
-                        // Update widths for previous column
-                        for j in col_start_index..i {
-                            let prev_child = self.children[j].borrow_mut();
-                            if prev_child.width < col_width {
-                                // Optionally stretch items to column width
-                                // For now, keep original width
+                    // Check if child fits in current column (considering gaps)
+                    let height_if_added = if current_col_height > 0 {
+                        current_col_height_with_gaps + gap + child_height
+                    } else {
+                        child_height
+                    };
+
+                    if current_col_height > 0 && height_if_added > content_height {
+                        // Save current column and start new one
+                        cols.push(ColInfo {
+                            start_index: col_start_index,
+                            end_index: i,
+                            width: current_col_width,
+                            height: current_col_height, // Store height WITHOUT gaps
+                        });
+
+                        col_start_index = i;
+                        current_col_width = child_width;
+                        current_col_height = child_height;
+                        current_col_height_with_gaps = child_height;
+                    } else {
+                        // Add to current column
+                        current_col_height += child_height;
+                        current_col_height_with_gaps = height_if_added;
+                        current_col_width = current_col_width.max(child_width);
+                    }
+                }
+
+                // Don't forget the last column
+                if col_start_index < self.children.len() {
+                    cols.push(ColInfo {
+                        start_index: col_start_index,
+                        end_index: self.children.len(),
+                        width: current_col_width,
+                        height: current_col_height, // Store height WITHOUT gaps
+                    });
+                }
+
+                // Second pass: Position children with alignment
+                let mut current_x = start_x;
+
+                for col in &cols {
+                    // Calculate vertical positioning for this column based on justify_content
+                    let col_item_count = col.end_index - col.start_index;
+                    // Calculate total height including gaps
+                    let total_gaps_height = if col_item_count > 1 {
+                        gap * (col_item_count as u16 - 1)
+                    } else {
+                        0
+                    };
+                    let col_height_with_gaps = col.height + total_gaps_height;
+                    let available_height = content_height.saturating_sub(col_height_with_gaps);
+
+                    // Calculate starting Y and spacing for this column
+                    let (col_start_y, item_spacing) = match justify_content {
+                        JustifyContent::Start => (start_y, gap),
+                        JustifyContent::End => (start_y + available_height, gap),
+                        JustifyContent::Center => (start_y + available_height / 2, gap),
+                        JustifyContent::SpaceBetween => {
+                            if col_item_count > 1 {
+                                let total_gaps = col_item_count - 1;
+                                let spacing = (available_height + gap * total_gaps as u16)
+                                    / total_gaps as u16;
+                                (start_y, spacing)
+                            } else {
+                                (start_y, gap)
                             }
                         }
+                        JustifyContent::SpaceAround => {
+                            if col_item_count > 0 {
+                                let spacing = available_height / col_item_count as u16;
+                                (start_y + spacing / 2, gap + spacing)
+                            } else {
+                                (start_y, gap)
+                            }
+                        }
+                        JustifyContent::SpaceEvenly => {
+                            if col_item_count > 0 {
+                                let spacing = available_height / (col_item_count as u16 + 1);
+                                (start_y + spacing, gap + spacing)
+                            } else {
+                                (start_y, gap)
+                            }
+                        }
+                    };
 
-                        col_width = child_ref.width;
-                        col_start_index = i;
+                    // Position each child in this column
+                    let mut current_y = col_start_y;
+
+                    for i in col.start_index..col.end_index {
+                        let mut child_ref = self.children[i].borrow_mut();
+
+                        // Apply AlignItems for horizontal positioning within the column
+                        let child_align = child_ref
+                            .style
+                            .as_ref()
+                            .and_then(|s| s.align_self)
+                            .unwrap_or(AlignSelf::Auto);
+
+                        let effective_align = match child_align {
+                            AlignSelf::Auto => align_items,
+                            AlignSelf::Start => AlignItems::Start,
+                            AlignSelf::Center => AlignItems::Center,
+                            AlignSelf::End => AlignItems::End,
+                        };
+
+                        let x_position = match effective_align {
+                            AlignItems::Start => current_x,
+                            AlignItems::Center => {
+                                let child_space = col.width.saturating_sub(child_ref.width);
+                                current_x + (child_space / 2)
+                            }
+                            AlignItems::End => {
+                                let child_space = col.width.saturating_sub(child_ref.width);
+                                current_x + child_space
+                            }
+                        };
+
+                        child_ref.set_position(x_position, current_y);
+                        current_y += child_ref.height;
+
+                        // Add spacing after each item except the last in column
+                        if i < col.end_index - 1 {
+                            current_y += item_spacing;
+                        }
                     }
 
-                    // Position the child
-                    child_ref.set_position(current_x, current_y);
-
-                    // Update column width
-                    col_width = col_width.max(child_ref.width);
-
-                    // Move y position for next child
-                    current_y += child_ref.height + gap;
+                    // Move to next column
+                    current_x += col.width + gap;
                 }
             }
         }
@@ -1350,10 +1637,54 @@ impl RenderNode {
             }
         }
 
-        // Third pass: Position and layout all children
-        let mut offset = 0u16;
-        let gap = self.style.as_ref().and_then(|s| s.gap).unwrap_or(0);
+        // Calculate total space used by children and gaps
+        let relative_children_count = self.children.len() - absolute_children.len();
+        let total_gaps = if relative_children_count > 1 {
+            gap * (relative_children_count as u16 - 1)
+        } else {
+            0
+        };
 
+        // Calculate total size of relative children in main axis
+        let total_children_size: u16 = child_sizes
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| !absolute_children.contains(i))
+            .map(|(_, size)| *size)
+            .sum();
+
+        let total_used_space = total_children_size + total_gaps;
+
+        // Get justify content setting
+        let justify_content = self
+            .style
+            .as_ref()
+            .and_then(|s| s.justify_content)
+            .unwrap_or(JustifyContent::Start);
+
+        // Calculate starting offset and spacing based on JustifyContent
+        let (mut offset, item_spacing) = match direction {
+            Direction::Vertical => {
+                let available_space = content_height.saturating_sub(total_used_space);
+                calculate_justify_offsets(
+                    justify_content,
+                    available_space,
+                    relative_children_count,
+                    gap,
+                )
+            }
+            Direction::Horizontal => {
+                let available_space = content_width.saturating_sub(total_used_space);
+                calculate_justify_offsets(
+                    justify_content,
+                    available_space,
+                    relative_children_count,
+                    gap,
+                )
+            }
+        };
+
+        // Third pass: Position and layout all children
         for (index, child) in self.children.iter().enumerate() {
             let mut child_ref = child.borrow_mut();
 
@@ -1482,14 +1813,66 @@ impl RenderNode {
                         }
                     }
 
-                    child_ref.set_position(
-                        self.x + padding.left + border_offset,
-                        self.y + padding.top + border_offset + offset,
-                    );
+                    // Apply AlignItems for cross-axis alignment (horizontal axis in vertical layout)
+                    let align_items = self
+                        .style
+                        .as_ref()
+                        .and_then(|s| s.align_items)
+                        .unwrap_or(AlignItems::Start);
+
+                    // Check if child overrides with align_self
+                    let child_align = child_ref
+                        .style
+                        .as_ref()
+                        .and_then(|s| s.align_self)
+                        .unwrap_or(AlignSelf::Auto);
+
+                    let effective_align = match child_align {
+                        AlignSelf::Auto => align_items,
+                        AlignSelf::Start => AlignItems::Start,
+                        AlignSelf::Center => AlignItems::Center,
+                        AlignSelf::End => AlignItems::End,
+                    };
+
+                    let x_position = match effective_align {
+                        AlignItems::Start => self.x + padding.left + border_offset,
+                        AlignItems::Center => {
+                            let child_space = content_width.saturating_sub(child_ref.width);
+                            self.x + padding.left + border_offset + (child_space / 2)
+                        }
+                        AlignItems::End => {
+                            let child_space = content_width.saturating_sub(child_ref.width);
+                            self.x + padding.left + border_offset + child_space
+                        }
+                    };
+
+                    child_ref
+                        .set_position(x_position, self.y + padding.top + border_offset + offset);
                     offset += child_sizes[index];
-                    // Add gap after each child except the last
-                    if index < self.children.len() - 1 {
-                        offset += gap;
+                    // Add spacing after each child based on justify mode
+                    // For SpaceBetween, add spacing after all children except the last
+                    // For SpaceAround and SpaceEvenly, add spacing after all children
+                    // For Start, Center, End, use regular gap spacing
+                    let is_last_relative_child = {
+                        // Find if this is the last non-absolute child
+                        let mut last_idx = index;
+                        for i in (index + 1)..self.children.len() {
+                            if !absolute_children.contains(&i) {
+                                last_idx = i;
+                            }
+                        }
+                        last_idx == index
+                    };
+
+                    // Add spacing based on justify mode
+                    if !is_last_relative_child {
+                        offset += item_spacing;
+                    } else if matches!(
+                        justify_content,
+                        JustifyContent::SpaceAround | JustifyContent::SpaceEvenly
+                    ) {
+                        // These modes need spacing after the last item too
+                        offset += item_spacing;
                     }
                 }
                 Direction::Horizontal => {
@@ -1534,14 +1917,66 @@ impl RenderNode {
                         child_ref.height = intrinsic_h.min(content_height);
                     }
 
-                    child_ref.set_position(
-                        self.x + padding.left + border_offset + offset,
-                        self.y + padding.top + border_offset,
-                    );
+                    // Apply AlignItems for cross-axis alignment (vertical axis in horizontal layout)
+                    let align_items = self
+                        .style
+                        .as_ref()
+                        .and_then(|s| s.align_items)
+                        .unwrap_or(AlignItems::Start);
+
+                    // Check if child overrides with align_self
+                    let child_align = child_ref
+                        .style
+                        .as_ref()
+                        .and_then(|s| s.align_self)
+                        .unwrap_or(AlignSelf::Auto);
+
+                    let effective_align = match child_align {
+                        AlignSelf::Auto => align_items,
+                        AlignSelf::Start => AlignItems::Start,
+                        AlignSelf::Center => AlignItems::Center,
+                        AlignSelf::End => AlignItems::End,
+                    };
+
+                    let y_position = match effective_align {
+                        AlignItems::Start => self.y + padding.top + border_offset,
+                        AlignItems::Center => {
+                            let child_space = content_height.saturating_sub(child_ref.height);
+                            self.y + padding.top + border_offset + (child_space / 2)
+                        }
+                        AlignItems::End => {
+                            let child_space = content_height.saturating_sub(child_ref.height);
+                            self.y + padding.top + border_offset + child_space
+                        }
+                    };
+
+                    child_ref
+                        .set_position(self.x + padding.left + border_offset + offset, y_position);
                     offset += child_sizes[index];
-                    // Add gap after each child except the last
-                    if index < self.children.len() - 1 {
-                        offset += gap;
+                    // Add spacing after each child based on justify mode
+                    // For SpaceBetween, add spacing after all children except the last
+                    // For SpaceAround and SpaceEvenly, add spacing after all children
+                    // For Start, Center, End, use regular gap spacing
+                    let is_last_relative_child = {
+                        // Find if this is the last non-absolute child
+                        let mut last_idx = index;
+                        for i in (index + 1)..self.children.len() {
+                            if !absolute_children.contains(&i) {
+                                last_idx = i;
+                            }
+                        }
+                        last_idx == index
+                    };
+
+                    // Add spacing based on justify mode
+                    if !is_last_relative_child {
+                        offset += item_spacing;
+                    } else if matches!(
+                        justify_content,
+                        JustifyContent::SpaceAround | JustifyContent::SpaceEvenly
+                    ) {
+                        // These modes need spacing after the last item too
+                        offset += item_spacing;
                     }
                 }
             }
