@@ -73,7 +73,6 @@ impl DivAlignmentDemo {
 
         node! {
             div(
-                bg: "#1a1a1a",
                 pad: 2,
                 w_pct: 1.0,
                 h_pct: 1.0,
