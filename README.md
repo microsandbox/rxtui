@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="450" alt="RxTUI Logo" src="https://github.com/user-attachments/assets/4d8cc0f6-9f17-43bf-8368-9ad616c1f91f" />
+  <img width="450" alt="rxtui logo" src="https://github.com/user-attachments/assets/c2038f9f-5633-4617-bbfb-569a5a89697c" />
 
   <br />
   <br />
@@ -40,9 +40,11 @@ We bring the retained-mode, component-based architecture that revolutionized web
 
 <br />
 
-<img width="100%" alt="form demo" src="https://github.com/user-attachments/assets/86819d2c-a037-4569-9b3a-d12279b38351" />
 
-<div align='center'>• • •</div>
+<div align='center'>
+  <img width="80%" alt="align demo" src="https://github.com/user-attachments/assets/c3a05029-a4fd-4ed4-a8a6-a41c76114956" />
+</div>
+
 
 # <sub>QUICK START</sub>
 
@@ -97,7 +99,7 @@ fn main() -> std::io::Result<()> {
 cargo run
 ```
 
-<img width="100%" alt="counter demo" src="https://github.com/user-attachments/assets/3018cde1-f24a-4689-b2df-4f6249180282" />
+<img width="100%" alt="counter demo" src="https://github.com/user-attachments/assets/904cce59-48c4-4813-9a68-d1c0b8176c4b" />
 
 <div align='center'>• • •</div>
 
