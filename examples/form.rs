@@ -47,7 +47,7 @@ impl Form {
     #[view]
     fn view(&self, ctx: &Context, state: FormState) -> Node {
         node! {
-            div(pad: 2, w_pct: 1.0, @key(esc): ctx.handler(Msg::Exit), @char('c'): ctx.handler(Msg::Clear), @char('C'): ctx.handler(Msg::Clear)) [
+            div(align: center, pad: 2, w_pct: 1.0, @key(esc): ctx.handler(Msg::Exit), @char('c'): ctx.handler(Msg::Clear), @char('C'): ctx.handler(Msg::Clear)) [
                 text("tab to navigate | enter to submit | esc to exit", color: bright_black),
                 spacer(1),
 
@@ -117,7 +117,7 @@ impl Form {
                 // Display submission status
                 (if state.submitted {
                     node! {
-                        div(border: green, pad: 2, bg: "#001e00", w: 40) [
+                        div(border: green, pad: 2, bg: "#001e00", w: 40, align: center) [
                             text("✓ Form submitted successfully!", color: green, bold),
                             spacer(1),
                             text("All fields have been validated and processed.", color: white, wrap: word),

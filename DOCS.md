@@ -727,6 +727,65 @@ node! {
 
 Note: Text nodes with alignment automatically expand to fill their parent's width to enable proper alignment calculation.
 
+#### Div Alignment (Flexbox-style)
+
+Divs support CSS Flexbox-style alignment for their children along both the main and cross axes:
+
+```rust
+node! {
+    // Justify content (main axis)
+    div(dir: h, justify: center, w: 50) [
+        div(w: 10, h: 3, bg: red) [],
+        div(w: 10, h: 3, bg: green) [],
+        div(w: 10, h: 3, bg: blue) []
+    ],
+
+    // Align items (cross axis)
+    div(dir: h, align: end, w: 50, h: 10) [
+        div(w: 10, h: 3, bg: red) [],
+        div(w: 10, h: 5, bg: green) [],
+        div(w: 10, h: 7, bg: blue) []
+    ],
+
+    // Combined justify and align
+    div(dir: v, justify: space_between, align: center, w: 40, h: 20) [
+        text("Item 1"),
+        text("Item 2"),
+        text("Item 3")
+    ],
+
+    // With align_self override
+    div(dir: h, align: start, w: 50, h: 10) [
+        div(w: 10, h: 3, bg: red) [],
+        div(w: 10, h: 3, bg: green, align_self: center) [],
+        div(w: 10, h: 3, bg: blue, align_self: end) []
+    ]
+}
+```
+
+**JustifyContent** (distributes items along main axis):
+- `start` - Pack items at the start (default)
+- `center` - Center items
+- `end` - Pack items at the end
+- `space_between` - Distribute evenly, first at start, last at end
+- `space_around` - Equal space around each item
+- `space_evenly` - Equal space between and around items
+
+**AlignItems** (aligns items on cross axis):
+- `start` - Align at the start (default)
+- `center` - Center items
+- `end` - Align at the end
+
+**AlignSelf** (per-child cross axis override):
+- `auto` - Use parent's align_items (default)
+- `start` - Align at the start
+- `center` - Center
+- `end` - Align at the end
+
+The main axis is determined by the direction:
+- `dir: h` (horizontal) - main axis is horizontal, cross axis is vertical
+- `dir: v` (vertical) - main axis is vertical, cross axis is horizontal
+
 #### Borders
 
 ```rust

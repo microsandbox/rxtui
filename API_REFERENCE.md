@@ -137,6 +137,11 @@ impl Div {
     pub fn gap(self, gap: u16) -> Self;
     pub fn wrap(self, mode: WrapMode) -> Self;
 
+    // Alignment
+    pub fn justify_content(self, justify: JustifyContent) -> Self;
+    pub fn align_items(self, align: AlignItems) -> Self;
+    pub fn align_self(self, align: AlignSelf) -> Self;
+
     // Sizing
     pub fn width(self, w: u16) -> Self;
     pub fn width_percent(self, pct: f32) -> Self;
@@ -284,6 +289,9 @@ pub struct Style {
     pub bottom: Option<i16>,
     pub left: Option<i16>,
     pub z_index: Option<i32>,
+    pub justify_content: Option<JustifyContent>,
+    pub align_items: Option<AlignItems>,
+    pub align_self: Option<AlignSelf>,
 }
 
 impl Style {
@@ -339,6 +347,40 @@ pub enum TextAlign {
     Left,    // Align text to the left edge (default)
     Center,  // Center text horizontally
     Right,   // Align text to the right edge
+}
+```
+
+### JustifyContent
+
+```rust
+pub enum JustifyContent {
+    Start,         // Pack items at the start of the main axis (default)
+    Center,        // Center items along the main axis
+    End,           // Pack items at the end of the main axis
+    SpaceBetween,  // Distribute items evenly, first at start, last at end
+    SpaceAround,   // Distribute items evenly with equal space around each item
+    SpaceEvenly,   // Distribute items evenly with equal space between and around items
+}
+```
+
+### AlignItems
+
+```rust
+pub enum AlignItems {
+    Start,   // Align items at the start of the cross axis (default)
+    Center,  // Center items along the cross axis
+    End,     // Align items at the end of the cross axis
+}
+```
+
+### AlignSelf
+
+```rust
+pub enum AlignSelf {
+    Auto,    // Use the parent's AlignItems value (default)
+    Start,   // Align at the start of the cross axis
+    Center,  // Center along the cross axis
+    End,     // Align at the end of the cross axis
 }
 ```
 
@@ -779,6 +821,9 @@ node! {
 | `h_auto` | - | flag |
 | `w_content` | - | flag |
 | `h_content` | - | flag |
+| `justify` | `justify_content` | JustifyContent |
+| `align` | `align_items` | AlignItems |
+| `align_self` | - | AlignSelf |
 
 ### Color Values
 
@@ -837,6 +882,40 @@ direction_value!(horizontal)
 direction_value!(vertical)
 direction_value!(h)  // Short for horizontal
 direction_value!(v)  // Short for vertical
+```
+
+### justify_value!
+
+Internal macro for parsing justify content values:
+
+```rust
+justify_value!(start)
+justify_value!(center)
+justify_value!(end)
+justify_value!(space_between)
+justify_value!(space_around)
+justify_value!(space_evenly)
+```
+
+### align_items_value!
+
+Internal macro for parsing align items values:
+
+```rust
+align_items_value!(start)
+align_items_value!(center)
+align_items_value!(end)
+```
+
+### align_self_value!
+
+Internal macro for parsing align self values:
+
+```rust
+align_self_value!(auto)
+align_self_value!(start)
+align_self_value!(center)
+align_self_value!(end)
 ```
 
 ## Type Aliases
