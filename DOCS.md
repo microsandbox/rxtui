@@ -251,7 +251,11 @@ node! {
         text(format!("Count: {}", count)),
 
         // Text with wrapping
-        text("Long text...", wrap: word)
+        text("Long text...", wrap: word),
+
+        // Text with alignment
+        text("Centered", align: center),
+        text("Right aligned", align: right)
     ]
 }
 ```
@@ -273,6 +277,12 @@ node! {
             text("Line 1 "),
             text("Important", color: yellow, bold),
             text(" continues...")
+        ],
+
+        // With alignment
+        richtext(align: center) [
+            text("Centered "),
+            text("rich text", bold)
         ]
     ]
 }
@@ -685,6 +695,37 @@ Available named colors:
 
 - Basic: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`
 - Bright: `bright_black`, `bright_red`, `bright_green`, `bright_yellow`, `bright_blue`, `bright_magenta`, `bright_cyan`, `bright_white`
+
+#### Text Alignment
+
+Text and RichText nodes support horizontal alignment within their containers:
+
+```rust
+node! {
+    div(w: 50) [
+        // Basic text alignment
+        text("Left aligned", align: left),
+        text("Centered text", align: center),
+        text("Right aligned", align: right),
+
+        // RichText alignment
+        richtext(align: center) [
+            text("This "),
+            text("rich text", bold),
+            text(" is centered")
+        ],
+
+        // Alignment with wrapping
+        text(
+            "Long text that wraps to multiple lines. Each line will be aligned.",
+            wrap: word,
+            align: right
+        )
+    ]
+}
+```
+
+Note: Text nodes with alignment automatically expand to fill their parent's width to enable proper alignment calculation.
 
 #### Borders
 
