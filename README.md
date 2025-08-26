@@ -1,6 +1,11 @@
 <div align="center">
-  <img width="500" alt="rxtui logo" src="https://github.com/user-attachments/assets/3e3235bc-3792-44eb-88d5-e847631c0086" />
-
+  <a href="./#gh-dark-mode-only" target="_blank">
+    <img width="500" alt="rxtui-dark" src="https://github.com/user-attachments/assets/3e3235bc-3792-44eb-88d5-e847631c0086" />
+  </a>
+  <a href="./#gh-light-mode-only" target="_blank">
+    <img width="500" alt="rxtui-light" src="https://github.com/user-attachments/assets/3d1e00f4-39ac-4053-b45b-c4bab7de1361" />
+  </a>
+  
   <br />
 
 <b>———&nbsp;&nbsp;&nbsp;reactive terminal UI framework for rust&nbsp;&nbsp;&nbsp;———</b>
