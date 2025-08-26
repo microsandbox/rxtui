@@ -1,7 +1,6 @@
 <div align="center">
-  <img width="500" alt="rxtui logo" src="https://github.com/user-attachments/assets/ddd9e32e-e654-4acb-97e7-43b65a420eb0" />
+  <img width="500" alt="rxtui logo" src="https://github.com/user-attachments/assets/3e3235bc-3792-44eb-88d5-e847631c0086" />
 
-  <br />
   <br />
 
 <b>———&nbsp;&nbsp;&nbsp;reactive terminal UI framework for rust&nbsp;&nbsp;&nbsp;———</b>
@@ -42,8 +41,10 @@ We bring the retained-mode, component-based architecture that revolutionized web
 <br />
 
 <div align='center'>
-  <img width="100%" alt="align demo" src="https://github.com/user-attachments/assets/c3a05029-a4fd-4ed4-a8a6-a41c76114956" />
+  <img width="100%" alt="align demo" src="https://github.com/user-attachments/assets/bff6886f-7d38-4e90-a512-04d79a3e6246" />
 </div>
+
+<br />
 
 # <sub>QUICK START</sub>
 
@@ -106,7 +107,7 @@ fn main() -> std::io::Result<()> {
 cargo run
 ```
 
-<img width="100%" alt="counter demo" src="https://github.com/user-attachments/assets/904cce59-48c4-4813-9a68-d1c0b8176c4b" />
+<img width="100%" alt="counter demo" src="https://github.com/user-attachments/assets/c841f1e6-8bf9-4b5a-bed5-97bc31cc3537" />
 
 <div align='center'>• • •</div>
 
