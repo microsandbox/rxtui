@@ -24,10 +24,29 @@ impl Spinner {
         let frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧"];
         let frame = frames[state];
 
+        let purple = Color::hex("#9370DB"); // Medium purple
+        let light_purple = Color::hex("#B19CD9"); // Light purple
+
         node! {
-            div(bg: black, pad: 2, @key(esc): ctx.handler(Msg::Exit)) [
-                text(format!("Spinner: {frame}"), color: white, bold),
-                text("press esc to exit", color: bright_black)
+            div(
+                w_pct: 1.0,
+                h_pct: 1.0,
+                align: center,
+                justify: center,
+                @key(esc): ctx.handler(Msg::Exit)
+            ) [
+                div(
+                    pad: 3,
+                    gap: 2,
+                    border_style: rounded,
+                    border_color: purple,
+                ) [
+                    div(dir: horizontal, gap: 2, align: center) [
+                        text(frame, color: purple, bold),
+                        text("Loading...", color: light_purple, bold)
+                    ],
+                    text("press esc to exit", color: bright_black)
+                ]
             ]
         }
     }
