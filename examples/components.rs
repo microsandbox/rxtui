@@ -56,26 +56,50 @@ impl Counter {
 
     #[view]
     fn view(&self, ctx: &Context, state: CounterState) -> Node {
+        // Create a darker version of the color for the label background
+        let label_bg = match self.color {
+            Color::Rgb(147, 112, 219) => Color::hex("#7B68AA"), // Darker purple for #9370DB
+            Color::Rgb(255, 165, 0) => Color::hex("#CC8400"),   // Darker amber for #FFA500
+            Color::Rgb(32, 178, 170) => Color::hex("#1A8D88"),  // Darker teal for #20B2AA
+            _ => Color::hex("#333333"),                         // Fallback dark gray
+        };
+
+        // Create a darker version of the color for focus background
+        let focus_bg = match self.color {
+            Color::Rgb(147, 112, 219) => Color::hex("#6B4C9A"), // Darker purple for #9370DB
+            Color::Rgb(255, 165, 0) => Color::hex("#CC6600"),   // Darker amber for #FFA500
+            Color::Rgb(32, 178, 170) => Color::hex("#156B66"),  // Darker teal for #20B2AA
+            _ => Color::hex("#222222"),                         // Fallback dark gray
+        };
+
         node! {
             div(
-                border: white,
-                pad_h: 1,
+                border: (self.color),
+                pad: 2,
                 w: 25,
                 dir: vertical,
+                align: center,
                 focusable,
-                focus_style: (Style::default().background(self.color)),
+                focus_style: (Style::default().background(focus_bg)),
                 @key(down): ctx.handler(CounterMsg::Decrement),
                 @key(up): ctx.handler(CounterMsg::Increment)
             ) [
-                text(&self.label, color: white),
-                text(format!("Count: {}", state.count), color: bright_white),
+                div(bg: (label_bg), pad_h: 1) [
+                    text(&self.label, color: black, bold, align: center)
+                ],
+
                 spacer(1),
-                hstack(gap: 2) [
-                    div(bg: "#8b0a0a", pad_h: 2, @click: ctx.handler(CounterMsg::Decrement)) [
-                        text("-", color: white)
+
+                text(format!("Count: {}", state.count), color: white, bold, align: center),
+
+                spacer(1),
+
+                hstack(gap: 2, justify: center) [
+                    div(bg: "#D32F2F", pad_h: 2, @click: ctx.handler(CounterMsg::Decrement)) [
+                        text("-", color: white, bold)
                     ],
-                    div(bg: "#0a29a4", pad_h: 2, @click: ctx.handler(CounterMsg::Increment)) [
-                        text("+", color: white)
+                    div(bg: "#388E3C", pad_h: 2, @click: ctx.handler(CounterMsg::Increment)) [
+                        text("+", color: white, bold)
                     ]
                 ]
             ]
@@ -88,9 +112,10 @@ impl Dashboard {
     fn update(&self, ctx: &Context, msg: DashboardMsg) -> Action {
         match msg {
             DashboardMsg::ResetAll => {
-                ctx.send_to_topic("counter_r", ResetSignal);
-                ctx.send_to_topic("counter_g", ResetSignal);
-                ctx.send_to_topic("counter_b", ResetSignal);
+                // Send reset signal to all counter topics
+                ctx.send_to_topic("counter_1", ResetSignal);
+                ctx.send_to_topic("counter_2", ResetSignal);
+                ctx.send_to_topic("counter_3", ResetSignal);
                 Action::none()
             }
             DashboardMsg::Exit => Action::exit(),
@@ -100,35 +125,49 @@ impl Dashboard {
     #[view]
     fn view(&self, ctx: &Context) -> Node {
         node! {
-            div(pad: 2, dir: vertical, @char_global('q'): ctx.handler(DashboardMsg::Exit), @key_global(esc): ctx.handler(DashboardMsg::Exit)) [
-                spacer(1),
-
-                text(
-                    "Use Tab to focus counters. Press ↑/↓ to change values. Click buttons also work.",
-                    color: bright_yellow
-                ),
-                text("Press 'r' to reset all counters, 'q' to quit.", color: bright_cyan),
-
-                spacer(1),
-
-                hstack(gap: 2) [
-                    node(Counter::new("counter_r", "Counter R", Color::Red)),
-                    node(Counter::new("counter_g", "Counter G", Color::Green)),
-                    node(Counter::new("counter_b", "Counter B", Color::Blue))
+            div(
+                pad: 2,
+                align: center,
+                w_pct: 1.0,
+                @char_global('q'): ctx.handler(DashboardMsg::Exit),
+                @key_global(esc): ctx.handler(DashboardMsg::Exit)
+            ) [
+                // Header
+                richtext(align: center) [
+                    text("Counter Dashboard", color: "#20B2AA", bold),
+                    text(" - Topic Communication Demo", color: bright_white)
                 ],
 
                 spacer(1),
 
-                div(
-                    bg: black,
-                    border: white,
-                    pad_h: 1,
-                    focusable,
-                    focus_style: (Style::default().background(Color::Magenta)),
-                    @click: ctx.handler(DashboardMsg::ResetAll),
-                    @char('r'): ctx.handler(DashboardMsg::ResetAll)
-                ) [
-                    text("Reset All (R)", color: white)
+                // Instructions
+                text("tab to focus • ↑/↓ to change • r to reset all • q to quit",
+                     color: bright_black, align: center),
+
+                spacer(2),
+
+                // Counters
+                hstack(gap: 2, justify: center) [
+                    node(Counter::new("counter_1", "Alpha", Color::hex("#9370DB"))),
+                    node(Counter::new("counter_2", "Beta", Color::hex("#FFA500"))),
+                    node(Counter::new("counter_3", "Gamma", Color::hex("#20B2AA")))
+                ],
+
+                spacer(2),
+
+                // Reset button
+                div(align: center) [
+                    div(
+                        bg: black,
+                        border: white,
+                        focusable,
+                        focus_style: (Style::default().background(Color::hex("#333")).border(Color::White)),
+                        @click: ctx.handler(DashboardMsg::ResetAll),
+                        pad_h: 1,
+                        @char('r'): ctx.handler(DashboardMsg::ResetAll)
+                    ) [
+                        text("Reset All Counters (R)", color: white, bold)
+                    ]
                 ]
             ]
         }

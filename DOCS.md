@@ -63,7 +63,7 @@ fn main() -> std::io::Result<()> {
 
 ## Components
 
-Everything in RxTUI is a component. Think of them as self-contained UI pieces that know how to manage their own state and behavior. Each component has two main jobs: handling events (through `update`) and rendering UI (through `view`):
+Everything in RxTUI is a component. Think of them as self-contained UI pieces that know how to manage their own state and behavior. Components have three main capabilities: handling events (through `update`), rendering UI (through `view`), and running async operations (through `effect`):
 
 #### Basic Component
 
@@ -83,6 +83,12 @@ impl TodoList {
         // This renders your UI using the current state
         // Uses the node! macro to build the UI tree
     }
+
+    #[effect]
+    async fn fetch_todos(&self, ctx: &Context, state: TodoState) {
+        // Async effects for background tasks
+        // Useful for timers, API calls, or any async operation
+    }
 }
 ```
 
@@ -101,10 +107,78 @@ impl Component for MyComponent {
     }
 
     fn effects(&self, ctx: &Context) -> Vec<Effect> {
-        // Return async effects (optional)
+        // Return async effects
     }
 }
 ```
+
+#### Complete Working Example
+
+Here's a complete working example of a stopwatch component with async effects:
+
+```rust
+use rxtui::prelude::*;
+
+#[derive(Component)]
+struct Stopwatch;
+
+impl Stopwatch {
+    #[update]
+    fn update(&self, _ctx: &Context, tick: bool, state: u64) -> Action {
+        if !tick {
+            return Action::exit();
+        }
+        Action::update(state + 10)
+    }
+
+    #[view]
+    fn view(&self, ctx: &Context, state: u64) -> Node {
+        let seconds = state / 1000;
+        let centiseconds = (state % 1000) / 10;
+
+        node! {
+            div(
+                pad: 2,
+                align: center,
+                w_pct: 1.0,
+                gap: 1,
+                @key(esc): ctx.handler(false),
+                @char_global('q'): ctx.handler(false)
+            ) [
+                richtext[
+                    text("Elapsed: ", color: white),
+                    text(
+                        format!(" {}.{:02}s ", seconds, centiseconds),
+                        color: "#ffffff",
+                        bg: "#9d29c3",
+                        bold
+                    ),
+                ],
+                text("press esc or q to exit", color: bright_black)
+            ]
+        }
+    }
+
+    #[effect]
+    async fn tick(&self, ctx: &Context) {
+        loop {
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+            ctx.send(true);
+        }
+    }
+}
+
+fn main() -> std::io::Result<()> {
+    App::new()?.fast_polling().run(Stopwatch)
+}
+```
+
+This example demonstrates:
+- State management with the `#[update]` method handling timer ticks
+- Async effects with the `#[effect]` method for continuous updates
+- Rich text formatting with inline styles and hex colors
+- Global keyboard event handling with `@key` and `@char_global`
+- Layout control with centering and responsive width (`w_pct: 1.0`)
 
 <div align='center'>• • •</div>
 
@@ -116,12 +190,37 @@ The `node!` macro is how you actually build your UI. It gives you a clean, decla
 
 ```rust
 node! {
-    // Root element (usually div)
-    div(properties, @click: handler, @key(enter): handler) [
-        // Children
-        text("content", properties),
-        div(properties) [
-            // Nested children
+    // Root node
+    div(...<properties>, ...<handlers>) [
+
+        // Children nodes here
+        text("content", ...<properties>),
+        div(...) [
+
+            // Nested nodes
+            ...<children>
+        ]
+    ]
+}
+```
+
+Example:
+```rust
+node! {
+    div(
+        bg: blue,
+        pad: 2,
+        border: white,
+        @key(enter): ctx.handler("submit"),
+        @click: ctx.handler("clicked")
+    ) [
+        richtext(align: center, wrap: word) [
+            text("Welcome to ", color: bright_white),
+            text("RxTUI", color: yellow, bold),
+            text("!", color: bright_white)
+        ],
+        div [
+            text("Nested content")
         ]
     ]
 }
