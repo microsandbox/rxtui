@@ -2,16 +2,6 @@
 
 This directory contains example applications demonstrating various features and patterns of the RxTUI framework.
 
-![stopwatch-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/98b5702c-cc98-4845-9dbe-e03ac43104f6)
-![spinner-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/f791a987-b460-4053-ae7e-36d86534726f)
-<img width="786" height="268" alt="rxtui-logo" src="https://github.com/user-attachments/assets/3e3235bc-3792-44eb-88d5-e847631c0086" />
-![progressbar-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/092d84db-66ea-431c-be72-cf48a043e7f6)
-![form-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/5c675ab4-144d-4ef1-8545-7921a537bb23)
-![counter-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/c841f1e6-8bf9-4b5a-bed5-97bc31cc3537)
-![components-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/9ad3e411-0ffe-487b-a0c1-93a3271284fc)
-![align-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/bff6886f-7d38-4e90-a512-04d79a3e6246)
-
-
 ## Examples
 
 ### [counter.rs](./counter.rs)
@@ -19,7 +9,7 @@ This directory contains example applications demonstrating various features and 
 cargo run --example counter
 ```
 
-<img width="100%" alt="counter demo" src="https://github.com/user-attachments/assets/904cce59-48c4-4813-9a68-d1c0b8176c4b" />
+<img width="100%" alt="counter demo" src="https://github.com/user-attachments/assets/c841f1e6-8bf9-4b5a-bed5-97bc31cc3537" />
 
 A minimal counter demonstrating:
 - Basic component structure with `#[update]` and `#[view]` macros
@@ -34,7 +24,7 @@ A minimal counter demonstrating:
 cargo run --example form
 ```
 
-<img width="100%" alt="form demo" src="https://github.com/user-attachments/assets/c0c85d9f-9231-45b7-bcf5-081fab998e79" />
+<img width="100%" alt="form demo" src="https://github.com/user-attachments/assets/5c675ab4-144d-4ef1-8545-7921a537bb23" />
 
 Demonstrates form building capabilities:
 - Text input fields with focus management
@@ -50,7 +40,7 @@ Demonstrates form building capabilities:
 cargo run --example stopwatch
 ```
 
-<img width="100%" alt="stopwatch demo" src="https://github.com/user-attachments/assets/8c627f96-b188-40ce-a022-384a6a1b7e66" />
+<img width="100%" alt="stopwatch demo" src="https://github.com/user-attachments/assets/98b5702c-cc98-4845-9dbe-e03ac43104f6" />
 
 Time-based UI updates:
 - Effects system for side effects
@@ -65,7 +55,7 @@ Time-based UI updates:
 cargo run --example align
 ```
 
-<img width="100%" alt="align demo" src="https://github.com/user-attachments/assets/c3a05029-a4fd-4ed4-a8a6-a41c76114956" />
+<img width="100%" alt="align demo" src="https://github.com/user-attachments/assets/bff6886f-7d38-4e90-a512-04d79a3e6246" />
 
 CSS Flexbox-style alignment demonstration:
 - **JustifyContent**: Controls main axis distribution (Start, Center, End, SpaceBetween, SpaceAround, SpaceEvenly)
@@ -82,7 +72,7 @@ CSS Flexbox-style alignment demonstration:
 cargo run --example progressbar
 ```
 
-<img width="100%" alt="progressbar demo" src="https://github.com/user-attachments/assets/df860dde-98f7-4ccd-ba32-c0187e0f214b" />
+<img width="100%" alt="progressbar demo" src="https://github.com/user-attachments/assets/092d84db-66ea-431c-be72-cf48a043e7f6" />
 
 Animated progress bar with visual flair:
 - Smooth multi-stop gradient with peachy colors (Coral → Peach → Salmon → Pink)
@@ -97,12 +87,31 @@ Animated progress bar with visual flair:
 ```bash
 cargo run --example components
 ```
+
+<img width="100%" alt="components demo" src="https://github.com/user-attachments/assets/9ad3e411-0ffe-487b-a0c1-93a3271284fc" />
+
 Shows how to build complex UIs from reusable components:
 - Multiple independent counter components with different colors
 - Inter-component communication via topics
 - Dynamic topic names in `#[update]` macro
 - Nested component structure (Dashboard → Counter components)
 - Both stateful (Counter) and stateless (Dashboard) components
+
+### [spinner.rs](./spinner.rs)
+```bash
+cargo run --example spinner
+```
+
+<img width="100%" alt="spinner demo" src="https://github.com/user-attachments/assets/f791a987-b460-4053-ae7e-36d86534726f" />
+
+Simple loading animation demonstration:
+- Animated spinner using Unicode braille characters
+- Automatic animation using `#[effect]` attribute
+- Clean purple color scheme with rounded borders
+- Shows how to create smooth animations with async effects
+- Minimal code for animated UI elements
+
+<br />
 
 ## Feature Showcase
 
