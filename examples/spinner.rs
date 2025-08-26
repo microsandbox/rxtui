@@ -45,7 +45,7 @@ impl Spinner {
                         text(frame, color: purple, bold),
                         text("Loading...", color: light_purple, bold)
                     ],
-                    text("press ESC to exit", color: (Color::hex("#666666")))
+                    text("press esc to exit", color: bright_black)
                 ]
             ]
         }
