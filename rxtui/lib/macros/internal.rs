@@ -88,6 +88,54 @@ macro_rules! direction_value {
     };
 }
 
+/// Converts edge names to BorderEdges values
+#[doc(hidden)]
+#[macro_export]
+macro_rules! tui_edge_value {
+    (top) => {
+        $crate::BorderEdges::TOP
+    };
+    (bottom) => {
+        $crate::BorderEdges::BOTTOM
+    };
+    (left) => {
+        $crate::BorderEdges::LEFT
+    };
+    (right) => {
+        $crate::BorderEdges::RIGHT
+    };
+    (horizontal) => {
+        $crate::BorderEdges::HORIZONTAL
+    };
+    (vertical) => {
+        $crate::BorderEdges::VERTICAL
+    };
+    (all) => {
+        $crate::BorderEdges::ALL
+    };
+    (corners) => {
+        $crate::BorderEdges::CORNERS
+    };
+    (edges) => {
+        $crate::BorderEdges::EDGES
+    };
+    (top_left) => {
+        $crate::BorderEdges::TOP_LEFT
+    };
+    (top_right) => {
+        $crate::BorderEdges::TOP_RIGHT
+    };
+    (bottom_left) => {
+        $crate::BorderEdges::BOTTOM_LEFT
+    };
+    (bottom_right) => {
+        $crate::BorderEdges::BOTTOM_RIGHT
+    };
+    ($edge:expr) => {
+        $edge
+    };
+}
+
 /// Converts overflow values to Overflow enum
 #[doc(hidden)]
 #[macro_export]

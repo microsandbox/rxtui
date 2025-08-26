@@ -217,7 +217,8 @@ node! {
 
         // Borders
         border: white,     // border color
-        border_style: (BorderStyle::Rounded, yellow),
+        border_style: rounded,
+        border_color: yellow,
         border_edges: BorderEdges::TOP | BorderEdges::BOTTOM,
 
         // Interaction
@@ -795,14 +796,17 @@ node! {
         div(border: white) [ text("Single border") ],
 
         // Border styles
-        div(border_style: (BorderStyle::Rounded, cyan)) [
+        div(
+            border_style: rounded,
+            border_color: cyan
+        ) [
             text("Rounded border")
         ],
 
         // Partial borders
         div(
             border: white,
-            border_edges: BorderEdges::TOP | BorderEdges::BOTTOM
+            border_edges: top | bottom
         ) [
             text("Top and bottom only")
         ]
