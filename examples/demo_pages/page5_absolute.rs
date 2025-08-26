@@ -90,7 +90,8 @@ impl Page5AbsoluteDemo {
                         h: 10,
                         z: (if state.selected_layer == 2 { 100 } else { 2 }),
                         bg: (if state.selected_layer == 2 { Color::BrightGreen } else { Color::Green }),
-                        border_style: (BorderStyle::Double, Color::White),
+                        border_style: double,
+                        border_color: white,
                         pad: 1,
                         @click: ctx.handler(AbsoluteDemoMsg::SetSelectedLayer(2))
                     ) [
@@ -113,7 +114,8 @@ impl Page5AbsoluteDemo {
                         h: 10,
                         z: (if state.selected_layer == 3 { 100 } else { 3 }),
                         bg: (if state.selected_layer == 3 { Color::BrightBlue } else { Color::Blue }),
-                        border_style: (BorderStyle::Thick, Color::White),
+                        border_style: thick,
+                        border_color: white,
                         pad: 1,
                         @click: ctx.handler(AbsoluteDemoMsg::SetSelectedLayer(3))
                     ) [
@@ -136,7 +138,8 @@ impl Page5AbsoluteDemo {
                         h: 6,
                         z: 200,
                         bg: bright_magenta,
-                        border_style: (BorderStyle::Rounded, Color::White),
+                        border_style: rounded,
+                        border_color: white,
                         pad: 1
                     ) [
                         text("Notification", color: black),
@@ -177,7 +180,8 @@ impl Page5AbsoluteDemo {
                     h: 10,
                     z: 1001,
                     bg: bright_white,
-                    border_style: (BorderStyle::Rounded, Color::Black),
+                    border_style: rounded,
+                    border_color: black,
                     pad: 2
                 ) [
                     div(bg: bright_cyan, pad: 1) [

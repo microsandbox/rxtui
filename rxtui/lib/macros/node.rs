@@ -63,12 +63,13 @@
 ///     div(
 ///         // Colors
 ///         bg: black,              // Named color
-///         border: "#FF5733",      // Hex color
+///         border_color: "#FF5733", // Hex color (or use legacy 'border:')
 ///
 ///         // Border configuration
-///         border_style: (BorderStyle::Rounded, white),  // Style and color
-///         border_edges: BorderEdges::TOP | BorderEdges::BOTTOM,  // Which edges
-///         border_full: (BorderStyle::Double, yellow, BorderEdges::ALL),  // Full config
+///         border_style: rounded,   // Style only (single, double, thick, rounded, dashed)
+///         border_color: white,     // Border color
+///         border_edges: top | bottom,  // Which edges (can use | for multiple)
+///         border_full: (BorderStyle::Double, yellow, BorderEdges::ALL),  // Full config (legacy)
 ///
 ///         // Dimensions
 ///         w: 50,                  // Fixed width
@@ -1004,7 +1005,39 @@ macro_rules! tui_apply_props {
         $container.gap($gap)
     }};
 
-    // Border
+    // Border color (renamed from border for clarity)
+    ($container:expr, border_color: $color:tt, $($rest:tt)*) => {{
+        let c = $container.border_color($crate::color_value!($color));
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_color: $color:tt) => {{
+        $container.border_color($crate::color_value!($color))
+    }};
+
+    // Border color with expression
+    ($container:expr, border_color: ($color:expr), $($rest:tt)*) => {{
+        let c = $container.border_color($color);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+
+    // Border color - optional with ! suffix on expression
+    ($container:expr, border_color: ($color:expr)!, $($rest:tt)*) => {{
+        let c = if let Some(color_val) = $color {
+            $container.border_color(color_val)
+        } else {
+            $container
+        };
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_color: ($color:expr)!) => {{
+        if let Some(color_val) = $color {
+            $container.border_color(color_val)
+        } else {
+            $container
+        }
+    }};
+
+    // Legacy border support (maps to border_color)
     ($container:expr, border: $color:tt, $($rest:tt)*) => {{
         let c = $container.border_color($crate::color_value!($color));
         $crate::tui_apply_props!(c, $($rest)*)
@@ -1012,14 +1045,10 @@ macro_rules! tui_apply_props {
     ($container:expr, border: $color:tt) => {{
         $container.border_color($crate::color_value!($color))
     }};
-
-    // Border with expression
     ($container:expr, border: ($color:expr), $($rest:tt)*) => {{
         let c = $container.border_color($color);
         $crate::tui_apply_props!(c, $($rest)*)
     }};
-
-    // Border - optional with ! suffix on expression
     ($container:expr, border: ($color:expr)!, $($rest:tt)*) => {{
         let c = if let Some(color_val) = $color {
             $container.border_color(color_val)
@@ -1036,7 +1065,66 @@ macro_rules! tui_apply_props {
         }
     }};
 
-    // Border style with color
+    // Border style (now only takes BorderStyle, not color)
+    ($container:expr, border_style: single, $($rest:tt)*) => {{
+        let c = $container.border_style($crate::BorderStyle::Single);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_style: double, $($rest:tt)*) => {{
+        let c = $container.border_style($crate::BorderStyle::Double);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_style: thick, $($rest:tt)*) => {{
+        let c = $container.border_style($crate::BorderStyle::Thick);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_style: rounded, $($rest:tt)*) => {{
+        let c = $container.border_style($crate::BorderStyle::Rounded);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_style: dashed, $($rest:tt)*) => {{
+        let c = $container.border_style($crate::BorderStyle::Dashed);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_style: ($style:expr), $($rest:tt)*) => {{
+        let c = $container.border_style($style);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_style: ($style:expr)!, $($rest:tt)*) => {{
+        let c = if let Some(style_val) = $style {
+            $container.border_style(style_val)
+        } else {
+            $container
+        };
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_style: single) => {{
+        $container.border_style($crate::BorderStyle::Single)
+    }};
+    ($container:expr, border_style: double) => {{
+        $container.border_style($crate::BorderStyle::Double)
+    }};
+    ($container:expr, border_style: thick) => {{
+        $container.border_style($crate::BorderStyle::Thick)
+    }};
+    ($container:expr, border_style: rounded) => {{
+        $container.border_style($crate::BorderStyle::Rounded)
+    }};
+    ($container:expr, border_style: dashed) => {{
+        $container.border_style($crate::BorderStyle::Dashed)
+    }};
+    ($container:expr, border_style: ($style:expr)) => {{
+        $container.border_style($style)
+    }};
+    ($container:expr, border_style: ($style:expr)!) => {{
+        if let Some(style_val) = $style {
+            $container.border_style(style_val)
+        } else {
+            $container
+        }
+    }};
+
+    // Legacy border_style with color (still supported for compatibility)
     ($container:expr, border_style: ($style:expr, $color:expr), $($rest:tt)*) => {{
         let c = $container.border_style_with_color($style, $color);
         $crate::tui_apply_props!(c, $($rest)*)
@@ -1045,13 +1133,103 @@ macro_rules! tui_apply_props {
         $container.border_style_with_color($style, $color)
     }};
 
-    // Border edges
-    ($container:expr, border_edges: $edges:expr, $($rest:tt)*) => {{
+    // Border edges - simple syntax support
+    ($container:expr, border_edges: top, $($rest:tt)*) => {{
+        let c = $container.border_edges($crate::BorderEdges::TOP);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_edges: bottom, $($rest:tt)*) => {{
+        let c = $container.border_edges($crate::BorderEdges::BOTTOM);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_edges: left, $($rest:tt)*) => {{
+        let c = $container.border_edges($crate::BorderEdges::LEFT);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_edges: right, $($rest:tt)*) => {{
+        let c = $container.border_edges($crate::BorderEdges::RIGHT);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_edges: horizontal, $($rest:tt)*) => {{
+        let c = $container.border_edges($crate::BorderEdges::HORIZONTAL);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_edges: vertical, $($rest:tt)*) => {{
+        let c = $container.border_edges($crate::BorderEdges::VERTICAL);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_edges: all, $($rest:tt)*) => {{
+        let c = $container.border_edges($crate::BorderEdges::ALL);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_edges: corners, $($rest:tt)*) => {{
+        let c = $container.border_edges($crate::BorderEdges::CORNERS);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, border_edges: edges, $($rest:tt)*) => {{
+        let c = $container.border_edges($crate::BorderEdges::EDGES);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    // Support for | operator in edges
+    ($container:expr, border_edges: $edge1:ident | $($edge2:ident)|+, $($rest:tt)*) => {{
+        let edges = $crate::tui_edge_value!($edge1) $(| $crate::tui_edge_value!($edge2))+;
+        let c = $container.border_edges(edges);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    // Expression-based edges
+    ($container:expr, border_edges: ($edges:expr), $($rest:tt)*) => {{
         let c = $container.border_edges($edges);
         $crate::tui_apply_props!(c, $($rest)*)
     }};
-    ($container:expr, border_edges: $edges:expr) => {{
+    ($container:expr, border_edges: ($edges:expr)!, $($rest:tt)*) => {{
+        let c = if let Some(edges_val) = $edges {
+            $container.border_edges(edges_val)
+        } else {
+            $container
+        };
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    // Terminal rules (no rest)
+    ($container:expr, border_edges: top) => {{
+        $container.border_edges($crate::BorderEdges::TOP)
+    }};
+    ($container:expr, border_edges: bottom) => {{
+        $container.border_edges($crate::BorderEdges::BOTTOM)
+    }};
+    ($container:expr, border_edges: left) => {{
+        $container.border_edges($crate::BorderEdges::LEFT)
+    }};
+    ($container:expr, border_edges: right) => {{
+        $container.border_edges($crate::BorderEdges::RIGHT)
+    }};
+    ($container:expr, border_edges: horizontal) => {{
+        $container.border_edges($crate::BorderEdges::HORIZONTAL)
+    }};
+    ($container:expr, border_edges: vertical) => {{
+        $container.border_edges($crate::BorderEdges::VERTICAL)
+    }};
+    ($container:expr, border_edges: all) => {{
+        $container.border_edges($crate::BorderEdges::ALL)
+    }};
+    ($container:expr, border_edges: corners) => {{
+        $container.border_edges($crate::BorderEdges::CORNERS)
+    }};
+    ($container:expr, border_edges: edges) => {{
+        $container.border_edges($crate::BorderEdges::EDGES)
+    }};
+    ($container:expr, border_edges: $edge1:ident | $($edge2:ident)|+) => {{
+        let edges = $crate::tui_edge_value!($edge1) $(| $crate::tui_edge_value!($edge2))+;
+        $container.border_edges(edges)
+    }};
+    ($container:expr, border_edges: ($edges:expr)) => {{
         $container.border_edges($edges)
+    }};
+    ($container:expr, border_edges: ($edges:expr)!) => {{
+        if let Some(edges_val) = $edges {
+            $container.border_edges(edges_val)
+        } else {
+            $container
+        }
     }};
 
     // Full border configuration
@@ -1751,7 +1929,25 @@ macro_rules! tui_apply_input_props {
         $input.height($value)
     }};
 
-    // Border color
+    // Border color (now using the more explicit name)
+    ($input:expr, border_color: $color:tt, $($rest:tt)*) => {{
+        let i = $input.border($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_color: $color:tt) => {{
+        $input.border($crate::color_value!($color))
+    }};
+
+    // Border color with expression
+    ($input:expr, border_color: ($color:expr), $($rest:tt)*) => {{
+        let i = $input.border($color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_color: ($color:expr)) => {{
+        $input.border($color)
+    }};
+
+    // Legacy border support (maps to border_color)
     ($input:expr, border: $color:tt, $($rest:tt)*) => {{
         let i = $input.border($crate::color_value!($color));
         $crate::tui_apply_input_props!(i, $($rest)*)
@@ -1760,7 +1956,7 @@ macro_rules! tui_apply_input_props {
         $input.border($crate::color_value!($color))
     }};
 
-    // Border with expression
+    // Border with expression (legacy)
     ($input:expr, border: ($color:expr), $($rest:tt)*) => {{
         let i = $input.border($color);
         $crate::tui_apply_input_props!(i, $($rest)*)

@@ -4,7 +4,8 @@
   <br />
   <br />
 
-  <b>———&nbsp;&nbsp;&nbsp;reactive terminal UI framework for rust&nbsp;&nbsp;&nbsp;———</b>
+<b>———&nbsp;&nbsp;&nbsp;reactive terminal UI framework for rust&nbsp;&nbsp;&nbsp;———</b>
+
 </div>
 
 <br />
@@ -40,11 +41,9 @@ We bring the retained-mode, component-based architecture that revolutionized web
 
 <br />
 
-
 <div align='center'>
   <img width="100%" alt="align demo" src="https://github.com/user-attachments/assets/c3a05029-a4fd-4ed4-a8a6-a41c76114956" />
 </div>
-
 
 # <sub>QUICK START</sub>
 
@@ -59,7 +58,7 @@ rxtui = "0.1"
 
 ### <span>2</span>&nbsp;&nbsp;Create Your First App
 
-Complete counter app in 30 lines of code:
+A simple working example showing separation of state management and UI building:
 
 ```rust
 use rxtui::prelude::*;
@@ -80,7 +79,15 @@ impl Counter {
     #[view]
     fn view(&self, ctx: &Context, count: i32) -> Node {
         node! {
-            div(@key(up): ctx.handler("inc"), @key(down): ctx.handler("dec"), @key(esc): ctx.handler("exit")) [
+            div(
+                pad: 2,
+                align: center,
+                w_pct: 1.0,
+                gap: 1,
+                @key(up): ctx.handler("inc"),
+                @key(down): ctx.handler("dec"),
+                @key(esc): ctx.handler("exit")
+            ) [
                 text(format!("Count: {count}"), color: white, bold),
                 text("use ↑/↓ to change, esc to exit", color: bright_black)
             ]

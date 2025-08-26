@@ -124,7 +124,8 @@ impl FocusButton {
 
         node! {
             div(
-                border_style: (BorderStyle::Single, color),
+                border_style: single,
+                border_color: (color),
                 pad: 1,
                 w: 15,
                 focusable,
