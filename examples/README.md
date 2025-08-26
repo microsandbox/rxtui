@@ -2,6 +2,16 @@
 
 This directory contains example applications demonstrating various features and patterns of the RxTUI framework.
 
+![stopwatch-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/98b5702c-cc98-4845-9dbe-e03ac43104f6)
+![spinner-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/f791a987-b460-4053-ae7e-36d86534726f)
+<img width="786" height="268" alt="rxtui-logo" src="https://github.com/user-attachments/assets/3e3235bc-3792-44eb-88d5-e847631c0086" />
+![progressbar-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/092d84db-66ea-431c-be72-cf48a043e7f6)
+![form-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/5c675ab4-144d-4ef1-8545-7921a537bb23)
+![counter-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/c841f1e6-8bf9-4b5a-bed5-97bc31cc3537)
+![components-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/9ad3e411-0ffe-487b-a0c1-93a3271284fc)
+![align-demo-26-aug-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/bff6886f-7d38-4e90-a512-04d79a3e6246)
+
+
 ## Examples
 
 ### [counter.rs](./counter.rs)
