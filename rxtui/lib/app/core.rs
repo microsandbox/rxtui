@@ -1,11 +1,12 @@
 use crate::app::Context;
+use crate::bounds::Rect;
 use crate::buffer::{DoubleBuffer, ScreenBuffer};
 use crate::component::{Action, Component, ComponentId};
 use crate::node::Div;
 use crate::node::Node;
 use crate::terminal::TerminalRenderer;
+use crate::vdom::VDom;
 use crate::vnode::VNode;
-use crate::{Rect, VDom};
 use crossterm::{
     ExecutableCommand, cursor,
     event::{self, Event},
