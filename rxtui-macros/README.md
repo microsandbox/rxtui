@@ -59,16 +59,26 @@ The macro automatically:
 #### Advanced: Multiple Message Types
 
 ```rust
-#[update]
-fn update(&self, ctx: &Context, msg: impl Message, state: State) -> Action {
-    // Handle different message types
-    match msg {
-        AppMsg(m) => { /* ... */ }
-        DialogMsg(m) => { /* ... */ }
-        _ => Action::none()
+#[update(msg = AppMessage, topics = ["dialog" => DialogMsg, "nav" => NavMsg])]
+fn update(&self, ctx: &Context, messages: Messages, mut state: AppState) -> Action {
+    match messages {
+        Messages::AppMessage(msg) => {
+            // Handle app messages
+            Action::update(state)
+        }
+        Messages::DialogMsg(msg) => {
+            // Handle dialog messages from "dialog" topic
+            Action::update(state)
+        }
+        Messages::NavMsg(msg) => {
+            // Handle navigation messages from "nav" topic
+            Action::update(state)
+        }
     }
 }
 ```
+
+The macro generates an enum `Messages` with variants for each message type.
 
 #### Topic-Based Updates
 
@@ -124,6 +134,7 @@ Effects run automatically when the component is mounted and are cancelled when u
 
 ```rust
 use rxtui::prelude::*;
+use std::time::Duration;
 
 #[derive(Debug, Clone)]
 enum CounterMsg {

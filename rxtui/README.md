@@ -167,6 +167,8 @@ node! {
 Handle background tasks with the effects system:
 
 ```rust
+use std::time::Duration;
+
 #[derive(Component)]
 struct Timer;
 
