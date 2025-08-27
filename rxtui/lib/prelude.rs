@@ -12,7 +12,7 @@
 pub use crate::app::{App, Context};
 
 // Component system
-pub use crate::component::{Action, ComponentId, Message, MessageExt, State, StateExt};
+pub use crate::component::{Action, Message, MessageExt, State};
 
 // Effects system (when feature is enabled)
 #[cfg(feature = "effects")]

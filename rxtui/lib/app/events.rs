@@ -1,6 +1,6 @@
-use crate::VDom;
 use crate::key::{Key, KeyWithModifiers};
 use crate::render_tree::RenderNode;
+use crate::vdom::VDom;
 use crossterm::event::{KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
 use std::cell::RefCell;
 use std::rc::Rc;

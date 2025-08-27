@@ -2,7 +2,7 @@
 
 ## Overview
 
-RxTUI is a reactive terminal user interface framework inspired by React's component model. It provides a declarative, component-based API for building interactive terminal applications with efficient rendering through virtual DOM diffing and advanced cross-component communication via topic-based messaging.
+RxTUI is a reactive terminal user interface framework inspired by Elm's message-passing architecture and React's component model. It provides a declarative, component-based API for building interactive terminal applications with efficient rendering through virtual DOM diffing and advanced cross-component communication via topic-based messaging.
 
 ## Architecture
 

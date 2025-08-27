@@ -1,7 +1,9 @@
+use crate::bounds::Rect;
 use crate::buffer::{Cell, ScreenBuffer};
+use crate::render_tree::RenderNode;
 use crate::render_tree::RenderNodeType;
+use crate::style::{Color, Overflow};
 use crate::utils::{display_width, substring_by_columns};
-use crate::{Color, Overflow, Rect, RenderNode};
 
 //--------------------------------------------------------------------------------------------------
 // Functions
@@ -1229,9 +1231,9 @@ mod tests {
 
     #[test]
     fn test_text_center_alignment() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(10)
@@ -1261,9 +1263,9 @@ mod tests {
 
     #[test]
     fn test_text_right_alignment() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(10)
@@ -1294,9 +1296,9 @@ mod tests {
 
     #[test]
     fn test_justify_content_start() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(20)
@@ -1331,9 +1333,9 @@ mod tests {
 
     #[test]
     fn test_justify_content_center() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(20)
@@ -1369,9 +1371,9 @@ mod tests {
 
     #[test]
     fn test_justify_content_end() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(20)
@@ -1407,9 +1409,9 @@ mod tests {
 
     #[test]
     fn test_justify_content_space_between() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(20)
@@ -1448,9 +1450,9 @@ mod tests {
 
     #[test]
     fn test_align_items_center() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(10)
@@ -1488,9 +1490,9 @@ mod tests {
 
     #[test]
     fn test_align_items_end() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(10)
@@ -1528,9 +1530,9 @@ mod tests {
 
     #[test]
     fn test_align_self_override() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(10)
@@ -1575,10 +1577,10 @@ mod tests {
 
     #[test]
     fn test_wrap_with_justify_content() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::style::WrapMode;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(25)
@@ -1626,10 +1628,10 @@ mod tests {
 
     #[test]
     fn test_wrap_with_align_items() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::style::WrapMode;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(25)
@@ -1688,10 +1690,10 @@ mod tests {
 
     #[test]
     fn test_wrap_with_space_between() {
-        use crate::VNode;
         use crate::prelude::*;
         use crate::style::WrapMode;
         use crate::vdom::VDom;
+        use crate::vnode::VNode;
 
         let node: VNode = Div::new()
             .width(30)

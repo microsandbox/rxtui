@@ -401,21 +401,16 @@ pub use rxtui_macros::Component as ComponentMacro;
 pub use rxtui_macros::effect;
 pub use rxtui_macros::{component, update, view};
 
-pub use app::{App, Context, Dispatcher, RenderConfig, StateMap};
+pub use app::{App, Context};
 pub use bounds::Rect;
-pub use component::{Action, Component, ComponentId, Message, State};
+pub use component::{Action, Component, Message, MessageExt, State};
 pub use components::TextInput;
-pub use diff::{Patch, diff};
 pub use key::Key;
 pub use node::{Div, Node, RichText, Text, TextSpan};
-pub use render_tree::RenderNode;
 pub use style::{
     BorderEdges, BorderStyle, Color, Dimension, Direction, Overflow, Position, Spacing, Style,
     TextStyle, TextWrap, WrapMode,
 };
-pub use utils::wrap_text;
-pub use vdom::VDom;
-pub use vnode::VNode;
 
 //--------------------------------------------------------------------------------------------------
 // Tests
