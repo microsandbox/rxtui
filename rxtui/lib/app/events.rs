@@ -45,11 +45,15 @@ pub fn handle_key_event(vdom: &VDom, key_event: KeyEvent) {
         if key == Key::Enter
             && let Some(focused) = render_tree.get_focused_node()
         {
-            // Simulate a click on the focused element
-            focused.borrow().handle_click();
-            // Return immediately to prevent Enter from being handled again
-            // The click simulation takes precedence
-            return;
+            // Only simulate click if the element actually has a click handler
+            // This allows elements like TextInput to handle Enter as a regular key
+            if focused.borrow().events.on_click.is_some() {
+                focused.borrow().handle_click();
+                // Return immediately to prevent Enter from being handled again
+                // The click simulation takes precedence
+                return;
+            }
+            // If no click handler, let Enter continue to be processed as a normal key
         }
 
         // Create KeyWithModifiers for handlers that need it

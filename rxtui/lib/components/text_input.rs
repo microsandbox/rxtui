@@ -641,6 +641,7 @@ impl TextInput {
             .on_key(Key::Right, ctx.handler(TextInputMsg::CursorRight))
             .on_key(Key::Home, ctx.handler(TextInputMsg::CursorHome))
             .on_key(Key::End, ctx.handler(TextInputMsg::CursorEnd))
+            .on_key(Key::Enter, ctx.handler(TextInputMsg::Submit))
             // Add modifier-aware handlers for word navigation
             // Terminals send Alt+B/F as Char('b'/'f') with ALT, not Arrow keys
             .on_key_with_modifiers(
