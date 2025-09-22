@@ -1,10 +1,8 @@
 use crate::app::Context;
+use crate::effect::Effect;
 use crate::node::Node;
 use std::any::Any;
 use std::fmt::Debug;
-
-#[cfg(feature = "effects")]
-use crate::effect::Effect;
 
 //--------------------------------------------------------------------------------------------------
 // Types
@@ -286,7 +284,6 @@ pub trait Component: 'static {
     /// - **File watching**: Monitoring file system changes
     /// - **WebSocket connections**: Real-time communication
     /// - **Background calculations**: Heavy computations that shouldn't block UI
-    #[cfg(feature = "effects")]
     fn effects(&self, _ctx: &Context) -> Vec<Effect> {
         vec![]
     }
