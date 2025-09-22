@@ -3,10 +3,8 @@
 //! These traits use Rust's method resolution order where inherent methods shadow trait methods,
 //! allowing the macro system to provide default implementations that can be optionally overridden.
 
-use crate::{Action, Context, Message, Node};
-
-#[cfg(feature = "effects")]
 use crate::effect::Effect;
+use crate::{Action, Context, Message, Node};
 
 //--------------------------------------------------------------------------------------------------
 // Traits
@@ -51,7 +49,6 @@ pub trait ViewProvider {
 /// This uses Rust's method resolution order where inherent methods shadow trait methods,
 /// allowing #[component] to optionally override the default empty implementation.
 #[doc(hidden)]
-#[cfg(feature = "effects")]
 pub trait EffectsProvider {
     /// Internal method that returns empty effects by default.
     /// This is shadowed by an inherent method when #[component] is used.
@@ -67,6 +64,4 @@ pub trait EffectsProvider {
 // Blanket implementations provide the defaults for all types
 impl<T> UpdateProvider for T {}
 impl<T> ViewProvider for T {}
-
-#[cfg(feature = "effects")]
 impl<T> EffectsProvider for T {}

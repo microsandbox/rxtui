@@ -2,7 +2,7 @@ use super::Effect;
 use crate::component::ComponentId;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use tokio::runtime::Runtime;
+use tokio::runtime::{Handle, Runtime};
 use tokio::task::JoinHandle;
 
 //--------------------------------------------------------------------------------------------------
@@ -11,11 +11,19 @@ use tokio::task::JoinHandle;
 
 /// Runtime for managing async effects
 pub struct EffectRuntime {
-    /// Tokio runtime for executing futures
-    runtime: Runtime,
+    /// Tokio runtime handle for executing futures
+    /// Either owns a runtime or uses existing one
+    runtime_handle: RuntimeHandle,
 
     /// Track active effects by component ID for cleanup
     active: Arc<RwLock<HashMap<ComponentId, Vec<JoinHandle<()>>>>>,
+}
+
+enum RuntimeHandle {
+    /// We own the runtime (created when not in async context)
+    Owned(Runtime),
+    /// Reference to existing runtime (when already in async context)
+    Existing(Handle),
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -25,12 +33,25 @@ pub struct EffectRuntime {
 impl EffectRuntime {
     /// Create a new effect runtime
     pub fn new() -> Self {
-        // Create tokio runtime with a small thread pool
-        let runtime = Runtime::new().expect("Failed to create tokio runtime");
+        // Try to get existing runtime handle first
+        let runtime_handle = Handle::try_current()
+            .map(RuntimeHandle::Existing)
+            .unwrap_or_else(|_| {
+                // No existing runtime, create a new one
+                RuntimeHandle::Owned(Runtime::new().expect("Failed to create tokio runtime"))
+            });
 
         Self {
-            runtime,
+            runtime_handle,
             active: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+
+    /// Get the runtime handle for spawning tasks
+    fn handle(&self) -> &Handle {
+        match &self.runtime_handle {
+            RuntimeHandle::Owned(runtime) => runtime.handle(),
+            RuntimeHandle::Existing(handle) => handle,
         }
     }
 
@@ -47,7 +68,7 @@ impl EffectRuntime {
         // Spawn new effects
         let handles: Vec<_> = effects
             .into_iter()
-            .map(|effect| self.runtime.spawn(effect))
+            .map(|effect| self.handle().spawn(effect))
             .collect();
 
         // Track handles for cleanup

@@ -14,8 +14,7 @@ pub use crate::app::{App, Context};
 // Component system
 pub use crate::component::{Action, Message, MessageExt, State};
 
-// Effects system (when feature is enabled)
-#[cfg(feature = "effects")]
+// Effects system
 pub use crate::effect::Effect;
 
 // Re-export both the trait and the derive macro

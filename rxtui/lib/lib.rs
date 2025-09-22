@@ -386,9 +386,23 @@ pub mod macros;
 pub mod components;
 
 /// Async effects system for running background tasks
-/// Requires the "effects" feature flag
 #[cfg(feature = "effects")]
 pub mod effect;
+
+/// Stub effect module when effects feature is disabled
+#[cfg(not(feature = "effects"))]
+pub mod effect {
+    /// Stub Effect type when effects feature is disabled
+    #[derive(Debug, Clone)]
+    pub struct Effect;
+
+    impl Effect {
+        /// Create an empty effect vector
+        pub fn none() -> Vec<Self> {
+            vec![]
+        }
+    }
+}
 
 //--------------------------------------------------------------------------------------------------
 // Exports
@@ -397,9 +411,11 @@ pub mod effect;
 // Re-export the derive macro with the same name
 #[doc(hidden)]
 pub use rxtui_macros::Component as ComponentMacro;
+pub use rxtui_macros::{component, update, view};
+
+// Conditionally export the effect macro only when the feature is enabled
 #[cfg(feature = "effects")]
 pub use rxtui_macros::effect;
-pub use rxtui_macros::{component, update, view};
 
 pub use app::{App, Context};
 pub use bounds::Rect;

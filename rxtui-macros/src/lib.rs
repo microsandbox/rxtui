@@ -160,7 +160,6 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 
             // Use method resolution to call inherent __component_effects_impl if it exists,
             // otherwise fall back to the trait's default implementation (empty vec)
-            #[cfg(feature = "effects")]
             fn effects(&self, ctx: &rxtui::Context) -> Vec<rxtui::effect::Effect> {
                 use rxtui::providers::EffectsProvider;
                 self.__component_effects_impl(ctx)
