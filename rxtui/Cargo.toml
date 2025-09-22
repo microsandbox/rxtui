@@ -20,7 +20,7 @@ default = ["effects"]
 effects = ["tokio", "futures"]
 
 [dependencies]
-rxtui-macros = { version = "0.1.3", path = "../rxtui-macros" }
+rxtui-macros = { version = "0.1.4", path = "../rxtui-macros" }
 bitflags = "2.4"
 crossterm = "0.28"
 serde.workspace = true
