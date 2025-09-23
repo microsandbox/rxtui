@@ -89,17 +89,11 @@ pub struct DoubleBuffer {
     back: ScreenBuffer,
 }
 
-/// Represents an update to one or more cells.
-///
-/// Updates can be single cells or runs of consecutive cells
-/// with the same styling for efficiency.
+/// Represents an update to a single cell.
 #[derive(Debug)]
 pub enum CellUpdate {
     /// Update a single cell
     Single { x: u16, y: u16, cell: Cell },
-
-    /// Update a run of cells with the same style
-    Run { x: u16, y: u16, cells: Vec<Cell> },
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -510,7 +504,6 @@ mod tests {
         for update in &updates2 {
             match update {
                 CellUpdate::Single { .. } => actual_changes += 1,
-                CellUpdate::Run { cells, .. } => actual_changes += cells.len(),
             }
         }
 

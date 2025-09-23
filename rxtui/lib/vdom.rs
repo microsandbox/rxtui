@@ -342,7 +342,6 @@ impl VDom {
     /// - **UpdateProps**: Update styles/dimensions
     /// - **AddChild**: Insert new child node
     /// - **RemoveChild**: Delete child node
-    /// - **ReorderChildren**: Rearrange child order
     fn apply_patch(&mut self, patch: Patch) {
         match patch {
             Patch::Replace { old, new } => {
@@ -512,17 +511,6 @@ impl VDom {
                     // Mark parent as dirty since its children changed
                     parent_ref.mark_dirty();
                 }
-            }
-            Patch::ReorderChildren { parent, moves } => {
-                let mut parent_ref = parent.borrow_mut();
-                for mov in moves {
-                    if mov.from < parent_ref.children.len() && mov.to < parent_ref.children.len() {
-                        let child = parent_ref.children.remove(mov.from);
-                        parent_ref.children.insert(mov.to, child);
-                    }
-                }
-                // Mark parent as dirty since its children were reordered
-                parent_ref.mark_dirty();
             }
         }
     }

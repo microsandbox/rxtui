@@ -67,76 +67,6 @@ pub fn char_width(c: char) -> usize {
     UnicodeWidthChar::width(c).unwrap_or(0)
 }
 
-/// Truncates a string to fit within the specified display width.
-///
-/// Returns a substring that fits within max_width columns when displayed.
-/// If the string needs to be truncated at a wide character boundary,
-/// the wide character is excluded to avoid exceeding the width.
-pub fn truncate_to_width(s: &str, max_width: usize) -> &str {
-    if max_width == 0 {
-        return "";
-    }
-
-    let mut width = 0;
-    let mut end_byte = 0;
-
-    for (byte_idx, ch) in s.char_indices() {
-        let ch_width = char_width(ch);
-
-        if width + ch_width > max_width {
-            break;
-        }
-
-        width += ch_width;
-        end_byte = byte_idx + ch.len_utf8();
-    }
-
-    &s[..end_byte]
-}
-
-/// Calculates the byte index in a string that corresponds to a given display column.
-///
-/// This is useful for cursor positioning and text selection.
-/// Returns None if the column is beyond the string's display width.
-pub fn byte_index_from_column(s: &str, target_column: usize) -> Option<usize> {
-    let mut current_column = 0;
-
-    for (byte_idx, ch) in s.char_indices() {
-        if current_column == target_column {
-            return Some(byte_idx);
-        }
-
-        let ch_width = char_width(ch);
-        if current_column + ch_width > target_column {
-            // Target column falls in the middle of a wide character
-            return None;
-        }
-
-        current_column += ch_width;
-    }
-
-    // If we've reached the end and the column matches, return the string length
-    if current_column == target_column {
-        Some(s.len())
-    } else {
-        None
-    }
-}
-
-/// Pads a string with spaces to reach the specified display width.
-///
-/// If the string is already wider than the target width, it's returned as-is.
-pub fn pad_to_width(s: &str, target_width: usize) -> String {
-    let current_width = display_width(s);
-
-    if current_width >= target_width {
-        s.to_string()
-    } else {
-        let padding = target_width - current_width;
-        format!("{}{}", s, " ".repeat(padding))
-    }
-}
-
 /// Extracts a substring based on display column positions.
 ///
 /// Returns a substring that starts at `start_col` and ends at `end_col` display columns.
@@ -583,45 +513,6 @@ mod tests {
         assert_eq!(char_width('世'), 2);
         assert_eq!(char_width('😀'), 2);
         assert_eq!(char_width('\0'), 0); // Control character
-    }
-
-    #[test]
-    fn test_truncate_to_width() {
-        assert_eq!(truncate_to_width("Hello World", 5), "Hello");
-        assert_eq!(truncate_to_width("Hello", 10), "Hello");
-
-        // Wide characters
-        assert_eq!(truncate_to_width("Hello 世界", 7), "Hello ");
-        assert_eq!(truncate_to_width("世界", 2), "世");
-        assert_eq!(truncate_to_width("世界", 3), "世"); // Can't fit the second char
-        assert_eq!(truncate_to_width("世界", 4), "世界");
-    }
-
-    #[test]
-    fn test_byte_index_from_column() {
-        let text = "Hello";
-        assert_eq!(byte_index_from_column(text, 0), Some(0));
-        assert_eq!(byte_index_from_column(text, 3), Some(3));
-        assert_eq!(byte_index_from_column(text, 5), Some(5));
-        assert_eq!(byte_index_from_column(text, 6), None);
-
-        // Wide characters
-        let text = "世界";
-        assert_eq!(byte_index_from_column(text, 0), Some(0));
-        assert_eq!(byte_index_from_column(text, 1), None); // Middle of first char
-        assert_eq!(byte_index_from_column(text, 2), Some(3)); // After first char
-        assert_eq!(byte_index_from_column(text, 4), Some(6)); // End of string
-    }
-
-    #[test]
-    fn test_pad_to_width() {
-        assert_eq!(pad_to_width("Hi", 5), "Hi   ");
-        assert_eq!(pad_to_width("Hello", 5), "Hello");
-        assert_eq!(pad_to_width("Hello", 3), "Hello");
-
-        // With wide characters
-        assert_eq!(pad_to_width("世", 5), "世   ");
-        assert_eq!(pad_to_width("Hi世", 6), "Hi世  ");
     }
 
     #[test]

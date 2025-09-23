@@ -56,7 +56,7 @@ pub struct TerminalRenderer {
 
 /// A terminal command abstraction for batching operations.
 #[derive(Debug)]
-pub enum TerminalCommand {
+enum TerminalCommand {
     /// Move cursor to position
     MoveTo(u16, u16),
 
@@ -77,7 +77,7 @@ pub enum TerminalCommand {
 }
 
 /// Batches cell updates into optimized terminal commands.
-pub struct UpdateBatcher {
+struct UpdateBatcher {
     /// The updates to process
     updates: Vec<CellUpdate>,
 }
@@ -159,13 +159,6 @@ impl TerminalRenderer {
                     self.stdout.execute(cursor::MoveTo(x, y))?;
                     self.apply_cell_style(&cell)?;
                     self.stdout.execute(Print(cell.char))?;
-                }
-                CellUpdate::Run { x, y, cells } => {
-                    for (i, cell) in cells.iter().enumerate() {
-                        self.stdout.execute(cursor::MoveTo(x + i as u16, y))?;
-                        self.apply_cell_style(cell)?;
-                        self.stdout.execute(Print(cell.char))?;
-                    }
                 }
             }
         }
@@ -393,6 +386,7 @@ impl TerminalRenderer {
     }
 
     /// Resets the renderer state.
+    #[allow(dead_code)]
     pub fn reset(&mut self) -> io::Result<()> {
         self.apply_command(TerminalCommand::Reset)
     }
@@ -427,7 +421,6 @@ impl UpdateBatcher {
         // Sort updates by position (top-to-bottom, left-to-right)
         self.updates.sort_by_key(|update| match update {
             CellUpdate::Single { x, y, .. } => (*y, *x),
-            CellUpdate::Run { x, y, .. } => (*y, *x),
         });
 
         // Group updates into runs where possible
@@ -478,21 +471,6 @@ impl UpdateBatcher {
                         runs.push(run);
                     }
                     current_run = Some(Run::new(x, y, cell));
-                }
-                CellUpdate::Run { x, y, cells } => {
-                    // Flush current run
-                    if let Some(run) = current_run.take() {
-                        runs.push(run);
-                    }
-                    // Add pre-made run
-                    runs.push(Run {
-                        x,
-                        y,
-                        cells,
-                        fg: None,
-                        bg: None,
-                        style: CellStyle::default(),
-                    });
                 }
             }
         }
@@ -801,24 +779,6 @@ mod tests {
 
         // First command should be MoveTo(0, 0) due to sorting
         assert!(matches!(commands[0], TerminalCommand::MoveTo(0, 0)));
-    }
-
-    #[test]
-    fn test_update_batcher_run_type() {
-        let cells = vec![
-            Cell::new('T'),
-            Cell::new('e'),
-            Cell::new('s'),
-            Cell::new('t'),
-        ];
-
-        let updates = vec![CellUpdate::Run { x: 10, y: 5, cells }];
-
-        let batcher = UpdateBatcher::new(updates);
-        let commands = batcher.optimize();
-
-        assert!(matches!(commands[0], TerminalCommand::MoveTo(10, 5)));
-        assert!(matches!(commands[3], TerminalCommand::Print(ref s) if s == "Test"));
     }
 
     #[test]
