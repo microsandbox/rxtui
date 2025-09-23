@@ -10,8 +10,12 @@
 /// Text input component for user text entry
 pub mod text_input;
 
+/// Spinner component for loading animations
+pub mod spinner;
+
 //--------------------------------------------------------------------------------------------------
 // Exports
 //--------------------------------------------------------------------------------------------------
 
+pub use spinner::{Spinner, SpinnerMsg, SpinnerSpeed, SpinnerType};
 pub use text_input::TextInput;

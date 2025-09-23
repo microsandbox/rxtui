@@ -1,7 +1,7 @@
 use crate::app::Context;
 use crate::effect::Effect;
 use crate::node::Node;
-use std::any::Any;
+use std::any::{Any, TypeId};
 use std::fmt::Debug;
 
 //--------------------------------------------------------------------------------------------------
@@ -286,6 +286,11 @@ pub trait Component: 'static {
     /// - **Background calculations**: Heavy computations that shouldn't block UI
     fn effects(&self, _ctx: &Context) -> Vec<Effect> {
         vec![]
+    }
+
+    /// Get the TypeId of this component for identity tracking
+    fn type_id(&self) -> TypeId {
+        self.as_any().type_id()
     }
 
     fn as_any(&self) -> &dyn Any;

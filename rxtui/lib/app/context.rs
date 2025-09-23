@@ -1,5 +1,6 @@
 use crate::component::{ComponentId, Message, State};
-use std::collections::{HashMap, VecDeque};
+use std::any::TypeId;
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::{Arc, RwLock};
 
 //--------------------------------------------------------------------------------------------------
@@ -34,6 +35,13 @@ pub struct TopicStore {
     owners: RwLock<HashMap<String, ComponentId>>,
 }
 
+/// Tracks component instances for effect management
+#[derive(Clone)]
+pub struct ComponentInstanceTracker {
+    /// Set of (ComponentId, TypeId) pairs for components with spawned effects
+    spawned_effects: Arc<RwLock<HashSet<(ComponentId, TypeId)>>>,
+}
+
 /// Context passed to components during rendering
 #[derive(Clone)]
 pub struct Context {
@@ -54,6 +62,9 @@ pub struct Context {
 
     /// Topic message queues (shared with dispatcher)
     pub(crate) topic_message_queues: TopicMessageQueueMap,
+
+    /// Tracks which components have effects spawned
+    pub(crate) effect_tracker: ComponentInstanceTracker,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -201,6 +212,49 @@ impl TopicStore {
     }
 }
 
+impl ComponentInstanceTracker {
+    pub fn new() -> Self {
+        Self {
+            spawned_effects: Arc::new(RwLock::new(HashSet::new())),
+        }
+    }
+
+    /// Check if a component instance has effects spawned
+    pub fn has_effects(&self, component_id: &ComponentId, type_id: TypeId) -> bool {
+        self.spawned_effects
+            .read()
+            .unwrap()
+            .contains(&(component_id.clone(), type_id))
+    }
+
+    /// Mark a component instance as having effects spawned
+    pub fn mark_spawned(&self, component_id: ComponentId, type_id: TypeId) {
+        self.spawned_effects
+            .write()
+            .unwrap()
+            .insert((component_id, type_id));
+    }
+
+    /// Remove a component instance from tracking (for cleanup)
+    pub fn remove(&self, component_id: &ComponentId, type_id: TypeId) -> bool {
+        self.spawned_effects
+            .write()
+            .unwrap()
+            .remove(&(component_id.clone(), type_id))
+    }
+
+    /// Get all tracked component instances
+    pub fn get_all(&self) -> HashSet<(ComponentId, TypeId)> {
+        self.spawned_effects.read().unwrap().clone()
+    }
+}
+
+impl Default for ComponentInstanceTracker {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Context {
     pub fn new() -> Self {
         let queues = Arc::new(RwLock::new(HashMap::new()));
@@ -213,6 +267,7 @@ impl Context {
             topics: Arc::new(TopicStore::new()),
             message_queues: queues,
             topic_message_queues: topic_queues,
+            effect_tracker: ComponentInstanceTracker::new(),
         }
     }
 
@@ -315,6 +370,7 @@ impl Context {
             topics: self.topics.clone(), // Share the topic store
             message_queues: self.message_queues.clone(), // Share the message queues
             topic_message_queues: self.topic_message_queues.clone(), // Share the topic message queues
+            effect_tracker: self.effect_tracker.clone(),             // Share the effect tracker
         }
     }
 

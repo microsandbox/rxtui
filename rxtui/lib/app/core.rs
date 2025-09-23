@@ -261,26 +261,23 @@ impl App {
 
         // Store the root component
         let root_id = ComponentId::default();
-        components.insert(
-            root_id.clone(),
-            Arc::new(root_component) as Arc<dyn Component>,
-        );
+        let root_arc = Arc::new(root_component) as Arc<dyn Component>;
+        let root_type_id = root_arc.type_id();
+        components.insert(root_id.clone(), root_arc.clone());
 
         let mut needs_render = true; // Initial render
-
-        // Track which components have active effects - OUTSIDE the loop so it persists
-        #[cfg(feature = "effects")]
-        let mut component_effects: HashSet<ComponentId> = HashSet::new();
 
         // Spawn effects for root component ONCE before entering the loop
         #[cfg(feature = "effects")]
         if let Some(runtime) = &self.effect_runtime
-            && let Some(root_comp) = components.get(&root_id)
+            && !context.effect_tracker.has_effects(&root_id, root_type_id)
         {
-            let effects = root_comp.effects(&context);
+            let effects = root_arc.effects(&context);
             if !effects.is_empty() {
                 runtime.spawn(root_id.clone(), effects);
-                component_effects.insert(root_id.clone());
+                context
+                    .effect_tracker
+                    .mark_spawned(root_id.clone(), root_type_id);
             }
         }
 
@@ -306,37 +303,59 @@ impl App {
                         // Handle effects for dynamically mounted/unmounted components
                         #[cfg(feature = "effects")]
                         if let Some(runtime) = &self.effect_runtime {
-                            // Track current components in tree (excluding root which was handled before loop)
-                            let current_components: HashSet<ComponentId> =
-                                temp_components.keys().cloned().collect();
+                            // Build a set of current component instances with their types
+                            let mut current_instances: HashSet<(ComponentId, std::any::TypeId)> =
+                                HashSet::new();
+                            for (comp_id, component) in &temp_components {
+                                if comp_id != &root_id {
+                                    // Skip root, already handled
+                                    current_instances
+                                        .insert((comp_id.clone(), component.type_id()));
+                                }
+                            }
 
                             // Spawn effects for newly mounted components (not root)
                             for (comp_id, component) in &temp_components {
                                 // Skip root component as it's already handled
-                                if comp_id != &root_id && !component_effects.contains(comp_id) {
-                                    // This is a newly mounted component
-                                    let effects = component.effects(&context);
-                                    if !effects.is_empty() {
-                                        runtime.spawn(comp_id.clone(), effects);
-                                        component_effects.insert(comp_id.clone());
+                                if comp_id != &root_id {
+                                    let type_id = component.type_id();
+
+                                    // Check if this exact component instance (ID + Type) has effects
+                                    if !context.effect_tracker.has_effects(comp_id, type_id) {
+                                        // This is a truly new component instance
+                                        // CRITICAL: Set the context's component ID so effects send messages to the right component
+                                        let original_id = context.current_component_id.clone();
+                                        context.current_component_id = comp_id.clone();
+
+                                        let effects = component.effects(&context);
+                                        if !effects.is_empty() {
+                                            runtime.spawn(comp_id.clone(), effects);
+                                            context
+                                                .effect_tracker
+                                                .mark_spawned(comp_id.clone(), type_id);
+                                        }
+
+                                        // Restore original ID
+                                        context.current_component_id = original_id;
                                     }
                                 }
                             }
 
                             // Cleanup effects for unmounted components (excluding root)
-                            component_effects.retain(|comp_id| {
+                            let tracked = context.effect_tracker.get_all();
+                            for (comp_id, type_id) in tracked {
                                 // Never cleanup root component effects
-                                if comp_id == &root_id {
-                                    return true;
+                                if comp_id == root_id {
+                                    continue;
                                 }
 
-                                if !current_components.contains(comp_id) {
-                                    runtime.cleanup(comp_id);
-                                    false
-                                } else {
-                                    true
+                                // Check if this component instance is still in the tree
+                                if !current_instances.contains(&(comp_id.clone(), type_id)) {
+                                    // Component was unmounted or type changed
+                                    runtime.cleanup(&comp_id);
+                                    context.effect_tracker.remove(&comp_id, type_id);
                                 }
-                            });
+                            }
                         }
 
                         // Merge temp_components back into main components map
