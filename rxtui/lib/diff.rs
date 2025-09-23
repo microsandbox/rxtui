@@ -84,24 +84,6 @@ pub enum Patch {
         parent: Rc<RefCell<RenderNode>>,
         index: usize,
     },
-
-    /// Reorder children by applying a series of moves.
-    /// Currently unused but reserved for future keyed diff implementation.
-    ReorderChildren {
-        parent: Rc<RefCell<RenderNode>>,
-        moves: Vec<Move>,
-    },
-}
-
-/// Represents a move operation for reordering children.
-/// Specifies moving a child from one index to another.
-#[derive(Debug, Clone)]
-pub struct Move {
-    /// Source index of the child to move
-    pub from: usize,
-
-    /// Target index where the child should be moved to
-    pub to: usize,
 }
 
 /// Context for accumulating patches during the diff process.
@@ -237,10 +219,10 @@ fn diff_div(
 /// 2. Adds new children if new list is longer
 /// 3. Removes extra children if old list is longer
 ///
-/// ## Future Enhancement
+/// ## Note
 ///
-/// Could be optimized with a key-based algorithm for better handling
-/// of reordered children (like React's reconciliation).
+/// Currently implements a simple index-based diff. Could be optimized
+/// with a key-based algorithm for better handling of reordered children.
 fn diff_children(
     context: &mut DiffContext,
     parent: &Rc<RefCell<RenderNode>>,

@@ -306,7 +306,7 @@ pub mod component;
 pub mod node;
 
 /// Virtual node types for the VDOM
-pub mod vnode;
+mod vnode;
 
 //--------------------------------------------------------------------------------------------------
 // Modules: Rendering
@@ -314,23 +314,23 @@ pub mod vnode;
 
 /// Virtual DOM implementation for managing the UI state.
 /// Maintains the current UI tree and applies patches from the diff engine.
-pub mod vdom;
+mod vdom;
 
 /// Diffing algorithm for efficiently updating the UI.
 /// Compares old and new virtual DOM trees to generate minimal change patches.
-pub mod diff;
+mod diff;
 
 /// Rendering engine that converts virtual nodes into terminal output.
 /// Handles the actual drawing of elements to the screen.
-pub mod render_tree;
+mod render_tree;
 
 /// Double buffering and cell-level diffing for flicker-free rendering.
 /// Maintains screen state to enable precise, minimal updates.
-pub mod buffer;
+mod buffer;
 
 /// Optimized terminal renderer for applying cell updates.
 /// Minimizes escape sequences and I/O operations for best performance.
-pub mod terminal;
+mod terminal;
 
 //--------------------------------------------------------------------------------------------------
 // Modules: Application
@@ -362,7 +362,7 @@ pub mod key;
 
 /// Utilities for terminal rendering, Unicode width calculations, and text wrapping.
 /// Provides helpers for display width, text manipulation, and wrapping algorithms.
-pub mod utils;
+mod utils;
 
 /// Provider traits for Component macro system (internal use)
 /// Enables safe defaults via method shadowing for update/view/effects
