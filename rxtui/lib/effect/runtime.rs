@@ -56,11 +56,8 @@ impl EffectRuntime {
     }
 
     /// Spawn effects for a component
-    /// This will cancel any existing effects for the component first
+    /// The caller is responsible for tracking whether effects should be spawned
     pub fn spawn(&self, component_id: ComponentId, effects: Vec<Effect>) {
-        // Cancel existing effects for this component
-        self.cleanup(&component_id);
-
         if effects.is_empty() {
             return;
         }
