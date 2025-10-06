@@ -2082,6 +2082,24 @@ macro_rules! tui_apply_input_props {
         $input.password(true)
     }};
 
+    // Clear on submit with explicit value
+    ($input:expr, clear_on_submit: $value:expr, $($rest:tt)*) => {{
+        let i = $input.clear_on_submit($value);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, clear_on_submit: $value:expr) => {{
+        $input.clear_on_submit($value)
+    }};
+
+    // Clear on submit shorthand (enables clear on submit)
+    ($input:expr, clear_on_submit, $($rest:tt)*) => {{
+        let i = $input.clear_on_submit(true);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, clear_on_submit) => {{
+        $input.clear_on_submit(true)
+    }};
+
     // @change handler
     ($input:expr, @change: $handler:expr, $($rest:tt)*) => {{
         let i = $input.on_change($handler);

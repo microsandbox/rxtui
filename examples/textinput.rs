@@ -68,9 +68,9 @@ impl TextInputTest {
                     if state.search_history.len() > 5 {
                         state.search_history.remove(0);
                     }
-                    let submitted = state.search_value.clone();
-                    state.search_value.clear();
-                    state.last_action = format!("Search submitted: '{}'", submitted);
+                    state.last_action = format!("Search submitted: '{}'", state.search_value);
+                    // Note: input will be cleared automatically by clear_on_submit flag
+                    // The SearchChanged handler will receive empty string and update state.search_value
                 } else {
                     state.last_action = "Search submitted but was empty".to_string();
                 }
@@ -161,6 +161,7 @@ impl TextInputTest {
                     border: green,
                     w: 40,
                     focusable,
+                    clear_on_submit,
                     @change: ctx.handler_with_value(Msg::SearchChanged),
                     @submit: ctx.handler(Msg::SearchSubmitted)
                 ),

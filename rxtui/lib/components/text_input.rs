@@ -65,6 +65,9 @@ pub enum TextInputMsg {
 
     /// Submit (Enter key)
     Submit,
+
+    /// Clear the input content
+    Clear,
 }
 
 /// State for TextInput component
@@ -158,6 +161,7 @@ pub struct TextInput {
     focusable: bool,
     wrap: Option<TextWrap>,
     password_mode: bool,
+    clear_on_submit: bool,
     on_change: Option<Box<dyn Fn(String)>>,
     on_submit: Option<Box<dyn Fn()>>,
 }
@@ -376,6 +380,7 @@ impl TextInput {
             focusable: true,                 // Text inputs are focusable by default
             wrap: Some(TextWrap::WordBreak), // Default to WordBreak for better text wrapping
             password_mode: false,            // Default to normal text mode
+            clear_on_submit: false,          // Default to not clearing on submit
             on_change: None,
             on_submit: None,
         }
@@ -396,6 +401,12 @@ impl TextInput {
     /// Enables password mode which masks the input content
     pub fn password(mut self, password: bool) -> Self {
         self.password_mode = password;
+        self
+    }
+
+    /// Enables automatic clearing of input content on submit (Enter key)
+    pub fn clear_on_submit(mut self, clear: bool) -> Self {
+        self.clear_on_submit = clear;
         self
     }
 
@@ -600,6 +611,30 @@ impl TextInput {
                     // Call on_submit callback when Enter is pressed
                     if let Some(callback) = &self.on_submit {
                         callback();
+                    }
+
+                    // Clear content if clear_on_submit is enabled
+                    if self.clear_on_submit {
+                        state.content.clear();
+                        state.cursor_position = 0;
+                        state.selection_start = None;
+                        state.selection_end = None;
+
+                        // Call on_change callback to notify of cleared content
+                        if let Some(callback) = &self.on_change {
+                            callback(state.content.clone());
+                        }
+                    }
+                }
+                TextInputMsg::Clear => {
+                    state.content.clear();
+                    state.cursor_position = 0;
+                    state.selection_start = None;
+                    state.selection_end = None;
+
+                    // Call on_change callback
+                    if let Some(callback) = &self.on_change {
+                        callback(state.content.clone());
                     }
                 }
             }
