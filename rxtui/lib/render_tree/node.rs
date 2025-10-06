@@ -1,4 +1,5 @@
 use crate::bounds::Rect;
+use crate::component::ComponentId;
 use crate::key::Key;
 use crate::node::{DivStyles, EventCallbacks, TextSpan};
 use crate::style::{
@@ -94,6 +95,9 @@ pub struct RenderNode {
 
     /// Whether this node is scrollable (has overflow:scroll or auto)
     pub scrollable: bool,
+
+    /// Component path that produced this node (used for focus targeting)
+    pub component_path: Option<ComponentId>,
 }
 
 /// Types of nodes that can be rendered.
@@ -188,6 +192,7 @@ impl RenderNode {
             content_width: 0,
             content_height: 0,
             scrollable: false,
+            component_path: None,
         }
     }
 

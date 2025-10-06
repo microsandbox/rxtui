@@ -26,6 +26,25 @@ pub struct StateMap {
     states: Arc<RwLock<HashMap<ComponentId, Box<dyn State>>>>,
 }
 
+/// Target for focus requests emitted during rendering
+#[derive(Clone)]
+pub(crate) enum FocusTarget {
+    /// Focus the first focusable element inside the component's subtree
+    Component(ComponentId),
+
+    /// Focus the first focusable element in the entire application tree
+    GlobalFirst,
+
+    /// Clear focus from whichever element currently has it
+    Clear,
+}
+
+/// Pending focus request queued by components
+#[derive(Clone)]
+pub(crate) struct FocusRequest {
+    pub target: FocusTarget,
+}
+
 /// Topic storage for shared state between components
 pub struct TopicStore {
     /// Topic states indexed by topic name
@@ -65,6 +84,15 @@ pub struct Context {
 
     /// Tracks which components have effects spawned
     pub(crate) effect_tracker: ComponentInstanceTracker,
+
+    /// Focus requests queued during rendering
+    pub(crate) pending_focus_requests: Arc<RwLock<Vec<FocusRequest>>>,
+
+    /// Components that have completed their first render pass
+    pub(crate) rendered_components: Arc<RwLock<HashSet<ComponentId>>>,
+
+    /// Whether the current component invocation is on its first render
+    pub(crate) current_is_first_render: Arc<RwLock<bool>>,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -268,6 +296,9 @@ impl Context {
             message_queues: queues,
             topic_message_queues: topic_queues,
             effect_tracker: ComponentInstanceTracker::new(),
+            pending_focus_requests: Arc::new(RwLock::new(Vec::new())),
+            rendered_components: Arc::new(RwLock::new(HashSet::new())),
+            current_is_first_render: Arc::new(RwLock::new(false)),
         }
     }
 
@@ -371,7 +402,58 @@ impl Context {
             message_queues: self.message_queues.clone(), // Share the message queues
             topic_message_queues: self.topic_message_queues.clone(), // Share the topic message queues
             effect_tracker: self.effect_tracker.clone(),             // Share the effect tracker
+            pending_focus_requests: self.pending_focus_requests.clone(),
+            rendered_components: self.rendered_components.clone(),
+            current_is_first_render: self.current_is_first_render.clone(),
         }
+    }
+
+    /// Request focus for the first focusable element inside the current component
+    pub fn focus_self(&self) {
+        let mut queue = self.pending_focus_requests.write().unwrap();
+        queue.push(FocusRequest {
+            target: FocusTarget::Component(self.current_component_id.clone()),
+        });
+    }
+
+    /// Request focus for the first focusable element in the entire tree
+    pub fn focus_first(&self) {
+        let mut queue = self.pending_focus_requests.write().unwrap();
+        queue.push(FocusRequest {
+            target: FocusTarget::GlobalFirst,
+        });
+    }
+
+    /// Request that no element remain focused after this render cycle.
+    pub fn blur_focus(&self) {
+        let mut queue = self.pending_focus_requests.write().unwrap();
+        queue.push(FocusRequest {
+            target: FocusTarget::Clear,
+        });
+    }
+
+    /// Drain all focus requests accumulated during rendering
+    pub(crate) fn take_focus_requests(&self) -> Vec<FocusRequest> {
+        let mut queue = self.pending_focus_requests.write().unwrap();
+        queue.drain(..).collect()
+    }
+
+    /// Mark the beginning of a component render and return whether it is the first render
+    pub(crate) fn begin_component_render(&self) -> bool {
+        let mut rendered = self.rendered_components.write().unwrap();
+        let is_first = rendered.insert(self.current_component_id.clone());
+        *self.current_is_first_render.write().unwrap() = is_first;
+        is_first
+    }
+
+    /// Mark the end of a component render
+    pub(crate) fn end_component_render(&self) {
+        *self.current_is_first_render.write().unwrap() = false;
+    }
+
+    /// Returns true if the current render invocation is the component's first
+    pub fn is_first_render(&self) -> bool {
+        *self.current_is_first_render.read().unwrap()
     }
 
     /// Take and drain messages for a specific component

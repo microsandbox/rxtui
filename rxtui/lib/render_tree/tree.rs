@@ -1,4 +1,5 @@
 use crate::bounds::Rect;
+use crate::component::ComponentId;
 use crate::render_tree::node::{RenderNode, RenderNodeType};
 use crate::style::{Dimension, Direction, Overflow};
 use std::cell::RefCell;
@@ -459,6 +460,31 @@ impl RenderTree {
         nodes
     }
 
+    /// Finds the render node that corresponds to the given component root.
+    pub fn find_component_root(
+        &self,
+        component_id: &ComponentId,
+    ) -> Option<Rc<RefCell<RenderNode>>> {
+        self.root
+            .as_ref()
+            .and_then(|root| Self::find_component_root_recursive(root, component_id))
+    }
+
+    /// Finds the first focusable render node within the given subtree.
+    pub fn find_first_focusable_in(
+        &self,
+        node: &Rc<RefCell<RenderNode>>,
+    ) -> Option<Rc<RefCell<RenderNode>>> {
+        Self::find_first_focusable_recursive(node)
+    }
+
+    /// Finds the first focusable render node in the entire tree.
+    pub fn find_first_focusable_global(&self) -> Option<Rc<RefCell<RenderNode>>> {
+        self.root
+            .as_ref()
+            .and_then(Self::find_first_focusable_recursive)
+    }
+
     /// Recursively collects focusable nodes.
     fn collect_focusable_recursive(
         node: &Rc<RefCell<RenderNode>>,
@@ -477,6 +503,58 @@ impl RenderTree {
         for child in &children {
             Self::collect_focusable_recursive(child, nodes);
         }
+    }
+
+    /// Recursively finds the component root render node.
+    fn find_component_root_recursive(
+        node: &Rc<RefCell<RenderNode>>,
+        component_id: &ComponentId,
+    ) -> Option<Rc<RefCell<RenderNode>>> {
+        let (matches_component, children) = {
+            let node_ref = node.borrow();
+            (
+                node_ref
+                    .component_path
+                    .as_ref()
+                    .map(|path| path == component_id)
+                    .unwrap_or(false),
+                node_ref.children.clone(),
+            )
+        };
+
+        if matches_component {
+            return Some(node.clone());
+        }
+
+        for child in &children {
+            if let Some(found) = Self::find_component_root_recursive(child, component_id) {
+                return Some(found);
+            }
+        }
+
+        None
+    }
+
+    /// Recursively finds the first focusable node in a subtree.
+    fn find_first_focusable_recursive(
+        node: &Rc<RefCell<RenderNode>>,
+    ) -> Option<Rc<RefCell<RenderNode>>> {
+        let (is_focusable, children) = {
+            let node_ref = node.borrow();
+            (node_ref.focusable, node_ref.children.clone())
+        };
+
+        if is_focusable {
+            return Some(node.clone());
+        }
+
+        for child in &children {
+            if let Some(found) = Self::find_first_focusable_recursive(child) {
+                return Some(found);
+            }
+        }
+
+        None
     }
 
     /// Gets the currently focused node.

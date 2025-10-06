@@ -11,8 +11,8 @@ use std::rc::Rc;
 
 /// Processes keyboard input events.
 ///
-/// Handles Tab/Shift+Tab for focus navigation, Escape to exit focus mode,
-/// Enter to activate focused elements, broadcasts to global handlers,
+/// Handles Tab/Shift+Tab for focus navigation, Enter to activate focused elements,
+/// broadcasts to global handlers,
 /// then routes other keys to the focused element.
 pub fn handle_key_event(vdom: &VDom, key_event: KeyEvent) {
     // Try to create both simple key and key with modifiers
@@ -27,18 +27,6 @@ pub fn handle_key_event(vdom: &VDom, key_event: KeyEvent) {
         if key == Key::BackTab {
             render_tree.focus_prev();
             return;
-        }
-
-        // Handle Escape to exit focus mode
-        if key == Key::Esc {
-            // Check if there's currently a focused node
-            if render_tree.get_focused_node().is_some() {
-                // Clear focus
-                render_tree.set_focused_node(None);
-                // Don't propagate the Escape key to other handlers
-                return;
-            }
-            // If nothing was focused, let Escape propagate normally
         }
 
         // Handle Enter to activate focused element

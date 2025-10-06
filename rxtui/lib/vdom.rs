@@ -216,6 +216,7 @@ impl VDom {
         render_node.events = div.events.clone();
         render_node.focusable = div.focusable;
         render_node.focused = div.focused;
+        render_node.component_path = div.component_path.clone();
 
         let node_rc = Rc::new(RefCell::new(render_node));
 
@@ -483,6 +484,7 @@ impl VDom {
                 node_ref.events = div.events.clone();
                 node_ref.focusable = div.focusable;
                 node_ref.focused = is_focused;
+                node_ref.component_path = div.component_path.clone();
                 node_ref.mark_dirty();
             }
             Patch::AddChild {

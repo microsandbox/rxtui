@@ -1,3 +1,4 @@
+use crate::component::ComponentId;
 use crate::key::{Key, KeyWithModifiers};
 use crate::style::{
     AlignItems, AlignSelf, Border, BorderEdges, BorderStyle, Color, Dimension, Direction,
@@ -34,6 +35,9 @@ pub struct Div<T> {
 
     /// Whether this container is currently focused
     pub focused: bool,
+
+    /// Component path that owns this div (used for focus targeting)
+    pub component_path: Option<ComponentId>,
 }
 
 /// Style configuration for a div in different states.
@@ -89,6 +93,7 @@ impl<T> Div<T> {
             events: EventCallbacks::default(),
             focusable: false,
             focused: false,
+            component_path: None,
         }
     }
 
@@ -490,6 +495,7 @@ impl<T> Div<T> {
             events: self.events,
             focusable: self.focusable,
             focused: self.focused,
+            component_path: self.component_path,
         }
     }
 
@@ -519,6 +525,7 @@ impl<T: PartialEq> PartialEq for Div<T> {
             && self.styles == other.styles
             && self.focusable == other.focusable
             && self.focused == other.focused
+            && self.component_path == other.component_path
     }
 }
 

@@ -20,6 +20,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use super::config::RenderConfig;
+use super::context::{FocusRequest, FocusTarget};
 use super::events::{handle_key_event, handle_mouse_event};
 use super::renderer::render_node_to_buffer;
 use std::collections::HashMap;
@@ -377,6 +378,9 @@ impl App {
                 // Render VNode tree
                 self.vdom.render(vnode_tree);
 
+                let focus_requests = context.take_focus_requests();
+                self.apply_focus_requests(focus_requests);
+
                 let (width, height) = terminal::size()?;
                 self.vdom.layout(width, height);
 
@@ -474,7 +478,9 @@ impl App {
         }
 
         // Get the node from the component's view
+        context.begin_component_render();
         let node = component.view(context);
+        context.end_component_render();
 
         // Convert Node to VNode, expanding any nested components
         self.node_to_vnode(node, context, components, 0)
@@ -521,7 +527,7 @@ impl App {
                 }
 
                 // Restore parent context after processing div children
-                context.current_component_id = parent_id;
+                context.current_component_id = parent_id.clone();
 
                 // Create VNode div with converted children
                 let mut vnode_div = Div::new();
@@ -532,6 +538,7 @@ impl App {
                 vnode_div.events = div.events;
                 vnode_div.focusable = div.focusable;
                 vnode_div.focused = div.focused;
+                vnode_div.component_path = Some(parent_id);
 
                 Ok(VNode::Div(vnode_div))
             }
@@ -558,6 +565,34 @@ impl App {
     /// This is useful for logging the render tree state for debugging purposes.
     pub fn set_render_log_fn<F: Fn(&str) + 'static>(&mut self, log_fn: F) {
         self.render_log_fn = Some(Box::new(log_fn));
+    }
+
+    /// Applies any focus requests that were queued during the render cycle.
+    fn apply_focus_requests(&self, requests: Vec<FocusRequest>) {
+        if requests.is_empty() {
+            return;
+        }
+
+        let render_tree = self.vdom.get_render_tree();
+        for request in requests {
+            match request.target {
+                FocusTarget::Component(component_id) => {
+                    if let Some(root) = render_tree.find_component_root(&component_id)
+                        && let Some(target) = render_tree.find_first_focusable_in(&root)
+                    {
+                        render_tree.set_focused_node(Some(target));
+                    }
+                }
+                FocusTarget::GlobalFirst => {
+                    if let Some(target) = render_tree.find_first_focusable_global() {
+                        render_tree.set_focused_node(Some(target));
+                    }
+                }
+                FocusTarget::Clear => {
+                    render_tree.set_focused_node(None);
+                }
+            }
+        }
     }
 
     /// Renders the current UI tree to the terminal using double buffering.

@@ -1010,6 +1010,30 @@ node! {
 - **Tab**: Move to next focusable element
 - **Shift+Tab**: Move to previous focusable element
 
+#### Programmatic Focus
+
+Use the `Context` focus helpers to move focus immediately after a render:
+
+```rust
+#[view]
+fn view(&self, ctx: &Context, state: MyState) -> Node {
+    if ctx.is_first_render() {
+        ctx.focus_self(); // focus the first focusable node in this component
+    }
+
+    node! {
+        div [
+            input(focusable),
+            button(focusable)
+        ]
+    }
+}
+```
+
+- `ctx.focus_self()` focuses the first focusable element inside the component's subtree.
+- `ctx.focus_first()` focuses the first focusable element in the entire app.
+- `ctx.is_first_render()` is handy for gating autofocus so you do not wrestle with user-driven focus changes later.
+
 <div align='center'>• • •</div>
 
 ## Built-in Components
