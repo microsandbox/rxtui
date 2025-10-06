@@ -194,6 +194,22 @@ div(
 ) []
 ```
 
+### Programmatic Focus
+
+```rust
+#[view]
+fn view(&self, ctx: &Context, state: MyState) -> Node {
+    if ctx.is_first_render() {
+        ctx.focus_self();      // focus first focusable inside this component
+        // ctx.focus_first();  // or focus the first focusable in the whole app
+    }
+
+    // Inside an event handler you can call ctx.blur_focus() to drop focus manually.
+
+    node! { div(focusable) [] }
+}
+```
+
 ### Optional Properties
 
 ```rust

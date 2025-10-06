@@ -31,7 +31,6 @@ impl Page12FocusDemo {
                     text("• Shift+Tab: Navigate backward between focusable elements", color: bright_black),
                     text("• Click: Focus an element directly", color: bright_black),
                     text("• Enter: Activate focused button", color: bright_black),
-                    text("• Esc: Exit focus mode (clear focus)", color: bright_black),
                     text("• Focused elements have white borders", color: bright_black)
                 ],
                 spacer(2),

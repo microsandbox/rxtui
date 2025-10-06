@@ -48,7 +48,10 @@ impl Form {
                 align: center,
                 @key(esc): ctx.handler(Msg::Exit)
             ) [
-                text("tab to navigate | enter to submit | esc to exit", color: bright_black),
+                text(
+                    "tab to navigate | enter to submit | esc to exit",
+                    color: bright_black
+                ),
                 spacer(1),
 
                 // Form fields with callbacks
