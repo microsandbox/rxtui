@@ -1294,6 +1294,32 @@ macro_rules! tui_apply_props {
         }
     }};
 
+    // Hover style
+    ($container:expr, hover_style: ($style:expr), $($rest:tt)*) => {{
+        let c = $container.hover_style($style);
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, hover_style: ($style:expr)) => {{
+        $container.hover_style($style)
+    }};
+
+    // Hover style - optional with ! suffix on expression
+    ($container:expr, hover_style: ($style:expr)!, $($rest:tt)*) => {{
+        let c = if let Some(style_val) = $style {
+            $container.hover_style(style_val)
+        } else {
+            $container
+        };
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, hover_style: ($style:expr)!) => {{
+        if let Some(style_val) = $style {
+            $container.hover_style(style_val)
+        } else {
+            $container
+        }
+    }};
+
     // Z-index
     ($container:expr, z: $index:expr, $($rest:tt)*) => {{
         let c = $container.z_index($index);
@@ -1929,6 +1955,181 @@ macro_rules! tui_apply_input_props {
         $input.height($value)
     }};
 
+    // Focus style
+    ($input:expr, focus_style: ($style:expr), $($rest:tt)*) => {{
+        let i = $input.focus_style($style);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_style: ($style:expr)) => {{
+        $input.focus_style($style)
+    }};
+
+    // Focus style optional expression
+    ($input:expr, focus_style: ($style:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(style_val) = $style {
+            $input.focus_style(style_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_style: ($style:expr)!) => {{
+        if let Some(style_val) = $style {
+            $input.focus_style(style_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Focus border color
+    ($input:expr, focus_border: $color:tt, $($rest:tt)*) => {{
+        let i = $input.focus_border($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_border: $color:tt) => {{
+        $input.focus_border($crate::color_value!($color))
+    }};
+    ($input:expr, focus_border: ($color:expr), $($rest:tt)*) => {{
+        let i = $input.focus_border($color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_border: ($color:expr)) => {{
+        $input.focus_border($color)
+    }};
+
+    // Focus border style with color
+    ($input:expr, focus_border_style: ($style:expr, $color:expr), $($rest:tt)*) => {{
+        let i = $input.focus_border_style($style, $color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_border_style: ($style:expr, $color:expr)) => {{
+        $input.focus_border_style($style, $color)
+    }};
+
+    // Focus background
+    ($input:expr, focus_background: $color:tt, $($rest:tt)*) => {{
+        let i = $input.focus_background($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_background: $color:tt) => {{
+        $input.focus_background($crate::color_value!($color))
+    }};
+    ($input:expr, focus_background: ($color:expr), $($rest:tt)*) => {{
+        let i = $input.focus_background($color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_background: ($color:expr)) => {{
+        $input.focus_background($color)
+    }};
+
+    // Focus padding using scalar value
+    ($input:expr, focus_padding: $value:expr, $($rest:tt)*) => {{
+        let i = $input.focus_padding($crate::Spacing::all($value));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_padding: $value:expr) => {{
+        $input.focus_padding($crate::Spacing::all($value))
+    }};
+    ($input:expr, focus_padding: ($spacing:expr), $($rest:tt)*) => {{
+        let i = $input.focus_padding($spacing);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_padding: ($spacing:expr)) => {{
+        $input.focus_padding($spacing)
+    }};
+
+    // Hover style
+    ($input:expr, hover_style: ($style:expr), $($rest:tt)*) => {{
+        let i = $input.hover_style($style);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, hover_style: ($style:expr)) => {{
+        $input.hover_style($style)
+    }};
+
+    // Hover style optional expression
+    ($input:expr, hover_style: ($style:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(style_val) = $style {
+            $input.hover_style(style_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, hover_style: ($style:expr)!) => {{
+        if let Some(style_val) = $style {
+            $input.hover_style(style_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Hover border color
+    ($input:expr, hover_border: $color:tt, $($rest:tt)*) => {{
+        let i = $input.hover_border($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, hover_border: $color:tt) => {{
+        $input.hover_border($crate::color_value!($color))
+    }};
+    ($input:expr, hover_border: ($color:expr), $($rest:tt)*) => {{
+        let i = $input.hover_border($color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, hover_border: ($color:expr)) => {{
+        $input.hover_border($color)
+    }};
+
+    // Hover background
+    ($input:expr, hover_background: $color:tt, $($rest:tt)*) => {{
+        let i = $input.hover_background($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, hover_background: $color:tt) => {{
+        $input.hover_background($crate::color_value!($color))
+    }};
+    ($input:expr, hover_background: ($color:expr), $($rest:tt)*) => {{
+        let i = $input.hover_background($color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, hover_background: ($color:expr)) => {{
+        $input.hover_background($color)
+    }};
+
+    // Hover padding using scalar value
+    ($input:expr, hover_padding: $value:expr, $($rest:tt)*) => {{
+        let i = $input.hover_padding($crate::Spacing::all($value));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, hover_padding: $value:expr) => {{
+        $input.hover_padding($crate::Spacing::all($value))
+    }};
+
+    // Hover padding with explicit spacing expression
+    ($input:expr, hover_padding: ($spacing:expr), $($rest:tt)*) => {{
+        let i = $input.hover_padding($spacing);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, hover_padding: ($spacing:expr)) => {{
+        $input.hover_padding($spacing)
+    }};
+
+    // Hover padding shorthand alias
+    ($input:expr, hover_pad: $value:expr, $($rest:tt)*) => {{
+        let i = $input.hover_padding($crate::Spacing::all($value));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, hover_pad: $value:expr) => {{
+        $input.hover_padding($crate::Spacing::all($value))
+    }};
+    ($input:expr, hover_pad: ($spacing:expr), $($rest:tt)*) => {{
+        let i = $input.hover_padding($spacing);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, hover_pad: ($spacing:expr)) => {{
+        $input.hover_padding($spacing)
+    }};
+
     // Border color (now using the more explicit name)
     ($input:expr, border_color: $color:tt, $($rest:tt)*) => {{
         let i = $input.border($crate::color_value!($color));
@@ -1945,6 +2146,15 @@ macro_rules! tui_apply_input_props {
     }};
     ($input:expr, border_color: ($color:expr)) => {{
         $input.border($color)
+    }};
+
+    // Border style with color
+    ($input:expr, border_style: ($style:expr, $color:expr), $($rest:tt)*) => {{
+        let i = $input.border_style($style, $color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_style: ($style:expr, $color:expr)) => {{
+        $input.border_style($style, $color)
     }};
 
     // Legacy border support (maps to border_color)

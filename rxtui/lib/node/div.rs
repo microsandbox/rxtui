@@ -36,6 +36,9 @@ pub struct Div<T> {
     /// Whether this container is currently focused
     pub focused: bool,
 
+    /// Whether this container is currently hovered
+    pub hovered: bool,
+
     /// Component path that owns this div (used for focus targeting)
     pub component_path: Option<ComponentId>,
 }
@@ -49,7 +52,7 @@ pub struct DivStyles {
     /// Style to apply when div is focused
     pub focus: Option<Style>,
 
-    /// Style to apply when div is hovered (future feature)
+    /// Style to apply when div is hovered
     pub hover: Option<Style>,
 }
 
@@ -93,6 +96,7 @@ impl<T> Div<T> {
             events: EventCallbacks::default(),
             focusable: false,
             focused: false,
+            hovered: false,
             component_path: None,
         }
     }
@@ -396,6 +400,12 @@ impl<T> Div<T> {
         self
     }
 
+    /// Sets the hover style
+    pub fn hover_style(mut self, style: Style) -> Self {
+        self.styles.hover = Some(style);
+        self
+    }
+
     /// Sets the base style directly
     pub fn style(mut self, style: Style) -> Self {
         self.styles.base = Some(style);
@@ -495,6 +505,7 @@ impl<T> Div<T> {
             events: self.events,
             focusable: self.focusable,
             focused: self.focused,
+            hovered: self.hovered,
             component_path: self.component_path,
         }
     }
@@ -503,6 +514,8 @@ impl<T> Div<T> {
     pub fn active_style(&self) -> Option<&Style> {
         if self.focused && self.styles.focus.is_some() {
             self.styles.focus.as_ref()
+        } else if self.hovered && self.styles.hover.is_some() {
+            self.styles.hover.as_ref()
         } else {
             self.styles.base.as_ref()
         }
@@ -525,6 +538,7 @@ impl<T: PartialEq> PartialEq for Div<T> {
             && self.styles == other.styles
             && self.focusable == other.focusable
             && self.focused == other.focused
+            && self.hovered == other.hovered
             && self.component_path == other.component_path
     }
 }
@@ -570,6 +584,7 @@ impl<T: Debug> Debug for Div<T> {
             .field("events", &self.events)
             .field("focusable", &self.focusable)
             .field("focused", &self.focused)
+            .field("hovered", &self.hovered)
             .finish()
     }
 }
