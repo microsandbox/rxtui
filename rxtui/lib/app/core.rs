@@ -257,7 +257,8 @@ impl App {
     where
         C: Component,
     {
-        let mut context = Context::new();
+        let focus_clear_flag = self.vdom.focus_clear_flag();
+        let mut context = Context::new(focus_clear_flag);
         let mut components: HashMap<ComponentId, Arc<dyn Component>> = HashMap::new();
 
         // Store the root component
@@ -379,7 +380,7 @@ impl App {
                 self.vdom.render(vnode_tree);
 
                 let focus_requests = context.take_focus_requests();
-                self.apply_focus_requests(focus_requests);
+                self.apply_focus_requests(&context, focus_requests);
 
                 let (width, height) = terminal::size()?;
                 self.vdom.layout(width, height);
@@ -568,12 +569,10 @@ impl App {
     }
 
     /// Applies any focus requests that were queued during the render cycle.
-    fn apply_focus_requests(&self, requests: Vec<FocusRequest>) {
-        if requests.is_empty() {
-            return;
-        }
-
+    fn apply_focus_requests(&self, context: &Context, requests: Vec<FocusRequest>) {
         let render_tree = self.vdom.get_render_tree();
+        let mut focus_applied = false;
+
         for request in requests {
             match request.target {
                 FocusTarget::Component(component_id) => {
@@ -581,17 +580,24 @@ impl App {
                         && let Some(target) = render_tree.find_first_focusable_in(&root)
                     {
                         render_tree.set_focused_node(Some(target));
+                        focus_applied = true;
                     }
                 }
                 FocusTarget::GlobalFirst => {
                     if let Some(target) = render_tree.find_first_focusable_global() {
                         render_tree.set_focused_node(Some(target));
+                        focus_applied = true;
                     }
                 }
-                FocusTarget::Clear => {
-                    render_tree.set_focused_node(None);
-                }
             }
+        }
+
+        if focus_applied {
+            context.cancel_focus_clear();
+        }
+
+        if context.take_focus_clear_request() {
+            render_tree.set_focused_node(None);
         }
     }
 

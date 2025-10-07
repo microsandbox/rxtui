@@ -2117,4 +2117,31 @@ macro_rules! tui_apply_input_props {
     ($input:expr, @submit: $handler:expr) => {{
         $input.on_submit($handler)
     }};
+
+    // @key handler
+    ($input:expr, @key($key:tt): $handler:expr, $($rest:tt)*) => {{
+        let i = $input.on_key($crate::key_value!($key), $handler);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, @key($key:tt): $handler:expr) => {{
+        $input.on_key($crate::key_value!($key), $handler)
+    }};
+
+    // @key_global handler
+    ($input:expr, @key_global($key:tt): $handler:expr, $($rest:tt)*) => {{
+        let i = $input.on_key_global($crate::key_value!($key), $handler);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, @key_global($key:tt): $handler:expr) => {{
+        $input.on_key_global($crate::key_value!($key), $handler)
+    }};
+
+    // @blur handler
+    ($input:expr, @blur: $handler:expr, $($rest:tt)*) => {{
+        let i = $input.on_blur($handler);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, @blur: $handler:expr) => {{
+        $input.on_blur($handler)
+    }};
 }

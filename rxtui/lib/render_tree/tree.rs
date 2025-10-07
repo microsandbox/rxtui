@@ -4,6 +4,10 @@ use crate::render_tree::node::{RenderNode, RenderNodeType};
 use crate::style::{Dimension, Direction, Overflow};
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::{
+    Arc,
+    atomic::{AtomicBool, Ordering},
+};
 
 //--------------------------------------------------------------------------------------------------
 // Types
@@ -19,6 +23,9 @@ pub struct RenderTree {
 
     /// The currently focused node (uses RefCell for interior mutability)
     focused_node: RefCell<Option<Rc<RefCell<RenderNode>>>>,
+
+    /// Tracks whether a focus clear has been requested this frame
+    pending_focus_clear: Arc<AtomicBool>,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -31,7 +38,13 @@ impl RenderTree {
         Self {
             root: None,
             focused_node: RefCell::new(None),
+            pending_focus_clear: Arc::new(AtomicBool::new(false)),
         }
+    }
+
+    /// Returns the shared flag controlling pending focus clears.
+    pub fn focus_clear_flag(&self) -> Arc<AtomicBool> {
+        self.pending_focus_clear.clone()
     }
 
     /// Returns a debug string representation of the render tree.
@@ -564,33 +577,35 @@ impl RenderTree {
 
     /// Sets the focused node and updates the focused flags.
     pub fn set_focused_node(&self, node: Option<Rc<RefCell<RenderNode>>>) {
-        // Clear focus from previous node and trigger on_blur
-        if let Some(old_focused) = self.focused_node.borrow().as_ref() {
+        let current = self.focused_node.borrow().clone();
+
+        let is_same_node = match (&current, &node) {
+            (Some(old), Some(new)) => Rc::ptr_eq(old, new),
+            _ => false,
+        };
+
+        if is_same_node {
+            return;
+        }
+
+        if let Some(old_focused) = current {
             let mut old_ref = old_focused.borrow_mut();
-            // Trigger on_blur event
             if let Some(on_blur) = &old_ref.events.on_blur {
                 on_blur();
             }
             old_ref.focused = false;
-
-            // Update the style to remove focus styles
             old_ref.style = old_ref.styles.base.clone();
-
-            // Mark old node as dirty so it redraws without focus style
             old_ref.mark_dirty();
         }
 
-        // Set focus on new node and trigger on_focus
         if let Some(new_focused) = &node {
             let mut new_ref = new_focused.borrow_mut();
             new_ref.focused = true;
 
-            // Trigger on_focus event
             if let Some(on_focus) = &new_ref.events.on_focus {
                 on_focus();
             }
 
-            // Update the style to apply focus styles (base -> default focus -> custom focus)
             let default_focus = if new_ref.focusable {
                 Some(crate::style::Style::default_focus())
             } else {
@@ -601,12 +616,12 @@ impl RenderTree {
                 crate::style::Style::merge(default_focus, new_ref.styles.focus.clone());
             new_ref.style =
                 crate::style::Style::merge(new_ref.styles.base.clone(), focus_with_defaults);
-
-            // Mark new node as dirty so it redraws with focus style
             new_ref.mark_dirty();
         }
 
-        // Update the focused node reference
+        // Reset pending clear whenever focus moves or is explicitly cleared
+        self.pending_focus_clear.store(false, Ordering::SeqCst);
+
         *self.focused_node.borrow_mut() = node;
     }
 

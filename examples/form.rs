@@ -5,6 +5,7 @@ enum Msg {
     UsernameChanged(String),
     PasswordChanged(String),
     Submit,
+    ClearFocus,
     Exit,
 }
 
@@ -20,7 +21,7 @@ struct Form;
 
 impl Form {
     #[update]
-    fn update(&self, _ctx: &Context, msg: Msg, mut state: FormState) -> Action {
+    fn update(&self, ctx: &Context, msg: Msg, mut state: FormState) -> Action {
         match msg {
             Msg::UsernameChanged(value) => {
                 state.username = value;
@@ -33,6 +34,7 @@ impl Form {
             Msg::Submit => {
                 state.submitted = !state.username.is_empty() && !state.password.is_empty();
             }
+            Msg::ClearFocus => ctx.blur_focus(),
             Msg::Exit => return Action::exit(),
         }
         Action::update(state)
@@ -63,7 +65,8 @@ impl Form {
                         focusable,
                         w: 40,
                         @change: ctx.handler_with_value(Msg::UsernameChanged),
-                        @submit: ctx.handler(Msg::Submit)
+                        @submit: ctx.handler(Msg::Submit),
+                        @key(esc): ctx.handler(Msg::ClearFocus)
                     )
                 ],
                 spacer(1),
@@ -77,7 +80,8 @@ impl Form {
                         focusable,
                         w: 40,
                         @change: ctx.handler_with_value(Msg::PasswordChanged),
-                        @submit: ctx.handler(Msg::Submit)
+                        @submit: ctx.handler(Msg::Submit),
+                        @key(esc): ctx.handler(Msg::ClearFocus)
                     )
                 ],
                 spacer(1),
@@ -93,7 +97,8 @@ impl Form {
                     border: white,
                     focusable,
                     focus_style: (Style::default().border(Color::hex("#ffffff"))),
-                    @click: ctx.handler(Msg::Submit)
+                    @click: ctx.handler(Msg::Submit),
+                    @key(esc): ctx.handler(Msg::ClearFocus)
                 ) [
                     hstack [
                         div(w_pct: 0.9, h: 1)[],

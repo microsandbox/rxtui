@@ -8,6 +8,7 @@ use crate::style::{
 };
 use crate::{Context, Div};
 use std::any::Any;
+use std::rc::Rc;
 
 //--------------------------------------------------------------------------------------------------
 // Types
@@ -164,6 +165,9 @@ pub struct TextInput {
     clear_on_submit: bool,
     on_change: Option<Box<dyn Fn(String)>>,
     on_submit: Option<Box<dyn Fn()>>,
+    on_blur: Option<Box<dyn Fn()>>,
+    key_handlers: Vec<(Key, Rc<dyn Fn()>)>,
+    key_global_handlers: Vec<(Key, Rc<dyn Fn()>)>,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -383,6 +387,9 @@ impl TextInput {
             clear_on_submit: false,          // Default to not clearing on submit
             on_change: None,
             on_submit: None,
+            on_blur: None,
+            key_handlers: Vec::new(),
+            key_global_handlers: Vec::new(),
         }
     }
 
@@ -422,6 +429,24 @@ impl TextInput {
         self
     }
 
+    /// Sets the callback to be called when the input loses focus
+    pub fn on_blur(mut self, callback: impl Fn() + 'static) -> Self {
+        self.on_blur = Some(Box::new(callback));
+        self
+    }
+
+    /// Registers a key handler that fires when the input is focused.
+    pub fn on_key(mut self, key: Key, handler: impl Fn() + 'static) -> Self {
+        self.key_handlers.push((key, Rc::new(handler)));
+        self
+    }
+
+    /// Registers a global key handler that fires regardless of focus state.
+    pub fn on_key_global(mut self, key: Key, handler: impl Fn() + 'static) -> Self {
+        self.key_global_handlers.push((key, Rc::new(handler)));
+        self
+    }
+
     fn update(&self, ctx: &Context, msg: Box<dyn Message>, _topic: Option<&str>) -> Action {
         if let Some(msg) = msg.downcast::<TextInputMsg>() {
             let mut state = ctx.get_state::<TextInputState>();
@@ -437,6 +462,10 @@ impl TextInput {
                     // Clear selection when losing focus
                     state.selection_start = None;
                     state.selection_end = None;
+
+                    if let Some(callback) = &self.on_blur {
+                        callback();
+                    }
                 }
                 TextInputMsg::CharInput(ch) => {
                     // Only accept input when focused
@@ -750,6 +779,16 @@ impl TextInput {
                 // Control sequences are handled by on_key_with_modifiers above
                 TextInputMsg::CharInput(ch)
             }));
+
+        for (key, handler) in &self.key_handlers {
+            let handler = handler.clone();
+            container = container.on_key(*key, move || (handler.as_ref())());
+        }
+
+        for (key, handler) in &self.key_global_handlers {
+            let handler = handler.clone();
+            container = container.on_key_global(*key, move || (handler.as_ref())());
+        }
 
         // Display content if present, otherwise show placeholder
         if !state.content.is_empty() || state.focused {

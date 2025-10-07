@@ -45,6 +45,7 @@ use crate::utils::display_width;
 use crate::vnode::VNode;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::{Arc, atomic::AtomicBool};
 
 //--------------------------------------------------------------------------------------------------
 // Types
@@ -122,6 +123,11 @@ impl VDom {
     /// Used by the App to access the tree for drawing and event handling.
     pub fn get_render_tree(&self) -> &RenderTree {
         &self.render_tree
+    }
+
+    /// Returns the shared focus-clear flag for coordination with contexts.
+    pub fn focus_clear_flag(&self) -> Arc<AtomicBool> {
+        self.render_tree.focus_clear_flag()
     }
 
     /// Creates a render node from a node.
