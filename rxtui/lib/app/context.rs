@@ -1,7 +1,10 @@
 use crate::component::{ComponentId, Message, State};
 use std::any::TypeId;
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::sync::{Arc, RwLock};
+use std::sync::{
+    Arc, RwLock,
+    atomic::{AtomicBool, Ordering},
+};
 
 //--------------------------------------------------------------------------------------------------
 // Types
@@ -34,9 +37,6 @@ pub(crate) enum FocusTarget {
 
     /// Focus the first focusable element in the entire application tree
     GlobalFirst,
-
-    /// Clear focus from whichever element currently has it
-    Clear,
 }
 
 /// Pending focus request queued by components
@@ -87,6 +87,9 @@ pub struct Context {
 
     /// Focus requests queued during rendering
     pub(crate) pending_focus_requests: Arc<RwLock<Vec<FocusRequest>>>,
+
+    /// Pending request to clear focus if nothing else claims it
+    pub(crate) pending_focus_clear: Arc<AtomicBool>,
 
     /// Components that have completed their first render pass
     pub(crate) rendered_components: Arc<RwLock<HashSet<ComponentId>>>,
@@ -284,7 +287,7 @@ impl Default for ComponentInstanceTracker {
 }
 
 impl Context {
-    pub fn new() -> Self {
+    pub fn new(pending_focus_clear: Arc<AtomicBool>) -> Self {
         let queues = Arc::new(RwLock::new(HashMap::new()));
         let topic_queues = Arc::new(RwLock::new(HashMap::new()));
 
@@ -297,6 +300,7 @@ impl Context {
             topic_message_queues: topic_queues,
             effect_tracker: ComponentInstanceTracker::new(),
             pending_focus_requests: Arc::new(RwLock::new(Vec::new())),
+            pending_focus_clear,
             rendered_components: Arc::new(RwLock::new(HashSet::new())),
             current_is_first_render: Arc::new(RwLock::new(false)),
         }
@@ -403,6 +407,7 @@ impl Context {
             topic_message_queues: self.topic_message_queues.clone(), // Share the topic message queues
             effect_tracker: self.effect_tracker.clone(),             // Share the effect tracker
             pending_focus_requests: self.pending_focus_requests.clone(),
+            pending_focus_clear: self.pending_focus_clear.clone(),
             rendered_components: self.rendered_components.clone(),
             current_is_first_render: self.current_is_first_render.clone(),
         }
@@ -426,16 +431,23 @@ impl Context {
 
     /// Request that no element remain focused after this render cycle.
     pub fn blur_focus(&self) {
-        let mut queue = self.pending_focus_requests.write().unwrap();
-        queue.push(FocusRequest {
-            target: FocusTarget::Clear,
-        });
+        self.pending_focus_clear.store(true, Ordering::SeqCst);
     }
 
     /// Drain all focus requests accumulated during rendering
     pub(crate) fn take_focus_requests(&self) -> Vec<FocusRequest> {
         let mut queue = self.pending_focus_requests.write().unwrap();
         queue.drain(..).collect()
+    }
+
+    /// Returns true if a focus clear was requested and resets the flag.
+    pub(crate) fn take_focus_clear_request(&self) -> bool {
+        self.pending_focus_clear.swap(false, Ordering::SeqCst)
+    }
+
+    /// Cancels any pending focus clear request.
+    pub(crate) fn cancel_focus_clear(&self) {
+        self.pending_focus_clear.store(false, Ordering::SeqCst);
     }
 
     /// Mark the beginning of a component render and return whether it is the first render
@@ -578,6 +590,6 @@ impl Default for StateMap {
 
 impl Default for Context {
     fn default() -> Self {
-        Self::new()
+        Self::new(Arc::new(AtomicBool::new(false)))
     }
 }

@@ -13,6 +13,7 @@ enum Msg {
     SearchChanged(String),
     SearchSubmitted,
     ExitFocus(bool),
+    ClearFocus,
     Exit,
 }
 
@@ -36,7 +37,7 @@ struct TextInputTest;
 
 impl TextInputTest {
     #[update]
-    fn update(&self, _ctx: &Context, msg: Msg, mut state: TextInputTestState) -> Action {
+    fn update(&self, ctx: &Context, msg: Msg, mut state: TextInputTestState) -> Action {
         match msg {
             Msg::InputChanged(value) => {
                 state.input_value = value;
@@ -63,6 +64,9 @@ impl TextInputTest {
             }
             Msg::ExitFocus(focused) => {
                 state.exit_focused = focused;
+            }
+            Msg::ClearFocus => {
+                ctx.blur_focus();
             }
             Msg::Exit => return Action::exit(),
         }
@@ -99,7 +103,8 @@ impl TextInputTest {
                     w: 40,
                     focusable,
                     @change: ctx.handler_with_value(Msg::InputChanged),
-                    @submit: ctx.handler(Msg::InputSubmitted)
+                    @submit: ctx.handler(Msg::InputSubmitted),
+                    @key(esc): ctx.handler(Msg::ClearFocus)
                 ),
                 text(
                     format!("Value: '{}' | Submits: {}",
@@ -117,7 +122,8 @@ impl TextInputTest {
                     w: 40,
                     focusable,
                     @change: ctx.handler_with_value(Msg::PasswordChanged),
-                    @submit: ctx.handler(Msg::PasswordSubmitted)
+                    @submit: ctx.handler(Msg::PasswordSubmitted),
+                    @key(esc): ctx.handler(Msg::ClearFocus)
                 ),
                 text(
                     format!("Password length: {} | Submits: {}",
@@ -135,7 +141,8 @@ impl TextInputTest {
                     focusable,
                     clear_on_submit,
                     @change: ctx.handler_with_value(Msg::SearchChanged),
-                    @submit: ctx.handler(Msg::SearchSubmitted)
+                    @submit: ctx.handler(Msg::SearchSubmitted),
+                    @key(esc): ctx.handler(Msg::ClearFocus)
                 ),
                 text(
                     format!("Current search: '{}'", state.search_value),
