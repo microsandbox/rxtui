@@ -153,76 +153,14 @@ impl VDom {
         // Create a standard element render node
         let mut render_node = RenderNode::element();
 
-        // Apply the correct style based on focus state
-        let effective_style = if div.focused {
-            // For focused elements, merge: base -> default focus -> custom focus
-            let default_focus = if div.focusable {
-                Some(crate::style::Style::default_focus())
-            } else {
-                None
-            };
-
-            let focus_with_defaults =
-                crate::style::Style::merge(default_focus, div.styles.focus.clone());
-            crate::style::Style::merge(div.styles.base.clone(), focus_with_defaults)
-        } else {
-            div.styles.base.clone()
-        };
-
-        if let Some(style) = effective_style {
-            // Extract dimensions from style before moving it
-            match style.width {
-                Some(crate::style::Dimension::Fixed(width)) => {
-                    render_node.width = width;
-                }
-                Some(crate::style::Dimension::Percentage(_)) => {
-                    // Percentage will be resolved during layout
-                    // Keep width as 0 to indicate it needs resolution
-                }
-                Some(crate::style::Dimension::Auto) => {
-                    // Auto will be resolved during layout
-                    // Keep width as 0 to indicate it needs resolution
-                }
-                Some(crate::style::Dimension::Content) => {
-                    // Content will be resolved during layout
-                    // Keep width as 0 to indicate it needs resolution
-                }
-                None => {}
-            }
-
-            match style.height {
-                Some(crate::style::Dimension::Fixed(height)) => {
-                    render_node.height = height;
-                }
-                Some(crate::style::Dimension::Percentage(_)) => {
-                    // Percentage will be resolved during layout
-                    // Keep height as 0 to indicate it needs resolution
-                }
-                Some(crate::style::Dimension::Auto) => {
-                    // Auto will be resolved during layout
-                    // Keep height as 0 to indicate it needs resolution
-                }
-                Some(crate::style::Dimension::Content) => {
-                    // Content will be resolved during layout
-                    // Keep height as 0 to indicate it needs resolution
-                }
-                None => {}
-            }
-
-            // Extract positioning and z-index
-            render_node.position_type = style.position.unwrap_or(crate::style::Position::Relative);
-            render_node.z_index = style.z_index.unwrap_or(0);
-
-            // Now assign the style after we're done extracting values from it
-            render_node.style = Some(style);
-        }
-
         // Copy div properties to render node
         render_node.styles = div.styles.clone();
         render_node.events = div.events.clone();
         render_node.focusable = div.focusable;
         render_node.focused = div.focused;
+        render_node.hovered = div.hovered;
         render_node.component_path = div.component_path.clone();
+        render_node.refresh_state_style();
 
         let node_rc = Rc::new(RefCell::new(render_node));
 
@@ -424,73 +362,16 @@ impl VDom {
 
                 // Preserve the existing focus state from the old node
                 let is_focused = node_ref.focused;
-
-                // Apply the correct style based on the preserved focus state
-                let effective_style = if is_focused {
-                    // For focused elements, merge: base -> default focus -> custom focus
-                    let default_focus = if div.focusable {
-                        Some(crate::style::Style::default_focus())
-                    } else {
-                        None
-                    };
-
-                    let focus_with_defaults =
-                        crate::style::Style::merge(default_focus, div.styles.focus.clone());
-                    crate::style::Style::merge(div.styles.base.clone(), focus_with_defaults)
-                } else {
-                    div.styles.base.clone()
-                };
-
-                if let Some(style) = effective_style {
-                    // Extract dimensions from style before assigning
-                    match style.width {
-                        Some(crate::style::Dimension::Fixed(width)) => {
-                            node_ref.width = width;
-                        }
-                        Some(crate::style::Dimension::Percentage(_)) => {
-                            // Percentage will be resolved during layout
-                            // Keep width as 0 to indicate it needs resolution
-                        }
-                        Some(crate::style::Dimension::Auto) => {
-                            // Auto will be resolved during layout
-                            // Keep width as 0 to indicate it needs resolution
-                        }
-                        Some(crate::style::Dimension::Content) => {
-                            // Content will be resolved during layout
-                            // Keep width as 0 to indicate it needs resolution
-                        }
-                        None => {}
-                    }
-
-                    match style.height {
-                        Some(crate::style::Dimension::Fixed(height)) => {
-                            node_ref.height = height;
-                        }
-                        Some(crate::style::Dimension::Percentage(_)) => {
-                            // Percentage will be resolved during layout
-                            // Keep height as 0 to indicate it needs resolution
-                        }
-                        Some(crate::style::Dimension::Auto) => {
-                            // Auto will be resolved during layout
-                            // Keep height as 0 to indicate it needs resolution
-                        }
-                        Some(crate::style::Dimension::Content) => {
-                            // Content will be resolved during layout
-                            // Keep height as 0 to indicate it needs resolution
-                        }
-                        None => {}
-                    }
-
-                    // Now assign the style
-                    node_ref.style = Some(style);
-                }
+                let is_hovered = node_ref.hovered;
 
                 // Update container properties but preserve focus state
                 node_ref.styles = div.styles.clone();
                 node_ref.events = div.events.clone();
                 node_ref.focusable = div.focusable;
                 node_ref.focused = is_focused;
+                node_ref.hovered = is_hovered;
                 node_ref.component_path = div.component_path.clone();
+                node_ref.refresh_state_style();
                 node_ref.mark_dirty();
             }
             Patch::AddChild {

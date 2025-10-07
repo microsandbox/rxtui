@@ -67,6 +67,20 @@ CSS Flexbox-style alignment demonstration:
 
 <br />
 
+### [hover.rs](./hover.rs)
+```bash
+cargo run --example hover
+```
+
+Demonstrates pointer-driven styling:
+- Cards highlight with `hover_style` overlays and animated borders
+- Keyboard tabbing still works via `focus_style` fallbacks
+- Shows how to compose base, focus, and hover layers without extra event wiring
+- Includes a `TextInput` with hover/focus styling via `hover_*` helpers
+- Great starting point for interactive menus and dashboards
+
+<br />
+
 ### [progressbar.rs](./progressbar.rs)
 ```bash
 cargo run --example progressbar

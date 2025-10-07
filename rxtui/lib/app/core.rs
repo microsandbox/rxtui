@@ -539,6 +539,7 @@ impl App {
                 vnode_div.events = div.events;
                 vnode_div.focusable = div.focusable;
                 vnode_div.focused = div.focused;
+                vnode_div.hovered = div.hovered;
                 vnode_div.component_path = Some(parent_id);
 
                 Ok(VNode::Div(vnode_div))

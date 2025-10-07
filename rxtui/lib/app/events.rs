@@ -175,6 +175,7 @@ pub fn handle_mouse_event(vdom: &VDom, mouse_event: MouseEvent) {
     match mouse_event.kind {
         MouseEventKind::Down(_) => {
             if let Some(node) = render_tree.find_node_at(mouse_event.column, mouse_event.row) {
+                render_tree.set_hovered_node(Some(node.clone()));
                 // Set focus if the node is focusable
                 {
                     let node_ref = node.borrow();
@@ -186,11 +187,14 @@ pub fn handle_mouse_event(vdom: &VDom, mouse_event: MouseEvent) {
 
                 // Handle the click
                 node.borrow().handle_click();
+            } else {
+                render_tree.set_hovered_node(None);
             }
         }
         MouseEventKind::ScrollUp => {
             // Find the scrollable node at the mouse position
             if let Some(node) = render_tree.find_node_at(mouse_event.column, mouse_event.row) {
+                render_tree.set_hovered_node(Some(node.clone()));
                 // Find the nearest scrollable ancestor (including self)
                 if let Some(scrollable_node) = find_scrollable_ancestor(&node) {
                     let mut node_ref = scrollable_node.borrow_mut();
@@ -199,11 +203,14 @@ pub fn handle_mouse_event(vdom: &VDom, mouse_event: MouseEvent) {
                         node_ref.mark_dirty();
                     }
                 }
+            } else {
+                render_tree.set_hovered_node(None);
             }
         }
         MouseEventKind::ScrollDown => {
             // Find the scrollable node at the mouse position
             if let Some(node) = render_tree.find_node_at(mouse_event.column, mouse_event.row) {
+                render_tree.set_hovered_node(Some(node.clone()));
                 // Find the nearest scrollable ancestor (including self)
                 if let Some(scrollable_node) = find_scrollable_ancestor(&node) {
                     let mut node_ref = scrollable_node.borrow_mut();
@@ -212,7 +219,17 @@ pub fn handle_mouse_event(vdom: &VDom, mouse_event: MouseEvent) {
                         node_ref.mark_dirty();
                     }
                 }
+            } else {
+                render_tree.set_hovered_node(None);
             }
+        }
+        MouseEventKind::Moved | MouseEventKind::Drag(_) => {
+            let hovered = render_tree.find_node_at(mouse_event.column, mouse_event.row);
+            render_tree.set_hovered_node(hovered);
+        }
+        MouseEventKind::Up(_) => {
+            let hovered = render_tree.find_node_at(mouse_event.column, mouse_event.row);
+            render_tree.set_hovered_node(hovered);
         }
         _ => {}
     }

@@ -24,6 +24,9 @@ pub struct RenderTree {
     /// The currently focused node (uses RefCell for interior mutability)
     focused_node: RefCell<Option<Rc<RefCell<RenderNode>>>>,
 
+    /// The currently hovered node (uses RefCell for interior mutability)
+    hovered_node: RefCell<Option<Rc<RefCell<RenderNode>>>>,
+
     /// Tracks whether a focus clear has been requested this frame
     pending_focus_clear: Arc<AtomicBool>,
 }
@@ -38,6 +41,7 @@ impl RenderTree {
         Self {
             root: None,
             focused_node: RefCell::new(None),
+            hovered_node: RefCell::new(None),
             pending_focus_clear: Arc::new(AtomicBool::new(false)),
         }
     }
@@ -594,8 +598,7 @@ impl RenderTree {
                 on_blur();
             }
             old_ref.focused = false;
-            old_ref.style = old_ref.styles.base.clone();
-            old_ref.mark_dirty();
+            old_ref.refresh_state_style();
         }
 
         if let Some(new_focused) = &node {
@@ -606,23 +609,41 @@ impl RenderTree {
                 on_focus();
             }
 
-            let default_focus = if new_ref.focusable {
-                Some(crate::style::Style::default_focus())
-            } else {
-                None
-            };
-
-            let focus_with_defaults =
-                crate::style::Style::merge(default_focus, new_ref.styles.focus.clone());
-            new_ref.style =
-                crate::style::Style::merge(new_ref.styles.base.clone(), focus_with_defaults);
-            new_ref.mark_dirty();
+            new_ref.refresh_state_style();
         }
 
         // Reset pending clear whenever focus moves or is explicitly cleared
         self.pending_focus_clear.store(false, Ordering::SeqCst);
 
         *self.focused_node.borrow_mut() = node;
+    }
+
+    /// Sets the hovered node and updates hover flags/styles.
+    pub fn set_hovered_node(&self, node: Option<Rc<RefCell<RenderNode>>>) {
+        let current = self.hovered_node.borrow().clone();
+
+        let is_same_node = match (&current, &node) {
+            (Some(old), Some(new)) => Rc::ptr_eq(old, new),
+            _ => false,
+        };
+
+        if is_same_node {
+            return;
+        }
+
+        if let Some(old_hovered) = current {
+            let mut old_ref = old_hovered.borrow_mut();
+            old_ref.hovered = false;
+            old_ref.refresh_state_style();
+        }
+
+        if let Some(new_hovered) = &node {
+            let mut new_ref = new_hovered.borrow_mut();
+            new_ref.hovered = true;
+            new_ref.refresh_state_style();
+        }
+
+        *self.hovered_node.borrow_mut() = node;
     }
 
     /// Moves focus to the next focusable element.

@@ -690,6 +690,11 @@ impl TextInput {
             container = container.focus_style(focus.clone());
         }
 
+        // Apply hover style if we have one
+        if let Some(hover) = &self.styles.hover {
+            container = container.hover_style(hover.clone());
+        }
+
         // Set focusable
         if self.focusable {
             container = container.focusable(true);
@@ -1018,6 +1023,12 @@ impl TextInput {
         self
     }
 
+    /// Sets the hover style
+    pub fn hover_style(mut self, style: Style) -> Self {
+        self.styles.hover = Some(style);
+        self
+    }
+
     /// Sets the border color when focused
     pub fn focus_border(mut self, color: Color) -> Self {
         let mut style = self.styles.focus.clone().unwrap_or_default();
@@ -1058,6 +1069,49 @@ impl TextInput {
         let mut style = self.styles.focus.clone().unwrap_or_default();
         style.padding = Some(padding);
         self.styles.focus = Some(style);
+        self
+    }
+
+    /// Sets the border color when hovered
+    pub fn hover_border(mut self, color: Color) -> Self {
+        let mut style = self.styles.hover.clone().unwrap_or_default();
+        if style.border.is_none() {
+            style.border = Some(Border::new(color));
+        }
+        if let Some(ref mut border) = style.border {
+            border.color = color;
+            border.enabled = true;
+        }
+        self.styles.hover = Some(style);
+        self
+    }
+
+    /// Sets the border style and color when hovered
+    pub fn hover_border_style(mut self, border_style: BorderStyle, color: Color) -> Self {
+        let mut style = self.styles.hover.clone().unwrap_or_default();
+        style.border = Some(Border {
+            enabled: true,
+            style: border_style,
+            color,
+            edges: BorderEdges::ALL,
+        });
+        self.styles.hover = Some(style);
+        self
+    }
+
+    /// Sets the background color when hovered
+    pub fn hover_background(mut self, color: Color) -> Self {
+        let mut style = self.styles.hover.clone().unwrap_or_default();
+        style.background = Some(color);
+        self.styles.hover = Some(style);
+        self
+    }
+
+    /// Sets the padding when hovered
+    pub fn hover_padding(mut self, padding: Spacing) -> Self {
+        let mut style = self.styles.hover.clone().unwrap_or_default();
+        style.padding = Some(padding);
+        self.styles.hover = Some(style);
         self
     }
 

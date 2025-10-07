@@ -75,6 +75,9 @@ pub struct RenderNode {
     /// Whether this element is currently focused
     pub focused: bool,
 
+    /// Whether this element is currently hovered
+    pub hovered: bool,
+
     /// Whether this node needs to be redrawn
     pub dirty: bool,
 
@@ -185,6 +188,7 @@ impl RenderNode {
             events: EventCallbacks::default(),
             focusable: false,
             focused: false,
+            hovered: false,
             dirty: true,
             z_index: 0,
             position_type: Position::Relative,
@@ -250,6 +254,62 @@ impl RenderNode {
     /// Clears the dirty flag after rendering.
     pub fn clear_dirty(&mut self) {
         self.dirty = false;
+    }
+
+    /// Computes the effective style for the current focus/hover state.
+    pub fn compose_state_style(
+        styles: &DivStyles,
+        focusable: bool,
+        focused: bool,
+        hovered: bool,
+    ) -> Option<Style> {
+        let base = styles.base.clone();
+
+        let focus_overlay = if focused {
+            let default_focus = if focusable {
+                Some(Style::default_focus())
+            } else {
+                None
+            };
+            Style::merge(default_focus, styles.focus.clone())
+        } else {
+            None
+        };
+
+        let hover_overlay = if hovered { styles.hover.clone() } else { None };
+
+        let with_focus = Style::merge(base, focus_overlay);
+        Style::merge(with_focus, hover_overlay)
+    }
+
+    /// Applies the provided style to this node, updating derived properties.
+    fn apply_computed_style(&mut self, style: Option<Style>) {
+        if let Some(ref style) = style {
+            if let Some(Dimension::Fixed(width)) = style.width {
+                self.width = width;
+            }
+            if let Some(Dimension::Fixed(height)) = style.height {
+                self.height = height;
+            }
+            self.position_type = style.position.unwrap_or(Position::Relative);
+            self.z_index = style.z_index.unwrap_or(0);
+        } else {
+            self.position_type = Position::Relative;
+            self.z_index = 0;
+        }
+
+        self.style = style;
+    }
+
+    /// Recomputes the node style based on focus/hover state and marks dirty if needed.
+    pub fn refresh_state_style(&mut self) {
+        let new_style =
+            Self::compose_state_style(&self.styles, self.focusable, self.focused, self.hovered);
+        let needs_dirty = self.style != new_style;
+        self.apply_computed_style(new_style);
+        if needs_dirty {
+            self.mark_dirty();
+        }
     }
 
     /// Returns true if this node creates a positioning context for absolute children.

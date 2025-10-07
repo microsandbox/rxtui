@@ -180,18 +180,20 @@ fn diff_div(
 ) {
     let props_changed = {
         let old_style = &old_ref.style;
-        // Use the OLD node's focus state, not the new div's (which is always false)
+        // Use the OLD node's state flags, not the new div's (which default to false)
         let is_focused = old_ref.focused;
-        // Get effective style based on the preserved focus state
-        let new_style = if is_focused {
-            crate::style::Style::merge(new_div.styles.base.clone(), new_div.styles.focus.clone())
-        } else {
-            new_div.styles.base.clone()
-        };
-        let new_style = &new_style;
+        let is_hovered = old_ref.hovered;
+        // Get effective style based on the preserved focus/hover state
+        let new_style = RenderNode::compose_state_style(
+            &new_div.styles,
+            new_div.focusable,
+            is_focused,
+            is_hovered,
+        );
+        let new_style_ref = &new_style;
 
         // Check if dimensions changed (including percentage values)
-        let dimensions_changed = match (old_style, new_style) {
+        let dimensions_changed = match (old_style, new_style_ref) {
             (Some(old_s), Some(new_s)) => {
                 old_s.width != new_s.width || old_s.height != new_s.height
             }
@@ -199,7 +201,7 @@ fn diff_div(
             (None, None) => false,
         };
 
-        old_style != new_style || dimensions_changed
+        old_style != new_style_ref || dimensions_changed
     };
 
     if props_changed {
