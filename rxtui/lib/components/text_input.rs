@@ -168,6 +168,8 @@ pub struct TextInput {
     on_blur: Option<Box<dyn Fn()>>,
     key_handlers: Vec<(Key, Rc<dyn Fn()>)>,
     key_global_handlers: Vec<(Key, Rc<dyn Fn()>)>,
+    key_with_modifiers_handlers: Vec<(KeyWithModifiers, Rc<dyn Fn()>)>,
+    key_with_modifiers_global_handlers: Vec<(KeyWithModifiers, Rc<dyn Fn()>)>,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -390,6 +392,8 @@ impl TextInput {
             on_blur: None,
             key_handlers: Vec::new(),
             key_global_handlers: Vec::new(),
+            key_with_modifiers_handlers: Vec::new(),
+            key_with_modifiers_global_handlers: Vec::new(),
         }
     }
 
@@ -444,6 +448,28 @@ impl TextInput {
     /// Registers a global key handler that fires regardless of focus state.
     pub fn on_key_global(mut self, key: Key, handler: impl Fn() + 'static) -> Self {
         self.key_global_handlers.push((key, Rc::new(handler)));
+        self
+    }
+
+    /// Registers a key handler that includes modifier state (Ctrl/Alt/Shift/Meta).
+    pub fn on_key_with_modifiers(
+        mut self,
+        key: KeyWithModifiers,
+        handler: impl Fn() + 'static,
+    ) -> Self {
+        self.key_with_modifiers_handlers
+            .push((key, Rc::new(handler)));
+        self
+    }
+
+    /// Registers a global modifier-aware key handler that fires regardless of focus state.
+    pub fn on_key_with_modifiers_global(
+        mut self,
+        key: KeyWithModifiers,
+        handler: impl Fn() + 'static,
+    ) -> Self {
+        self.key_with_modifiers_global_handlers
+            .push((key, Rc::new(handler)));
         self
     }
 
@@ -785,9 +811,21 @@ impl TextInput {
                 TextInputMsg::CharInput(ch)
             }));
 
+        for (key_with_modifiers, handler) in &self.key_with_modifiers_handlers {
+            let handler = handler.clone();
+            container =
+                container.on_key_with_modifiers(*key_with_modifiers, move || (handler.as_ref())());
+        }
+
         for (key, handler) in &self.key_handlers {
             let handler = handler.clone();
             container = container.on_key(*key, move || (handler.as_ref())());
+        }
+
+        for (key_with_modifiers, handler) in &self.key_with_modifiers_global_handlers {
+            let handler = handler.clone();
+            container = container
+                .on_key_with_modifiers_global(*key_with_modifiers, move || (handler.as_ref())());
         }
 
         for (key, handler) in &self.key_global_handlers {

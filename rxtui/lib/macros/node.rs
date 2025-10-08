@@ -389,8 +389,10 @@
 /// | `@char(c)` | Character key press | `@char('a'): handler` |
 /// | `@key(k)` | Special key press | `@key(enter): handler` |
 /// | `@key(Char(c))` | Character in key enum | `@key(Char('-')): handler` |
+/// | `@key(mod + key)` | Key press with modifiers | `@key(ctrl + 'c'): handler` |
 /// | `@char_global(c)` | Global character key | `@char_global('q'): handler` |
 /// | `@key_global(k)` | Global special key | `@key_global(esc): handler` |
+/// | `@key_global(mod + key)` | Global key with modifiers | `@key_global(ctrl + enter): handler` |
 /// | `@focus` | Gained focus | `@focus: handler` |
 /// | `@blur` | Lost focus | `@blur: handler` |
 /// | `@any_char` | Any character typed | `@any_char: \|c\| handler(c)` |
@@ -1477,6 +1479,21 @@ macro_rules! tui_apply_props {
         $container.on_key($crate::Key::Char($ch), $handler)
     }};
 
+    // @key with modifiers handler
+    ($container:expr, @key($modifier:ident + $($mods:tt)+): $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_key_with_modifiers(
+            $crate::key_with_modifiers_value!($modifier + $($mods)+),
+            $handler,
+        );
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @key($modifier:ident + $($mods:tt)+): $handler:expr) => {{
+        $container.on_key_with_modifiers(
+            $crate::key_with_modifiers_value!($modifier + $($mods)+),
+            $handler,
+        )
+    }};
+
     // @key handler
     ($container:expr, @key($key:tt): $handler:expr, $($rest:tt)*) => {{
         let c = $container.on_key($crate::key_value!($key), $handler);
@@ -1493,6 +1510,21 @@ macro_rules! tui_apply_props {
     }};
     ($container:expr, @key_global($key:tt): $handler:expr) => {{
         $container.on_key_global($crate::key_value!($key), $handler)
+    }};
+
+    // @key_global with modifiers handler
+    ($container:expr, @key_global($modifier:ident + $($mods:tt)+): $handler:expr, $($rest:tt)*) => {{
+        let c = $container.on_key_with_modifiers_global(
+            $crate::key_with_modifiers_value!($modifier + $($mods)+),
+            $handler,
+        );
+        $crate::tui_apply_props!(c, $($rest)*)
+    }};
+    ($container:expr, @key_global($modifier:ident + $($mods:tt)+): $handler:expr) => {{
+        $container.on_key_with_modifiers_global(
+            $crate::key_with_modifiers_value!($modifier + $($mods)+),
+            $handler,
+        )
     }};
 
     // @focus handler
@@ -1930,6 +1962,50 @@ macro_rules! tui_apply_input_props {
         $input.width($value)
     }};
 
+    // Width - optional with ! suffix on expression
+    ($input:expr, w: ($value:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(width_val) = $value {
+            $input.width(width_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, w: ($value:expr)!) => {{
+        if let Some(width_val) = $value {
+            $input.width(width_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Width percentage
+    ($input:expr, w_pct: $pct:expr, $($rest:tt)*) => {{
+        let i = $input.width_percent($pct);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, w_pct: $pct:expr) => {{
+        $input.width_percent($pct)
+    }};
+
+    // Width auto
+    ($input:expr, w_auto, $($rest:tt)*) => {{
+        let i = $input.width_auto();
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, w_auto) => {{
+        $input.width_auto()
+    }};
+
+    // Width content
+    ($input:expr, w_content, $($rest:tt)*) => {{
+        let i = $input.width_content();
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, w_content) => {{
+        $input.width_content()
+    }};
+
     ($input:expr, width: $value:expr, $($rest:tt)*) => {{
         let i = $input.width($value);
         $crate::tui_apply_input_props!(i, $($rest)*)
@@ -1945,6 +2021,50 @@ macro_rules! tui_apply_input_props {
     }};
     ($input:expr, h: $value:expr) => {{
         $input.height($value)
+    }};
+
+    // Height - optional with ! suffix on expression
+    ($input:expr, h: ($value:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(height_val) = $value {
+            $input.height(height_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, h: ($value:expr)!) => {{
+        if let Some(height_val) = $value {
+            $input.height(height_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Height percentage
+    ($input:expr, h_pct: $pct:expr, $($rest:tt)*) => {{
+        let i = $input.height_percent($pct);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, h_pct: $pct:expr) => {{
+        $input.height_percent($pct)
+    }};
+
+    // Height auto
+    ($input:expr, h_auto, $($rest:tt)*) => {{
+        let i = $input.height_auto();
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, h_auto) => {{
+        $input.height_auto()
+    }};
+
+    // Height content
+    ($input:expr, h_content, $($rest:tt)*) => {{
+        let i = $input.height_content();
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, h_content) => {{
+        $input.height_content()
     }};
 
     ($input:expr, height: $value:expr, $($rest:tt)*) => {{
@@ -2175,6 +2295,339 @@ macro_rules! tui_apply_input_props {
         $input.border($color)
     }};
 
+    // Border color - optional with ! suffix on expression
+    ($input:expr, border_color: ($color:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(color_val) = $color {
+            $input.border(color_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_color: ($color:expr)!) => {{
+        if let Some(color_val) = $color {
+            $input.border(color_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Legacy border support (maps to border_color) - optional with ! suffix
+    ($input:expr, border: ($color:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(color_val) = $color {
+            $input.border(color_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border: ($color:expr)!) => {{
+        if let Some(color_val) = $color {
+            $input.border(color_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Border style with explicit style and color
+    ($input:expr, border_style: ($style:expr, $color:expr), $($rest:tt)*) => {{
+        let i = $input.border_style($style, $color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_style: ($style:expr, $color:expr)) => {{
+        $input.border_style($style, $color)
+    }};
+
+    // Border edges - simple syntax support
+    ($input:expr, border_edges: top, $($rest:tt)*) => {{
+        let i = $input.border_edges($crate::BorderEdges::TOP);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_edges: bottom, $($rest:tt)*) => {{
+        let i = $input.border_edges($crate::BorderEdges::BOTTOM);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_edges: left, $($rest:tt)*) => {{
+        let i = $input.border_edges($crate::BorderEdges::LEFT);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_edges: right, $($rest:tt)*) => {{
+        let i = $input.border_edges($crate::BorderEdges::RIGHT);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_edges: horizontal, $($rest:tt)*) => {{
+        let i = $input.border_edges($crate::BorderEdges::HORIZONTAL);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_edges: vertical, $($rest:tt)*) => {{
+        let i = $input.border_edges($crate::BorderEdges::VERTICAL);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_edges: all, $($rest:tt)*) => {{
+        let i = $input.border_edges($crate::BorderEdges::ALL);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_edges: corners, $($rest:tt)*) => {{
+        let i = $input.border_edges($crate::BorderEdges::CORNERS);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_edges: edges, $($rest:tt)*) => {{
+        let i = $input.border_edges($crate::BorderEdges::EDGES);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+
+    // Support for | operator in edges
+    ($input:expr, border_edges: $edge1:ident | $($edge2:ident)|+, $($rest:tt)*) => {{
+        let edges = $crate::tui_edge_value!($edge1) $(| $crate::tui_edge_value!($edge2))+;
+        let i = $input.border_edges(edges);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+
+    // Expression-based edges
+    ($input:expr, border_edges: ($edges:expr), $($rest:tt)*) => {{
+        let i = $input.border_edges($edges);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_edges: ($edges:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(edges_val) = $edges {
+            $input.border_edges(edges_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+
+    // Terminal rules (no rest)
+    ($input:expr, border_edges: top) => {{
+        $input.border_edges($crate::BorderEdges::TOP)
+    }};
+    ($input:expr, border_edges: bottom) => {{
+        $input.border_edges($crate::BorderEdges::BOTTOM)
+    }};
+    ($input:expr, border_edges: left) => {{
+        $input.border_edges($crate::BorderEdges::LEFT)
+    }};
+    ($input:expr, border_edges: right) => {{
+        $input.border_edges($crate::BorderEdges::RIGHT)
+    }};
+    ($input:expr, border_edges: horizontal) => {{
+        $input.border_edges($crate::BorderEdges::HORIZONTAL)
+    }};
+    ($input:expr, border_edges: vertical) => {{
+        $input.border_edges($crate::BorderEdges::VERTICAL)
+    }};
+    ($input:expr, border_edges: all) => {{
+        $input.border_edges($crate::BorderEdges::ALL)
+    }};
+    ($input:expr, border_edges: corners) => {{
+        $input.border_edges($crate::BorderEdges::CORNERS)
+    }};
+    ($input:expr, border_edges: edges) => {{
+        $input.border_edges($crate::BorderEdges::EDGES)
+    }};
+    ($input:expr, border_edges: $edge1:ident | $($edge2:ident)|+) => {{
+        let edges = $crate::tui_edge_value!($edge1) $(| $crate::tui_edge_value!($edge2))+;
+        $input.border_edges(edges)
+    }};
+    ($input:expr, border_edges: ($edges:expr)) => {{
+        $input.border_edges($edges)
+    }};
+    ($input:expr, border_edges: ($edges:expr)!) => {{
+        if let Some(edges_val) = $edges {
+            $input.border_edges(edges_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Full border configuration
+    ($input:expr, border_full: ($style:expr, $color:expr, $edges:expr), $($rest:tt)*) => {{
+        let i = $input.border_full($style, $color, $edges);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, border_full: ($style:expr, $color:expr, $edges:expr)) => {{
+        $input.border_full($style, $color, $edges)
+    }};
+
+    // Focus style
+    ($input:expr, focus_style: ($style:expr), $($rest:tt)*) => {{
+        let i = $input.focus_style($style);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_style: ($style:expr)) => {{
+        $input.focus_style($style)
+    }};
+    ($input:expr, focus_style: ($style:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(style_val) = $style {
+            $input.focus_style(style_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_style: ($style:expr)!) => {{
+        if let Some(style_val) = $style {
+            $input.focus_style(style_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Focus border color helpers
+    ($input:expr, focus_border: $color:tt, $($rest:tt)*) => {{
+        let i = $input.focus_border($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_border: $color:tt) => {{
+        $input.focus_border($crate::color_value!($color))
+    }};
+    ($input:expr, focus_border: ($color:expr), $($rest:tt)*) => {{
+        let i = $input.focus_border($color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_border: ($color:expr)) => {{
+        $input.focus_border($color)
+    }};
+    ($input:expr, focus_border: ($color:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(color_val) = $color {
+            $input.focus_border(color_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_border: ($color:expr)!) => {{
+        if let Some(color_val) = $color {
+            $input.focus_border(color_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Focus border style with explicit style and color
+    ($input:expr, focus_border_style: ($style:expr, $color:expr), $($rest:tt)*) => {{
+        let i = $input.focus_border_style($style, $color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_border_style: ($style:expr, $color:expr)) => {{
+        $input.focus_border_style($style, $color)
+    }};
+
+    // Focus background color helpers
+    ($input:expr, focus_background: $color:tt, $($rest:tt)*) => {{
+        let i = $input.focus_background($crate::color_value!($color));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_background: $color:tt) => {{
+        $input.focus_background($crate::color_value!($color))
+    }};
+    ($input:expr, focus_background: ($color:expr), $($rest:tt)*) => {{
+        let i = $input.focus_background($color);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_background: ($color:expr)) => {{
+        $input.focus_background($color)
+    }};
+    ($input:expr, focus_background: ($color:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(color_val) = $color {
+            $input.focus_background(color_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_background: ($color:expr)!) => {{
+        if let Some(color_val) = $color {
+            $input.focus_background(color_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Focus padding helpers
+    ($input:expr, focus_padding: ($padding:expr), $($rest:tt)*) => {{
+        let i = $input.focus_padding($padding);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_padding: ($padding:expr)) => {{
+        $input.focus_padding($padding)
+    }};
+    ($input:expr, focus_padding: ($padding:expr)!, $($rest:tt)*) => {{
+        let i = if let Some(padding_val) = $padding {
+            $input.focus_padding(padding_val)
+        } else {
+            $input
+        };
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, focus_padding: ($padding:expr)!) => {{
+        if let Some(padding_val) = $padding {
+            $input.focus_padding(padding_val)
+        } else {
+            $input
+        }
+    }};
+
+    // Z-index
+    ($input:expr, z: $index:expr, $($rest:tt)*) => {{
+        let i = $input.z_index($index);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, z: $index:expr) => {{
+        $input.z_index($index)
+    }};
+
+    // Position
+    ($input:expr, pos: $pos:tt, $($rest:tt)*) => {{
+        let i = $input.position($crate::position_value!($pos));
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, pos: $pos:tt) => {{
+        $input.position($crate::position_value!($pos))
+    }};
+
+    // Absolute positioning shorthand
+    ($input:expr, absolute, $($rest:tt)*) => {{
+        let i = $input.absolute();
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, absolute) => {{
+        $input.absolute()
+    }};
+
+    // Positioning offsets
+    ($input:expr, top: $val:expr, $($rest:tt)*) => {{
+        let i = $input.top($val);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, top: $val:expr) => {{
+        $input.top($val)
+    }};
+
+    ($input:expr, right: $val:expr, $($rest:tt)*) => {{
+        let i = $input.right($val);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, right: $val:expr) => {{
+        $input.right($val)
+    }};
+
+    ($input:expr, bottom: $val:expr, $($rest:tt)*) => {{
+        let i = $input.bottom($val);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, bottom: $val:expr) => {{
+        $input.bottom($val)
+    }};
+
+    ($input:expr, left: $val:expr, $($rest:tt)*) => {{
+        let i = $input.left($val);
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, left: $val:expr) => {{
+        $input.left($val)
+    }};
+
     // Background color
     ($input:expr, bg: $color:tt, $($rest:tt)*) => {{
         let i = $input.background($crate::color_value!($color));
@@ -2337,6 +2790,21 @@ macro_rules! tui_apply_input_props {
         $input.on_key($crate::key_value!($key), $handler)
     }};
 
+    // @key with modifiers handler
+    ($input:expr, @key($modifier:ident + $($mods:tt)+): $handler:expr, $($rest:tt)*) => {{
+        let i = $input.on_key_with_modifiers(
+            $crate::key_with_modifiers_value!($modifier + $($mods)+),
+            $handler,
+        );
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, @key($modifier:ident + $($mods:tt)+): $handler:expr) => {{
+        $input.on_key_with_modifiers(
+            $crate::key_with_modifiers_value!($modifier + $($mods)+),
+            $handler,
+        )
+    }};
+
     // @key_global handler
     ($input:expr, @key_global($key:tt): $handler:expr, $($rest:tt)*) => {{
         let i = $input.on_key_global($crate::key_value!($key), $handler);
@@ -2344,6 +2812,21 @@ macro_rules! tui_apply_input_props {
     }};
     ($input:expr, @key_global($key:tt): $handler:expr) => {{
         $input.on_key_global($crate::key_value!($key), $handler)
+    }};
+
+    // @key_global with modifiers handler
+    ($input:expr, @key_global($modifier:ident + $($mods:tt)+): $handler:expr, $($rest:tt)*) => {{
+        let i = $input.on_key_with_modifiers_global(
+            $crate::key_with_modifiers_value!($modifier + $($mods)+),
+            $handler,
+        );
+        $crate::tui_apply_input_props!(i, $($rest)*)
+    }};
+    ($input:expr, @key_global($modifier:ident + $($mods:tt)+): $handler:expr) => {{
+        $input.on_key_with_modifiers_global(
+            $crate::key_with_modifiers_value!($modifier + $($mods)+),
+            $handler,
+        )
     }};
 
     // @blur handler

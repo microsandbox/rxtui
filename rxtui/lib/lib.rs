@@ -421,7 +421,7 @@ pub use app::{App, Context};
 pub use bounds::Rect;
 pub use component::{Action, Component, Message, MessageExt, State};
 pub use components::TextInput;
-pub use key::Key;
+pub use key::{Key, KeyWithModifiers};
 pub use node::{Div, Node, RichText, Text, TextSpan};
 pub use style::{
     BorderEdges, BorderStyle, Color, Dimension, Direction, Overflow, Position, Spacing, Style,
