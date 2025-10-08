@@ -36,7 +36,7 @@ pub use crate::components::TextInput;
 pub use crate::style::*;
 
 // Key handling
-pub use crate::key::Key;
+pub use crate::key::{Key, KeyWithModifiers};
 
 // Layout types
 pub use crate::bounds::Rect;

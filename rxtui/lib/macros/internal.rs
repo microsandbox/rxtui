@@ -489,3 +489,49 @@ macro_rules! key_value {
         $key
     };
 }
+
+/// Converts modifier combinations to KeyWithModifiers
+#[doc(hidden)]
+#[macro_export]
+macro_rules! key_with_modifiers_value {
+    (ctrl + $($rest:tt)+) => {{
+        let mut km = $crate::key_with_modifiers_value!($($rest)+);
+        km.ctrl = true;
+        km
+    }};
+    (alt + $($rest:tt)+) => {{
+        let mut km = $crate::key_with_modifiers_value!($($rest)+);
+        km.alt = true;
+        km
+    }};
+    (shift + $($rest:tt)+) => {{
+        let mut km = $crate::key_with_modifiers_value!($($rest)+);
+        km.shift = true;
+        km
+    }};
+    (meta + $($rest:tt)+) => {{
+        let mut km = $crate::key_with_modifiers_value!($($rest)+);
+        km.meta = true;
+        km
+    }};
+    (cmd + $($rest:tt)+) => {{
+        let mut km = $crate::key_with_modifiers_value!($($rest)+);
+        km.meta = true;
+        km
+    }};
+    (key: $key:expr) => {{
+        $crate::KeyWithModifiers::new($key)
+    }};
+    (Char($ch:literal)) => {{
+        $crate::KeyWithModifiers::new($crate::Key::Char($ch))
+    }};
+    ($ch:literal) => {{
+        $crate::KeyWithModifiers::new($crate::Key::Char($ch))
+    }};
+    ($key:ident) => {{
+        $crate::KeyWithModifiers::new($crate::key_value!($key))
+    }};
+    ($key:expr) => {{
+        $crate::KeyWithModifiers::new($key)
+    }};
+}

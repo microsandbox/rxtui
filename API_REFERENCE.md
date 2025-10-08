@@ -612,24 +612,63 @@ impl TextInput {
     pub fn background(self, color: Color) -> Self;
     pub fn border(self, color: Color) -> Self;
     pub fn border_style(self, style: BorderStyle, color: Color) -> Self;
+    pub fn border_edges(self, edges: BorderEdges) -> Self;
+    pub fn border_full(self, style: BorderStyle, color: Color, edges: BorderEdges) -> Self;
     pub fn padding(self, spacing: Spacing) -> Self;
+    pub fn z_index(self, z: i32) -> Self;
+    pub fn position(self, pos: Position) -> Self;
+    pub fn absolute(self) -> Self;
+    pub fn top(self, offset: i16) -> Self;
+    pub fn right(self, offset: i16) -> Self;
+    pub fn bottom(self, offset: i16) -> Self;
+    pub fn left(self, offset: i16) -> Self;
+
+    // Sizing
     pub fn width(self, w: u16) -> Self;
+    pub fn width_percent(self, pct: f32) -> Self;
+    pub fn width_auto(self) -> Self;
+    pub fn width_content(self) -> Self;
     pub fn height(self, h: u16) -> Self;
+    pub fn height_percent(self, pct: f32) -> Self;
+    pub fn height_auto(self) -> Self;
+    pub fn height_content(self) -> Self;
 
     // Text styling
     pub fn content_color(self, color: Color) -> Self;
     pub fn content_bold(self, bold: bool) -> Self;
+    pub fn content_background(self, color: Color) -> Self;
     pub fn placeholder_color(self, color: Color) -> Self;
+    pub fn placeholder_background(self, color: Color) -> Self;
+    pub fn placeholder_bold(self, bold: bool) -> Self;
     pub fn placeholder_italic(self, italic: bool) -> Self;
+    pub fn placeholder_underline(self, underline: bool) -> Self;
+    pub fn placeholder_style(self, style: TextStyle) -> Self;
+    pub fn content_style(self, style: TextStyle) -> Self;
     pub fn cursor_color(self, color: Color) -> Self;
 
     // Focus
     pub fn focusable(self, enabled: bool) -> Self;
     pub fn focus_border(self, color: Color) -> Self;
+    pub fn focus_border_style(self, style: BorderStyle, color: Color) -> Self;
     pub fn focus_background(self, color: Color) -> Self;
+    pub fn focus_style(self, style: Style) -> Self;
+    pub fn focus_padding(self, spacing: Spacing) -> Self;
 
     // Wrapping
     pub fn wrap(self, mode: TextWrap) -> Self;
+
+    // Events
+    pub fn on_change(self, callback: impl Fn(String) + 'static) -> Self;
+    pub fn on_submit(self, callback: impl Fn() + 'static) -> Self;
+    pub fn on_blur(self, callback: impl Fn() + 'static) -> Self;
+    pub fn on_key(self, key: Key, handler: impl Fn() + 'static) -> Self;
+    pub fn on_key_global(self, key: Key, handler: impl Fn() + 'static) -> Self;
+    pub fn on_key_with_modifiers(self, key: KeyWithModifiers, handler: impl Fn() + 'static) -> Self;
+    pub fn on_key_with_modifiers_global(
+        self,
+        key: KeyWithModifiers,
+        handler: impl Fn() + 'static,
+    ) -> Self;
 }
 ```
 
@@ -855,8 +894,10 @@ color: (optional_color)!
 | `@char('x'): handler` | Character key |
 | `@key(enter): handler` | Special key |
 | `@key(Char('-')): handler` | Character via Key enum |
+| `@key(ctrl + 'c'): handler` | Key with modifiers |
 | `@char_global('q'): handler` | Global character |
 | `@key_global(esc): handler` | Global special key |
+| `@key_global(ctrl + enter): handler` | Global key with modifiers |
 | `@focus: handler` | Gained focus |
 | `@blur: handler` | Lost focus |
 | `@any_char: \|ch\| handler` | Any character |

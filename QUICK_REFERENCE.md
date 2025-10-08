@@ -75,6 +75,8 @@ node! {
     // Spacer
     spacer(2),
 }
+
+// Shorthand commas are optional at end of prop lists
 ```
 
 ### Dynamic Content
@@ -147,6 +149,58 @@ div(
 )
 ```
 
+### Input Properties
+
+```rust
+input(
+    // Sizing
+    w: 40,
+    h: 3,
+    w_pct: 0.5,
+    h_pct: 0.4,
+    w_auto,
+    h_auto,
+    w_content,
+    h_content,
+
+    // Container styling
+    bg: blue,
+    pad: 1,
+    border: cyan,
+    border_style: (BorderStyle::Rounded, cyan),
+    border_edges: BorderEdges::TOP | BorderEdges::BOTTOM,
+    border_full: (BorderStyle::Double, yellow, BorderEdges::ALL),
+
+    // Positioning
+    absolute,
+    top: 2,
+    left: 4,
+    z: 10,
+
+    // Focus
+    focusable,
+    focus_style: (Style::new().background(Color::Blue)),
+    focus_border: magenta,
+    focus_border_style: (BorderStyle::Rounded, yellow),
+    focus_background: green,
+    focus_padding: (Spacing::all(2)),
+
+    // Text + cursor styling
+    placeholder: "Search...",
+    placeholder_color: gray,
+    placeholder_italic: true,
+    placeholder_bold: false,
+    content_color: white,
+    cursor_color: yellow,
+    wrap: word,
+
+    // Behavior
+    password,
+    clear_on_submit,
+    @submit: ctx.handler(Msg::Submit),
+)
+```
+
 ### Text Properties
 
 ```rust
@@ -182,10 +236,12 @@ div(
     @char('a'): handler,
     @key(enter): handler,
     @key(backspace): handler,
+    @key(ctrl + 'c'): handler,
     @char('-'): handler,  // For character keys, use @char
     // Global (no focus needed)
     @char_global('q'): handler,
     @key_global(esc): handler,
+    @key_global(ctrl + enter): handler,
     // Focus
     @focus: handler,
     @blur: handler,
@@ -193,6 +249,8 @@ div(
     @any_char: |ch| handler(ch)
 ) []
 ```
+
+Use `ctrl`, `alt`, `shift`, or `meta`/`cmd` with `+` to target modifier-aware shortcuts.
 
 ### Programmatic Focus
 
@@ -218,6 +276,12 @@ div(
     bg: (optional_color)!,
     w: (optional_width)!,
     border: (if selected { Some(yellow) } else { None })!,
+)
+
+input(
+    placeholder: (maybe_placeholder)!,
+    w: (state.width)!,
+    focus_border: (state.focus_color)!,
 )
 ```
 
@@ -324,6 +388,19 @@ node! {
             node! { spacer(0) }
         })
     ]
+}
+```
+
+### Keyboard Shortcuts
+
+```rust
+#[view]
+fn view(&self, ctx: &Context) -> Node {
+    node! {
+        div(focusable, @key(ctrl + 'c'): ctx.handler(Msg::Exit)) [
+            text("Press Ctrl+C to exit", color: bright_red)
+        ]
+    }
 }
 ```
 
