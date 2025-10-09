@@ -1,5 +1,9 @@
 use rxtui::prelude::*;
 
+//--------------------------------------------------------------------------------------------------
+// Types
+//--------------------------------------------------------------------------------------------------
+
 #[derive(Debug, Clone)]
 enum CounterMsg {
     Increment,
@@ -29,6 +33,10 @@ enum DashboardMsg {
 
 #[derive(Component)]
 struct Dashboard;
+
+//--------------------------------------------------------------------------------------------------
+// Methods
+//--------------------------------------------------------------------------------------------------
 
 impl Counter {
     fn new(topic: impl Into<String>, label: impl Into<String>, color: Color) -> Self {
@@ -141,8 +149,11 @@ impl Dashboard {
                 spacer(1),
 
                 // Instructions
-                text("tab to focus • ↑/↓ to change • r to reset all • q to quit",
-                     color: bright_black, align: center),
+                text(
+                    "tab to focus • ↑/↓ to change • r to reset all • q to quit",
+                    color: bright_black,
+                    align: center
+                ),
 
                 spacer(2),
 
@@ -173,6 +184,10 @@ impl Dashboard {
         }
     }
 }
+
+//--------------------------------------------------------------------------------------------------
+// Functions
+//--------------------------------------------------------------------------------------------------
 
 fn main() -> std::io::Result<()> {
     App::new()?.run(Dashboard)

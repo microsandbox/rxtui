@@ -97,6 +97,32 @@ Animated progress bar with visual flair:
 
 <br />
 
+### [scroll.rs](./scroll.rs)
+```bash
+cargo run --example scroll
+```
+
+Interactive overview of scroll behaviors:
+- Dual vertical panels comparing visible and hidden scrollbars
+- Nested scrollable containers with independent focus and overflow control
+- Horizontal gallery demonstrating sideways panning without a scrollbar track
+- Contextual hint banner that updates as different surfaces receive focus
+
+<br />
+
+### [scroll2.rs](./scroll2.rs)
+```bash
+cargo run --example scroll2
+```
+
+Single-panel reading view:
+- Large article body contained within one scrollable surface
+- Keyboard, mouse, and touchpad scrolling supported out of the box
+- Fixed viewport keeps the layout stable on smaller terminals
+- Helpful instructions for focusing and navigating the text
+
+<br />
+
 ### [components.rs](./components.rs)
 ```bash
 cargo run --example components
