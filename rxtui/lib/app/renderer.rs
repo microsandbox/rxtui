@@ -554,12 +554,24 @@ fn render_node_with_offset(
         }
 
         RenderNodeType::TextWrapped(lines) => {
-            // Render each line of wrapped text
-            for (line_idx, line) in lines.iter().enumerate() {
-                let line_y = rendered_y + line_idx as u16;
+            // Skip lines that have scrolled out of view above the clip region
+            let skip_lines = if rendered_y_i32 < 0 {
+                (-rendered_y_i32) as usize
+            } else {
+                0
+            };
+            let start_index = skip_lines.min(lines.len());
 
-                // Check if this line is within the clip rect
-                if line_y >= clip_rect.y && line_y < clip_rect.bottom() {
+            // Render each visible line of wrapped text
+            for (line_idx, line) in lines.iter().enumerate().skip(start_index) {
+                let visual_index = (line_idx - start_index) as u16;
+                let line_y = rendered_y + visual_index;
+
+                if line_y >= clip_rect.bottom() {
+                    break;
+                }
+
+                if line_y >= clip_rect.y {
                     let line_width = display_width(line) as u16;
 
                     // Calculate alignment offset for this line
@@ -727,12 +739,24 @@ fn render_node_with_offset(
         }
 
         RenderNodeType::RichTextWrapped(lines) => {
-            // Render each line of wrapped styled text
-            for (line_idx, line_spans) in lines.iter().enumerate() {
-                let line_y = rendered_y + line_idx as u16;
+            // Skip lines that have scrolled out of view above the clip region
+            let skip_lines = if rendered_y_i32 < 0 {
+                (-rendered_y_i32) as usize
+            } else {
+                0
+            };
+            let start_index = skip_lines.min(lines.len());
 
-                // Check if this line is within the clip rect
-                if line_y >= clip_rect.y && line_y < clip_rect.bottom() {
+            // Render each visible line of wrapped styled text
+            for (line_idx, line_spans) in lines.iter().enumerate().skip(start_index) {
+                let visual_index = (line_idx - start_index) as u16;
+                let line_y = rendered_y + visual_index;
+
+                if line_y >= clip_rect.bottom() {
+                    break;
+                }
+
+                if line_y >= clip_rect.y {
                     // Calculate total line width
                     let line_width: u16 = line_spans
                         .iter()
